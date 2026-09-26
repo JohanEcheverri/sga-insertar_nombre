@@ -1,6 +1,6 @@
 package co.edu.uniquindio.sga.application.exception;
 
-import co.edu.uniquindio.sga.domain.valueobject.CodigoReserva;
+import co.uniquindio.edu.sga.domain.valueobject.CodigoReserva;
 public class ReservaNoEncontradaException extends RuntimeException {
 
     public ReservaNoEncontradaException(CodigoReserva codigo) {

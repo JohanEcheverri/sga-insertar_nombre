@@ -1,10 +1,10 @@
-package co.edu.uniquindio.sga.domain.entity;
+package co.uniquindio.edu.sga.domain.entity;
 
-import co.edu.uniquindio.sga.domain.exception.ReglaDominioException;
-import co.edu.uniquindio.sga.domain.valueobject.EstadoOperativo;
-import co.edu.uniquindio.sga.domain.valueobject.IdTemporada;
-import co.edu.uniquindio.sga.domain.valueobject.IdentificacionApartamento;
-import co.edu.uniquindio.sga.domain.valueobject.Tarifa;
+import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
+import co.uniquindio.edu.sga.domain.valueobject.EstadoOperativo;
+import co.uniquindio.edu.sga.domain.valueobject.IdTemporada;
+import co.uniquindio.edu.sga.domain.valueobject.IdentificacionApartamento;
+import co.uniquindio.edu.sga.domain.valueobject.Tarifa;
 
 import java.util.ArrayList;
 import java.util.List;
