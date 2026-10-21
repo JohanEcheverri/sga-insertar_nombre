@@ -1,4 +1,7 @@
 package co.uniquindio.edu.sga.domain.repository;
+import java.util.List;
 
-public interface ReservaRepository {
-}
+public class ReservaRepository {
+
+    Optional<Reserva> obtenerPorCodigo;
+ }

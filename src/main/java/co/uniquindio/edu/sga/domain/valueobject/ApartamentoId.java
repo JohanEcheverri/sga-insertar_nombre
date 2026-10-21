@@ -1,4 +1,5 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class ApartamentoId {
+import java.util.UUID;
+public record ApartamentoId(UUID valor) {
 }

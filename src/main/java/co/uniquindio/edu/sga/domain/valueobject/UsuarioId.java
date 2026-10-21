@@ -1,4 +1,8 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class UsuarioId {
+import java.util.UUID;
+
+public record UsuarioId (UUID valor){
+
 }
+

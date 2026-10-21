@@ -1,4 +1,6 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class EstadoFolio {
+public enum EstadoFolio {
+    ABIERTO,
+    CERRADO
 }

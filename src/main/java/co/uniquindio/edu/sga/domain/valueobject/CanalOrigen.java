@@ -1,4 +1,7 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class CanalOrigen {
+public enum CanalOrigen {
+    PORTAL,
+    DIRECTO,
+    EXTERNO
 }

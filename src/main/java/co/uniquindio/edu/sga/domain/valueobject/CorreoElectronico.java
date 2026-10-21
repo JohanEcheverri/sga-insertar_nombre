@@ -1,4 +1,4 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class CorreoElectronico {
+public record CorreoElectronico(String valor) {
 }
