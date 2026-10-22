@@ -1,4 +1,22 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class FolioId {
+import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
+import java.util.UUID;
+
+public record FolioId(UUID valor) {
+    
+    public FolioId {
+        if (valor == null) {
+            throw new ReglaDominioException("El valor del alojamiento no puede ser nulo");
+        }
+    }
+
+    public static FolioId of(UUID valor) {
+        return new FolioId(valor);
+    }
+
+    public static FolioId generar() {
+        return new FolioId(UUID.randomUUID());
+    }
+
 }

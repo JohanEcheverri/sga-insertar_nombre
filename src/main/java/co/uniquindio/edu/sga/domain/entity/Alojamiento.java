@@ -6,7 +6,6 @@ import co.uniquindio.edu.sga.domain.valueobject.Ubicacion;
 import co.uniquindio.edu.sga.domain.valueobject.ConfiguracionAlojamiento;
 import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
 
-
 public class Alojamiento {
 
     // ------ Atributos Entidad Alojamiento ------ //
@@ -18,5 +17,8 @@ public class Alojamiento {
     private List<Apartamento> apartamentos;
     private List<Temporada> temporadas;
     private PoliticaCancelacion politicaVigente;
+
+    
+    
     
 }
