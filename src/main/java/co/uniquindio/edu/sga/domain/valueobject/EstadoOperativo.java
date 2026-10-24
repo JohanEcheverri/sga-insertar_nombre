@@ -1,6 +1,6 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public enum EstadoOperativo {
+public enum  EstadoOperativo {
     PREPARADO,
     OCUPADO,
     PENDIENTE_PREPARACION,

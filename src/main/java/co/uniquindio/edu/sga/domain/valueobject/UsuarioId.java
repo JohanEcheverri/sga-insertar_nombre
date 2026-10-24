@@ -7,7 +7,7 @@ public record UsuarioId (UUID valor){
     
     public UsuarioId {
         if (valor == null) {
-            throw new ReglaDominioException("El valor del usuario no puede ser nulo");
+            throw new ReglaDominioException("El identificador del usuario no puede ser nulo");
         }
     }
 

@@ -7,7 +7,7 @@ public record FolioId(UUID valor) {
     
     public FolioId {
         if (valor == null) {
-            throw new ReglaDominioException("El valor del alojamiento no puede ser nulo");
+            throw new ReglaDominioException("El id del folio no puede ser nulo");
         }
     }
 

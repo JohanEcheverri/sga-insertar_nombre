@@ -1,4 +1,8 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class GravedadNovedad {
+public enum GravedadNovedad {
+    BAJA,
+    MEDIA,
+    ALTA,
+    CRITICA
 }

@@ -1,4 +1,8 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-public class RolUsuario {
+public enum RolUsuario {
+    ADMINISTRADOR,
+    HUESPED,
+    RECEPCIONISTA,
+    PERSONAL_SERVICIO
 }

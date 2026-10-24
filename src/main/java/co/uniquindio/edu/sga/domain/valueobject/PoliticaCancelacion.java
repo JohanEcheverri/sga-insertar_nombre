@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+// TODO: revisar clase
 public class PoliticaCancelacion {
 
     private final VersionPolitica version;

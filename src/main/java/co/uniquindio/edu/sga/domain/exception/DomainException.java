@@ -1,4 +1,12 @@
 package co.uniquindio.edu.sga.domain.exception;
 
-public class DomainException extends RuntimeException{
+public abstract class DomainException extends RuntimeException {
+
+    protected DomainException(String message) {
+        super(message);
+    }
+
+    protected DomainException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

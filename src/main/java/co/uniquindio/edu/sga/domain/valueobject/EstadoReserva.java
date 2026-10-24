@@ -19,7 +19,7 @@ public enum EstadoReserva {
         return activa;
     }
 
-    //consulta es terminal FINALIZADO, CANCELADA YNO_SHOW
+    //consulta es terminal FINALIZADO, CANCELADA Y NO_SHOW
     public boolean esTerminal(){
         return !activa;
     }
