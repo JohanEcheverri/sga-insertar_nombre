@@ -1,22 +1,11 @@
 package co.uniquindio.edu.sga.domain.entity;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
-import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
-import co.uniquindio.edu.sga.domain.valueobject.CanalOrigen;
-import co.uniquindio.edu.sga.domain.valueobject.Dinero;
-import co.uniquindio.edu.sga.domain.valueobject.EstadoReserva;
-import co.uniquindio.edu.sga.domain.valueobject.Estancia;
-import co.uniquindio.edu.sga.domain.valueobject.FolioId;
-import co.uniquindio.edu.sga.domain.valueobject.Ocupante;
-import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
-import co.uniquindio.edu.sga.domain.valueobject.ReservaId;
-import co.uniquindio.edu.sga.domain.valueobject.Titular;
+import co.uniquindio.edu.sga.domain.valueobject.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Objects;
 
 /** Agregado raíz que protege las invariantes propias de una reserva. */
 public class Reserva {
@@ -30,6 +19,7 @@ public class Reserva {
     private final LocalTime horaEstimadaLlegada;
     private final CanalOrigen canalOrigen;
     private EstadoReserva estado;
+    // RN-22 - El valor y la política de una reserva quedan congelados al crearla y solo cambian por modificación explícita.
     private final Dinero valorCongelado;
     private final PoliticaCancelacion politicaCancelacion;
     private final LocalDateTime fechaCreacion;
@@ -56,6 +46,7 @@ public class Reserva {
     /**
      * Crea una reserva pendiente.
      * RN-04 - No se pueden crear reservas cuya fecha de entrada sea anterior a la fecha actual.
+     * RN-22 - El valor y la política de una reserva quedan congelados al crearla y solo cambian por modificación explícita.
      * Regla de ciclo de vida: toda reserva nueva inicia en estado PENDIENTE.
      */
     public static Reserva crear(ReservaId id, FolioId folioId, ApartamentoId apartamentoId,

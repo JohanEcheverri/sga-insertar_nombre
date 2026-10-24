@@ -13,4 +13,9 @@ public record Estancia(LocalDate fechaEntrada, LocalDate fechaSalida) {
             throw new ReglaDominioException("La fecha de salida debe ser posterior a la fecha de entrada.");
         }
     }
+
+    /** Convierte la estancia al intervalo semiabierto usado para comparar ocupación y bloqueos. */
+    public RangoFechas rangoFechas() {
+        return new RangoFechas(fechaEntrada, fechaSalida);
+    }
 }

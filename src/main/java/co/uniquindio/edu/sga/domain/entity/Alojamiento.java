@@ -2,9 +2,9 @@ package co.uniquindio.edu.sga.domain.entity;
 
 import java.util.List;
 import co.uniquindio.edu.sga.domain.valueobject.AlojamientoId;
+import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
 import co.uniquindio.edu.sga.domain.valueobject.Ubicacion;
 import co.uniquindio.edu.sga.domain.valueobject.ConfiguracionAlojamiento;
-import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
 
 public class Alojamiento {
 
