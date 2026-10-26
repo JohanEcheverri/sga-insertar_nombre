@@ -1,74 +1,60 @@
 package co.uniquindio.edu.sga.domain.valueobject;
 
-import java.util.Objects;
-
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
-// TODO: revisar clase
-public class PoliticaCancelacion {
+import java.util.Comparator;
+import java.util.List;
 
-    private final VersionPolitica version;
-    private final List<TramoRetencion> tramos;
-    private final Porcentaje retencionNoShow;
-
-    public PoliticaCancelacion(VersionPolitica version, List<TramoRetencion> tramos, Porcentaje retencionNoShow) {
+/** Política inmutable que define retenciones por antelación y para no-show. */
+public record PoliticaCancelacion(VersionPolitica version,
+                                  List<TramoCancelacion> tramos,
+                                  double porcentajeRetencionNoShow) {
+    public PoliticaCancelacion {
         if (version == null) {
             throw new ReglaDominioException("La política de cancelación debe tener una versión.");
         }
-        if (tramos == null || tramos.size() < 2) {
-            throw new ReglaDominioException("La política de cancelación debe tener al menos dos tramos de antelación.");
+        // Regla de política: debe existir al menos un tramo y cubrir cualquier antelación no negativa desde el día cero.
+        if (tramos == null || tramos.isEmpty()) {
+            throw new ReglaDominioException("La política debe contener al menos un tramo de cancelación.");
         }
-        if (retencionNoShow == null) {
-            throw new ReglaDominioException("La política de cancelación debe indicar la retención por no-show.");
+        if (tramos.contains(null)) {
+            throw new ReglaDominioException("La política no puede contener tramos nulos.");
         }
-        this.version = version;
-        this.tramos = List.copyOf(tramos);
-        this.retencionNoShow = retencionNoShow;
-    }
+        if (!Double.isFinite(porcentajeRetencionNoShow)
+                || porcentajeRetencionNoShow < 0 || porcentajeRetencionNoShow > 1) {
+            throw new ReglaDominioException("El porcentaje de retención por no-show debe estar entre 0 y 1.");
+        }
 
-    /** RN-13: escoge el tramo aplicable según la antelación con la que ocurre la cancelación. */
-    public Porcentaje retencionPara(long horasAntelacion) {
-        TramoRetencion tramoAplicable = null;
-        for (TramoRetencion tramo : tramos) {
-            if (horasAntelacion < tramo.horasAntelacionMinima()) {
-                continue;
+        List<TramoCancelacion> tramosOrdenados = tramos.stream()
+                .sorted(Comparator.comparingInt(TramoCancelacion::diasAntelacionMinimos))
+                .toList();
+        if (tramosOrdenados.get(0).diasAntelacionMinimos() != 0) {
+            throw new ReglaDominioException("La política debe incluir un tramo desde cero días de antelación.");
+        }
+        for (int i = 1; i < tramosOrdenados.size(); i++) {
+            if (tramosOrdenados.get(i - 1).diasAntelacionMinimos()
+                    == tramosOrdenados.get(i).diasAntelacionMinimos()) {
+                throw new ReglaDominioException("No puede haber tramos con el mismo mínimo de días de antelación.");
             }
-            if (tramoAplicable == null || tramo.horasAntelacionMinima() > tramoAplicable.horasAntelacionMinima()) {
-                tramoAplicable = tramo;
-            }
         }
-        if (tramoAplicable == null) {
-            throw new ReglaDominioException("No existe un tramo de retención aplicable para la antelación indicada.");
+        tramos = List.copyOf(tramosOrdenados);
+    }
+
+    /** RN-13 - La retención de cancelación se determina según la antelación con que se cancela. */
+    public double retencionParaDias(long diasAntelacion) {
+        if (diasAntelacion < 0) {
+            throw new ReglaDominioException("Los días de antelación no pueden ser negativos.");
         }
-        return tramoAplicable.retencion();
+        TramoCancelacion aplicable = tramos.get(0);
+        for (TramoCancelacion tramo : tramos) {
+            if (tramo.diasAntelacionMinimos() > diasAntelacion) break;
+            aplicable = tramo;
+        }
+        return aplicable.porcentajeRetencion();
     }
 
-    /** RN-13. */
-    public Porcentaje retencionPorNoShow() {
-        return retencionNoShow;
-    }
-
-    public VersionPolitica getVersion() {
-        return version;
-    }
-
-    public List<TramoRetencion> getTramos() {
-        return tramos;
-    }
-
-    public Porcentaje getRetencionNoShow() {
-        return retencionNoShow;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PoliticaCancelacion that)) return false;
-        return Objects.equals(version, that.version);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(version);
+    /** RN-13 - La retención aplicable a un no-show se toma de la configuración específica de la política. */
+    public double retencionPorNoShow() {
+        return porcentajeRetencionNoShow;
     }
 }

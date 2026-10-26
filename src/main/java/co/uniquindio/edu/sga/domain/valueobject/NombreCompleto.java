@@ -10,6 +10,8 @@ public record NombreCompleto(String nombre, String apellido) {
         if(nombre == null || nombre.isBlank()) throw new ReglaDominioException("Debe ingresar un nombre válido.");
 
         if(apellido == null || apellido.isBlank()) throw new ReglaDominioException("Debe ingresar un apellido válido.");
+        nombre = nombre.trim();
+        apellido = apellido.trim();
     }
 
     /*

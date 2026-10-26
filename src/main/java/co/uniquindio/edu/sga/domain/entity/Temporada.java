@@ -50,7 +50,7 @@ public class Temporada {
     }
 
     /** Registra o reemplaza la tarifa de un apartamento en esta temporada. */
-    public void establecerTarifa(Tarifa tarifa) {
+    void establecerTarifa(Tarifa tarifa) {
         exigir(tarifa != null, "La tarifa no puede ser nula.");
         exigir(id.equals(tarifa.temporadaId()), "La tarifa debe pertenecer a esta temporada.");
         tarifasPorApartamento.put(tarifa.apartamentoId(), tarifa);
