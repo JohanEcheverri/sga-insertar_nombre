@@ -339,3 +339,163 @@ class ReglasDominioTest {
         }
     }
 }
+    // =====================================================================
+    // Reserva: RN-04, RN-08, RN-12, RN-22
+    // =====================================================================
+
+    @Nested
+    @DisplayName("Reserva")
+    class ReservaTests {
+
+        @Test
+        void nuevaReservaNaceEnPendienteConValorYPoliticaCongelados() {
+            Reserva r = reservaValida();
+            assertEquals(EstadoReserva.PENDIENTE, r.getEstado());
+            assertEquals(240000.0, r.getValorCongelado().valor());
+            assertEquals("v1", r.getPoliticaCancelacion().version().valor());
+        }
+
+        @Test
+        void rn04NoSePuedeCrearConEntradaAnteriorAHoy() {
+            ReglaDominioException ex = assertThrows(ReglaDominioException.class,
+                    () -> reserva(LocalDate.of(2026, 10, 27), LocalDate.of(2026, 10, 29)));
+            assertTrue(ex.getMessage().contains("RN-04"));
+        }
+
+        @Test
+        void rn04SePuedeCrearConEntradaIgualAHoy() {
+            assertDoesNotThrow(() -> reserva(LocalDate.of(2026, 10, 28), LocalDate.of(2026, 10, 29)));
+        }
+
+        @Test
+        void exigeAlMenosUnOcupanteYDatosObligatorios() {
+            Estancia e = estancia(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
+            assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
+                    FolioId.generar(), ApartamentoId.generar(), titular(), new ArrayList<>(), e, null,
+                    LocalTime.of(15, 0), CanalOrigen.PORTAL, new Dinero(1), politica(), AHORA));
+            List<Ocupante> uno = new ArrayList<>();
+            uno.add(ocupante());
+            assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
+                    FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
+                    null, CanalOrigen.PORTAL, new Dinero(1), politica(), AHORA));
+            assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
+                    FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
+                    LocalTime.of(15, 0), null, new Dinero(1), politica(), AHORA));
+            assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
+                    FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
+                    LocalTime.of(15, 0), CanalOrigen.PORTAL, null, politica(), AHORA));
+            assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
+                    FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
+                    LocalTime.of(15, 0), CanalOrigen.PORTAL, new Dinero(1), null, AHORA));
+        }
+
+        @Test
+        void identificadorExternoEnBlancoSeNormalizaANulo() {
+            List<Ocupante> uno = new ArrayList<>();
+            uno.add(ocupante());
+            Reserva r = Reserva.crear(ReservaId.generar(), FolioId.generar(), ApartamentoId.generar(),
+                    titular(), uno, estancia(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12)),
+                    "   ", LocalTime.of(15, 0), CanalOrigen.DIRECTO, new Dinero(1), politica(), AHORA);
+            assertNull(r.getIdentificadorExterno());
+        }
+
+        @Test
+        void listaDeOcupantesDeLaReservaEsInmutable() {
+            Reserva r = reservaValida();
+            assertThrows(UnsupportedOperationException.class, () -> r.getOcupantes().add(ocupante()));
+        }
+
+        // ---- RN-08: transiciones ----
+
+        @Test
+        void rn08CicloCompletoPendienteConfirmadaEnCursoFinalizada() {
+            Reserva r = reservaValida();
+            r.confirmar();
+            assertEquals(EstadoReserva.CONFIRMADA, r.getEstado());
+            r.iniciarEstancia();
+            assertEquals(EstadoReserva.EN_CURSO, r.getEstado());
+            r.finalizar();
+            assertEquals(EstadoReserva.FINALIZADA, r.getEstado());
+        }
+
+        @Test
+        void rn08RechazaTransicionesInvalidas() {
+            Reserva pendiente = reservaValida();
+            assertThrows(ReglaDominioException.class, pendiente::iniciarEstancia);
+            assertThrows(ReglaDominioException.class, pendiente::finalizar);
+            assertThrows(ReglaDominioException.class, pendiente::marcarNoShow);
+
+            Reserva confirmada = reservaValida();
+            confirmada.confirmar();
+            assertThrows(ReglaDominioException.class, confirmada::confirmar);
+            assertThrows(ReglaDominioException.class, confirmada::finalizar);
+
+            Reserva enCurso = reservaValida();
+            enCurso.confirmar();
+            enCurso.iniciarEstancia();
+            assertThrows(ReglaDominioException.class, enCurso::cancelar);
+            assertThrows(ReglaDominioException.class, enCurso::marcarNoShow);
+            assertThrows(ReglaDominioException.class, enCurso::iniciarEstancia);
+        }
+
+        @Test
+        void rn08PuedeCancelarseDesdePendienteYConfirmada() {
+            Reserva p = reservaValida();
+            p.cancelar();
+            assertEquals(EstadoReserva.CANCELADA, p.getEstado());
+
+            Reserva c = reservaValida();
+            c.confirmar();
+            c.cancelar();
+            assertEquals(EstadoReserva.CANCELADA, c.getEstado());
+        }
+
+        @Test
+        void rn08NoShowSoloDesdeConfirmada() {
+            Reserva r = reservaValida();
+            r.confirmar();
+            r.marcarNoShow();
+            assertEquals(EstadoReserva.NO_SHOW, r.getEstado());
+        }
+
+        @Test
+        void rn08EstadosTerminalesNoPuedenCancelarse() {
+            Reserva cancelada = reservaValida();
+            cancelada.cancelar();
+            assertThrows(ReglaDominioException.class, cancelada::cancelar);
+
+            Reserva noShow = reservaValida();
+            noShow.confirmar();
+            noShow.marcarNoShow();
+            assertThrows(ReglaDominioException.class, noShow::cancelar);
+
+            Reserva finalizada = reservaValida();
+            finalizada.confirmar();
+            finalizada.iniciarEstancia();
+            finalizada.finalizar();
+            assertThrows(ReglaDominioException.class, finalizada::cancelar);
+        }
+
+        // ---- RN-12 / Sección 8: retención de disponibilidad ----
+
+        @Test
+        void rn12SoloLosEstadosActivosRetienenDisponibilidad() {
+            assertTrue(EstadoReserva.PENDIENTE.retieneDisponibilidad());
+            assertTrue(EstadoReserva.CONFIRMADA.retieneDisponibilidad());
+            assertTrue(EstadoReserva.EN_CURSO.retieneDisponibilidad());
+            assertFalse(EstadoReserva.FINALIZADA.retieneDisponibilidad());
+            assertFalse(EstadoReserva.CANCELADA.retieneDisponibilidad());
+            assertFalse(EstadoReserva.NO_SHOW.retieneDisponibilidad());
+        }
+
+        @Test
+        void terminalesSonExactamenteFinalizadaCanceladaYNoShow() {
+            for (EstadoReserva e : EstadoReserva.values()) {
+                boolean terminal = e == EstadoReserva.FINALIZADA || e == EstadoReserva.CANCELADA
+                        || e == EstadoReserva.NO_SHOW;
+                assertEquals(terminal, e.esTerminal(), e.name());
+                assertEquals(!terminal, e.esActiva(), e.name());
+            }
+        }
+    }
+}
