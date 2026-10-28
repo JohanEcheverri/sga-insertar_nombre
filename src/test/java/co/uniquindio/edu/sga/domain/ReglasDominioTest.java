@@ -135,4 +135,150 @@ class ReglasDominioTest {
     private static Folio folio() {
         return Folio.crear(FolioId.generar(), ReservaId.generar());
     }
+
+    // =====================================================================
+    // Objetos de valor
+    // =====================================================================
+
+    @Nested
+    @DisplayName("Objetos de valor")
+    class ObjetosDeValor {
+
+        @Test
+        void dineroRechazaCeroNegativoYNoFinito() {
+            assertThrows(ReglaDominioException.class, () -> new Dinero(0));
+            assertThrows(ReglaDominioException.class, () -> new Dinero(-1));
+            assertThrows(ReglaDominioException.class, () -> new Dinero(Double.NaN));
+            assertThrows(ReglaDominioException.class, () -> new Dinero(Double.POSITIVE_INFINITY));
+            assertEquals(1000.0, new Dinero(1000).valor());
+        }
+
+        @Test
+        void capacidadDebeSerMayorACero() {
+            assertThrows(ReglaDominioException.class, () -> new Capacidad((byte) 0));
+            assertThrows(ReglaDominioException.class, () -> new Capacidad((byte) -1));
+            assertEquals(6, new Capacidad((byte) 6).aforoMax());
+        }
+
+        @Test
+        void dormitorioValidaCamposYNormalizaTexto() {
+            assertThrows(ReglaDominioException.class, () -> new Dormitorio(" ", 1, "Doble"));
+            assertThrows(ReglaDominioException.class, () -> new Dormitorio("D1", 0, "Doble"));
+            assertThrows(ReglaDominioException.class, () -> new Dormitorio("D1", 1, null));
+            Dormitorio d = new Dormitorio("  D1 ", 2, " Doble ");
+            assertEquals("D1", d.nombre());
+            assertEquals("Doble", d.tipoCamas());
+        }
+
+        @Test
+        void correoValidaFormato() {
+            assertThrows(ReglaDominioException.class, () -> CorreoElectronico.of(null));
+            assertThrows(ReglaDominioException.class, () -> CorreoElectronico.of("   "));
+            assertThrows(ReglaDominioException.class, () -> CorreoElectronico.of("sin-arroba"));
+            assertThrows(ReglaDominioException.class, () -> CorreoElectronico.of("a@b"));
+            assertEquals("ana@correo.com", CorreoElectronico.of("  ana@correo.com ").direccion());
+        }
+
+        @Test
+        void fechaNacimientoNoPuedeSerNulaNiFutura() {
+            assertThrows(ReglaDominioException.class, () -> new FechaNacimiento(null));
+            assertThrows(ReglaDominioException.class,
+                    () -> new FechaNacimiento(LocalDate.now().plusDays(1)));
+            assertDoesNotThrow(() -> new FechaNacimiento(LocalDate.now()));
+        }
+
+        @Test
+        void nombreCompletoExigeNombreYApellidoYLosRecorta() {
+            assertThrows(ReglaDominioException.class, () -> new NombreCompleto("", "X"));
+            assertThrows(ReglaDominioException.class, () -> new NombreCompleto("X", null));
+            assertEquals("Ana Pérez", new NombreCompleto(" Ana ", " Pérez ").obtenerNombreCompleto());
+        }
+
+        @Test
+        void documentoYTelefonoNoPuedenSerVacios() {
+            assertThrows(ReglaDominioException.class, () -> new DocumentoIdentidad(" "));
+            assertThrows(ReglaDominioException.class, () -> new DocumentoIdentidad(null));
+            assertThrows(ReglaDominioException.class, () -> new Telefono(""));
+            assertThrows(ReglaDominioException.class, () -> new Telefono(null));
+        }
+
+        @Test
+        void ocupanteExigeTodosSusDatos() {
+            FechaNacimiento fn = new FechaNacimiento(LocalDate.of(2000, 1, 1));
+            assertThrows(ReglaDominioException.class, () -> new Ocupante(null, documento(), fn));
+            assertThrows(ReglaDominioException.class, () -> new Ocupante(nombre(), null, fn));
+            assertThrows(ReglaDominioException.class, () -> new Ocupante(nombre(), documento(), null));
+        }
+
+        @Test
+        void titularExigeNombreYDatosDeContacto() {
+            UsuarioId uid = UsuarioId.generar();
+            CorreoElectronico c = CorreoElectronico.of("a@b.co");
+            Telefono t = new Telefono("300");
+            assertThrows(ReglaDominioException.class, () -> new Titular(null, uid, c, t, documento()));
+            assertThrows(ReglaDominioException.class, () -> new Titular(nombre(), null, c, t, documento()));
+            assertThrows(ReglaDominioException.class, () -> new Titular(nombre(), uid, null, t, documento()));
+            assertThrows(ReglaDominioException.class, () -> new Titular(nombre(), uid, c, null, documento()));
+            assertThrows(ReglaDominioException.class, () -> new Titular(nombre(), uid, c, t, null));
+        }
+
+        @Test
+        void identificadoresNoAceptanNulosYAlojamientoIdParseaTexto() {
+            assertThrows(ReglaDominioException.class, () -> new ReservaId(null));
+            assertThrows(ReglaDominioException.class, () -> new FolioId(null));
+            assertThrows(ReglaDominioException.class, () -> new ApartamentoId(null));
+            assertThrows(ReglaDominioException.class, () -> new UsuarioId(null));
+            assertThrows(ReglaDominioException.class, () -> new TemporadaId(null));
+            assertThrows(ReglaDominioException.class, () -> new BloqueoId(null));
+            assertThrows(ReglaDominioException.class, () -> new NovedadId(null));
+            assertThrows(ReglaDominioException.class, () -> AlojamientoId.of("no-es-uuid"));
+            assertThrows(ReglaDominioException.class, () -> AlojamientoId.of(" "));
+            AlojamientoId id = AlojamientoId.generar();
+            assertEquals(id, AlojamientoId.of(id.toString()));
+        }
+
+        @Test
+        void ubicacionExigeTodosSusCampos() {
+            assertThrows(ReglaDominioException.class, () -> new Ubicacion("", "Lloró", "Calle 1"));
+            assertThrows(ReglaDominioException.class, () -> new Ubicacion("Chocó", " ", "Calle 1"));
+            assertThrows(ReglaDominioException.class, () -> new Ubicacion("Chocó", "Lloró", null));
+        }
+
+        @Test
+        void configuracionAlojamientoValidaParametros() {
+            LocalTime in = LocalTime.of(15, 0), out = LocalTime.of(12, 0), ns = LocalTime.of(18, 0);
+            assertThrows(ReglaDominioException.class,
+                    () -> new ConfiguracionAlojamiento(-1, in, out, 3, 4, ns));
+            assertThrows(ReglaDominioException.class,
+                    () -> new ConfiguracionAlojamiento(5, null, out, 3, 4, ns));
+            assertThrows(ReglaDominioException.class,
+                    () -> new ConfiguracionAlojamiento(5, in, out, 0, 4, ns));
+            assertThrows(ReglaDominioException.class,
+                    () -> new ConfiguracionAlojamiento(5, in, out, 3, 0, ns));
+            // no-show antes del check-in
+            assertThrows(ReglaDominioException.class,
+                    () -> new ConfiguracionAlojamiento(5, in, out, 3, 4, LocalTime.of(14, 0)));
+            assertDoesNotThrow(() -> new ConfiguracionAlojamiento(5, in, out, 3, 4, ns));
+        }
+
+        @Test
+        void autorizacionCierreExigeAutorMotivoYFecha() {
+            assertThrows(ReglaDominioException.class, () -> new AutorizacionCierre(" ", "m", AHORA));
+            assertThrows(ReglaDominioException.class, () -> new AutorizacionCierre("a", null, AHORA));
+            assertThrows(ReglaDominioException.class, () -> new AutorizacionCierre("a", "m", null));
+        }
+
+        @Test
+        void pagoYCargoValidanCamposObligatorios() {
+            assertThrows(ReglaDominioException.class, () -> new Pago(null, MedioPago.EFECTIVO, null, AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Pago(new Dinero(1), null, null, AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Pago(new Dinero(1), MedioPago.EFECTIVO, null, null));
+            assertNull(new Pago(new Dinero(1), MedioPago.EFECTIVO, "   ", AHORA).referencia());
+
+            assertThrows(ReglaDominioException.class, () -> new Cargo(null, "c", new Dinero(1), AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, " ", new Dinero(1), AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", null, AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", new Dinero(1), null));
+        }
+    }
 }
