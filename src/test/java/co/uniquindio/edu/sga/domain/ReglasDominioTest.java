@@ -281,4 +281,61 @@ class ReglasDominioTest {
             assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", new Dinero(1), null));
         }
     }
+
+    // =====================================================================
+    // RN-03 / 3.1 Estancia y RangoFechas
+    // =====================================================================
+
+    @Nested
+    @DisplayName("RN-03 Estancia y rango de fechas")
+    class EstanciaYRango {
+
+        @Test
+        void salidaDebeSerPosteriorALaEntrada() {
+            LocalDate d = LocalDate.of(2026, 11, 10);
+            assertThrows(ReglaDominioException.class, () -> new Estancia(d, d));
+            assertThrows(ReglaDominioException.class, () -> new Estancia(d, d.minusDays(1)));
+            assertThrows(ReglaDominioException.class, () -> new Estancia(null, d));
+            assertDoesNotThrow(() -> new Estancia(d, d.plusDays(1)));
+        }
+
+        @Test
+        void rangosSemiabiertosQueSoloSeTocanNoSolapan() {
+            RangoFechas a = new RangoFechas(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
+            RangoFechas b = new RangoFechas(LocalDate.of(2026, 11, 12), LocalDate.of(2026, 11, 14));
+            assertFalse(a.intersecta(b));
+            assertFalse(b.intersecta(a));
+        }
+
+        @Test
+        void rangosQueCompartenUnaNocheSeSolapan() {
+            RangoFechas a = new RangoFechas(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 13));
+            RangoFechas b = new RangoFechas(LocalDate.of(2026, 11, 12), LocalDate.of(2026, 11, 14));
+            assertTrue(a.intersecta(b));
+            assertTrue(b.intersecta(a));
+        }
+
+        @Test
+        void cubreUnRangoContenido() {
+            RangoFechas grande = new RangoFechas(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 30));
+            RangoFechas chico = new RangoFechas(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
+            assertTrue(grande.cubre(chico));
+            assertFalse(chico.cubre(grande));
+        }
+
+        @Test
+        void rangoRechazaFinNoPosteriorYConsultaNula() {
+            LocalDate d = LocalDate.of(2026, 1, 1);
+            assertThrows(ReglaDominioException.class, () -> new RangoFechas(d, d));
+            RangoFechas r = new RangoFechas(d, d.plusDays(1));
+            assertThrows(ReglaDominioException.class, () -> r.intersecta(null));
+        }
+
+        @Test
+        void estanciaSeConvierteEnRango() {
+            Estancia e = estancia(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
+            assertEquals(new RangoFechas(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12)),
+                    e.rangoFechas());
+        }
+    }
 }
