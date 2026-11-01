@@ -1,7 +1,11 @@
 package co.uniquindio.edu.sga.domain.repository;
-import java.util.List;
 
-public class ReservaRepository {
+import co.uniquindio.edu.sga.domain.entity.Reserva;
+import co.uniquindio.edu.sga.domain.valueobject.ReservaId;
 
-    Optional<Reserva> obtenerPorCodigo;
- }
+import java.util.Optional;
+
+/** Puerto de persistencia para el agregado Reserva. */
+public interface ReservaRepository {
+    Optional<Reserva> obtenerPorCodigo(ReservaId codigo);
+}
