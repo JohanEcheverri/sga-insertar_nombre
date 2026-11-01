@@ -1,14 +1,12 @@
 package co.uniquindio.edu.sga.domain.entity;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
-import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
-import co.uniquindio.edu.sga.domain.valueobject.Capacidad;
-import co.uniquindio.edu.sga.domain.valueobject.Dormitorio;
-import co.uniquindio.edu.sga.domain.valueobject.EstadoOperativo;
+import co.uniquindio.edu.sga.domain.valueobject.*;
 
 import java.util.List;
+import java.util.Optional;
 
-/** Agregado raíz que conserva las invariantes propias de un apartamento. */
+/** Agregada raíz que conserva las invariantes propias de un apartamento. */
 public class Apartamento {
     private final ApartamentoId id;
     private final String identificadorUnico;
@@ -16,14 +14,16 @@ public class Apartamento {
     private final Capacidad capacidad;
     private EstadoOperativo estadoOperativo;
     private final List<Dormitorio> dormitorios;
+    private final List<Tarifa> tarifas;
     private boolean disponible;
 
     private Apartamento(Capacidad capacidad, String descripcion, List<Dormitorio> dormitorios,
-                        EstadoOperativo estadoOperativo, ApartamentoId id,
+                        List<Tarifa> tarifas, EstadoOperativo estadoOperativo, ApartamentoId id,
                         String identificadorUnico, boolean disponible) {
         this.capacidad = capacidad;
         this.descripcion = descripcion.trim();
         this.dormitorios = List.copyOf(dormitorios);
+        this.tarifas = tarifas != null ? List.copyOf(tarifas) : List.of();
         this.estadoOperativo = estadoOperativo;
         this.disponible = disponible;
         this.id = id;
@@ -32,7 +32,7 @@ public class Apartamento {
 
     /** Crea el apartamento validando sus datos obligatorios y su configuración inicial. */
     public static Apartamento crear(Capacidad capacidad, String descripcion,
-                                    List<Dormitorio> dormitorios, EstadoOperativo estadoOperativo,
+                                    List<Dormitorio> dormitorios, List<Tarifa> tarifas, EstadoOperativo estadoOperativo,
                                     ApartamentoId id, String identificadorUnico, boolean disponible) {
         exigir(capacidad != null, "El apartamento debe tener una capacidad definida.");
         exigir(descripcion != null && !descripcion.isBlank(), "La descripción del apartamento es obligatoria.");
@@ -44,7 +44,7 @@ public class Apartamento {
         // RN-11 - Un apartamento solo puede recibir un grupo si su estado operativo es PREPARADO.
         exigir(estadoOperativo != EstadoOperativo.OCUPADO || !disponible,
                 "Un apartamento OCUPADO no puede estar marcado como disponible.");
-        return new Apartamento(capacidad, descripcion, dormitorios, estadoOperativo,
+        return new Apartamento(capacidad, descripcion, dormitorios, tarifas, estadoOperativo,
                 id, identificadorUnico, disponible);
     }
 
@@ -88,8 +88,26 @@ public class Apartamento {
         disponible = false;
     }
 
+    /** Busca la tarifa aplicable para una temporada específica dentro de las tarifas del apartamento. */
+    public Optional<Tarifa> tarifaEn(Object temporadaId) {
+        if (temporadaId == null || tarifas == null) {
+            return Optional.empty();
+        }
+        return tarifas.stream()
+                .filter(t -> t.temporadaId().equals(temporadaId))
+                .findFirst();
+    }
+
     private static void exigir(boolean condicion, String mensaje) {
         if (!condicion) throw new ReglaDominioException(mensaje);
+    }
+
+    /** Marca el apartamento como pendiente de preparación tras finalizar la estancia. */
+    public void marcarPendientePreparacion() {
+        exigir(estadoOperativo == EstadoOperativo.OCUPADO,
+                "Solo un apartamento ocupado puede pasar a pendiente de preparación.");
+        estadoOperativo = EstadoOperativo.PENDIENTE_PREPARACION;
+        disponible = false;
     }
 
     public ApartamentoId getId() { return id; }
@@ -98,5 +116,6 @@ public class Apartamento {
     public Capacidad getCapacidad() { return capacidad; }
     public EstadoOperativo getEstadoOperativo() { return estadoOperativo; }
     public List<Dormitorio> getDormitorios() { return dormitorios; }
+    public List<Tarifa> getTarifas() { return tarifas; }
     public boolean isDisponible() { return disponible; }
 }

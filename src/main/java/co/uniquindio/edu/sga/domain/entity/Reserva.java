@@ -3,11 +3,12 @@ package co.uniquindio.edu.sga.domain.entity;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import co.uniquindio.edu.sga.domain.valueobject.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-/** Agregado raíz que protege las invariantes propias de una reserva. */
+/** Agregada raíz que protege las invariantes propias de una reserva. */
 public class Reserva {
     private final ReservaId id;
     private final FolioId folioId;
@@ -19,6 +20,7 @@ public class Reserva {
     private final LocalTime horaEstimadaLlegada;
     private final CanalOrigen canalOrigen;
     private EstadoReserva estado;
+
     // RN-22 - El valor y la política de una reserva quedan congelados al crearla y solo cambian por modificación explícita.
     private final Dinero valorCongelado;
     private final PoliticaCancelacion politicaCancelacion;
@@ -103,6 +105,11 @@ public class Reserva {
         estado = EstadoReserva.NO_SHOW;
     }
 
+    /** RN-01, RN-12: una reserva activa (PENDIENTE, CONFIRMADA o EN_CURSO) ocupa noches. */
+    public boolean estaActiva() {
+        return estado.esActiva();
+    }
+
     public ReservaId getId() { return id; }
     public FolioId getFolioId() { return folioId; }
     public ApartamentoId getApartamentoId() { return apartamentoId; }
@@ -121,8 +128,34 @@ public class Reserva {
         if (!condicion) throw new ReglaDominioException(mensaje);
     }
 
+
+    /** Registra la llegada de los huéspedes, iniciando formalmente la estancia de la reserva. */
+    public void registrarLlegada(LocalDate fechaActual) {
+        exigir(fechaActual != null, "La fecha actual es obligatoria para registrar la llegada.");
+        // RN-08 / Ciclo de vida: solo una reserva confirmada (o pendiente) puede iniciar su estancia
+        exigir(estado == EstadoReserva.CONFIRMADA || estado == EstadoReserva.PENDIENTE,
+                "Solo una reserva confirmada o pendiente puede registrar su llegada.");
+
+        // Puedes aprovechar el método que ya tienes o cambiar directamente el estado
+        iniciarEstancia();
+    }
+
+    public void registrarSalida(LocalDate fechaActual) {
+        exigir(estado == EstadoReserva.EN_CURSO, "Solo una reserva en curso puede registrar su salida.");
+        this.estado = EstadoReserva.FINALIZADA;
+    }
+
     private static String normalizarIdentificador(String identificador) {
         if (identificador == null || identificador.isBlank()) return null;
         return identificador.trim();
     }
+
+    public String getCodigo() {
+        return id.toString();
+    }
+
+    public String getApartamento() {
+        return apartamentoId.toString();
+    }
+
 }

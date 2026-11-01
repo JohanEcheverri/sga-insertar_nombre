@@ -75,12 +75,12 @@ public class Folio {
     }
 
     public BigDecimal totalCargos() {
-        return cargos.stream().map(c -> BigDecimal.valueOf(c.monto().valor()))
+        return cargos.stream().map(c -> c.monto().valor())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal totalPagos() {
-        return pagos.stream().map(p -> BigDecimal.valueOf(p.monto().valor()))
+        return pagos.stream().map(p -> p.monto().valor())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

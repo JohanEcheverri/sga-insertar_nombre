@@ -27,6 +27,14 @@ public record RangoFechas(LocalDate fechaInicio, LocalDate fechaFin) {
         return fechaInicio.isBefore(rango.fechaFin) && rango.fechaInicio.isBefore(fechaFin);
     }
 
+    /** Indica si una fecha específica (una noche) se encuentra dentro de este rango. */
+    public boolean contiene(LocalDate fecha) {
+        if (fecha == null) {
+            return false;
+        }
+        return !fecha.isBefore(fechaInicio) && !fecha.isAfter(fechaFin);
+    }
+
     private static void exigirRango(RangoFechas rango) {
         if (rango == null) throw new ReglaDominioException("El rango consultado no puede ser nulo.");
     }

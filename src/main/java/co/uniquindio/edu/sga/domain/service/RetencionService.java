@@ -1,4 +1,4 @@
 package co.uniquindio.edu.sga.domain.service;
 
-public class ReasignacionApartamentoService {
+public class RetencionService {
 }

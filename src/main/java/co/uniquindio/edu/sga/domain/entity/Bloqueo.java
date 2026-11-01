@@ -6,6 +6,8 @@ import co.uniquindio.edu.sga.domain.valueobject.BloqueoId;
 import co.uniquindio.edu.sga.domain.valueobject.Estancia;
 import co.uniquindio.edu.sga.domain.valueobject.RangoFechas;
 
+import java.time.LocalDate;
+
 /** Entidad que reserva un intervalo del calendario del apartamento para mantenimiento u otro motivo. */
 public class Bloqueo {
     private final BloqueoId id;
@@ -54,6 +56,16 @@ public class Bloqueo {
     public boolean seCruzaConEstancia(Estancia estancia) {
         exigir(estancia != null, "La estancia consultada no puede ser nula.");
         return activo && rangoFechas.intersecta(estancia.rangoFechas());
+    }
+
+    /** RN-07: un apartamento con bloqueo vigente sobre una noche no está disponible para esa noche. */
+    public boolean cubre(LocalDate noche) {
+        return activo && rangoFechas.contiene(noche);
+    }
+
+    /** RN-07: una estancia se ve afectada si alguna de sus noches está cubierta por el bloqueo. */
+    public boolean afecta(Estancia estancia) {
+        return estancia.nochesOcupadas().stream().anyMatch(this::cubre);
     }
 
     public void desactivar() {

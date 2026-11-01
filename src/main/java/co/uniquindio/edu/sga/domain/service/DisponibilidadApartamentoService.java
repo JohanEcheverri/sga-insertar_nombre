@@ -1,8 +1,19 @@
 package co.uniquindio.edu.sga.domain.service;
 
+import co.uniquindio.edu.sga.domain.entity.Bloqueo;
+import co.uniquindio.edu.sga.domain.entity.Reserva;
+import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import co.uniquindio.edu.sga.domain.repository.BloqueoRepository;
 import co.uniquindio.edu.sga.domain.repository.ReservaRepository;
+import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
+import co.uniquindio.edu.sga.domain.valueobject.Estancia;
+import co.uniquindio.edu.sga.domain.valueobject.RangoFechas;
+import co.uniquindio.edu.sga.domain.valueobject.ConfiguracionAlojamiento;
 
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
+/** Servicio de dominio (Guía 05) */
 public class DisponibilidadApartamentoService {
 
     private final ReservaRepository reservaRepository;
@@ -13,5 +24,62 @@ public class DisponibilidadApartamentoService {
         this.bloqueoRepository = bloqueoRepository;
     }
 
-    ;
+    public boolean estaDisponible(ApartamentoId apartamento, Estancia estancia, ConfiguracionAlojamiento configuracion) {
+        RangoFechas periodo = new RangoFechas(estancia.fechaEntrada(), estancia.fechaSalida());
+
+        List<Reserva> activas = reservaRepository.buscarActivasPorApartamento(apartamento, periodo);
+        for (Reserva otra : activas) {
+            // RN-12: una reserva que dejó de estar activa no ocupa noches
+            if (!otra.estaActiva()) {
+                continue;
+            }
+            // RN-01: sin importar el canal de origen
+            if (estancia.seSolapaCon(otra.getEstancia())) {
+                return false;
+            }
+            // RN-20
+            if (violaTiempoPreparacion(estancia, otra.getEstancia(), configuracion)) {
+                return false;
+            }
+        }
+
+        // RN-07
+        List<Bloqueo> bloqueos = bloqueoRepository.buscarVigentesPorApartamento(apartamento, periodo);
+        for (Bloqueo bloqueo : bloqueos) {
+            if (bloqueo.afecta(estancia)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void verificarDisponibilidad(ApartamentoId apartamento, Estancia estancia, ConfiguracionAlojamiento configuracion) {
+        if (!estaDisponible(apartamento, estancia, configuracion)) {
+            throw new ReglaDominioException(
+                    "El apartamento no está disponible para la estancia solicitada.");
+        }
+    }
+
+    // RN-20: entre la salida de un grupo y la entrada del siguiente debe respetarse
+    // el tiempo de preparación configurado
+    private boolean violaTiempoPreparacion(Estancia nueva, Estancia otra, ConfiguracionAlojamiento configuracion) {
+        long diasPreparacion = Math.ceilDiv(configuracion.tiempoPreparacionHoras(), 24);
+        if (diasPreparacion == 0) {
+            return false;
+        }
+        if (!nueva.fechaEntrada().isBefore(otra.fechaSalida())) {
+            long brecha = ChronoUnit.DAYS.between(otra.fechaSalida(), nueva.fechaEntrada());
+            if (brecha < diasPreparacion) {
+                return true;
+            }
+        }
+        if (!otra.fechaEntrada().isBefore(nueva.fechaSalida())) {
+            long brecha = ChronoUnit.DAYS.between(nueva.fechaSalida(), otra.fechaEntrada());
+            if (brecha < diasPreparacion) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
