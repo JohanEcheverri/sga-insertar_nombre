@@ -11,7 +11,8 @@ import java.util.List;
 public interface FolioMapper {
     static FolioResponse aRespuesta(Folio folio) {
         List<CargoResponse> cargos = folio.getCargos().stream()
-                .map(c -> new CargoResponse(c.tipoCargo().name(), c.concepto(), c.monto().valor(), c.fechaRegistro()))
+                .map(c -> new CargoResponse(c.tipoCargo().name(), c.concepto(),
+                        c.monto().valor().doubleValue(), c.fechaRegistro()))
                 .toList();
         var autorizacion = folio.getAutorizacionCierre();
         var cierre = autorizacion == null ? null

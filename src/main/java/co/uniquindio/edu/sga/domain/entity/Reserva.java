@@ -93,9 +93,10 @@ public class Reserva {
         estado = EstadoReserva.FINALIZADA;
     }
 
-    /** Regla de ciclo de vida: una reserva terminal (FINALIZADA, CANCELADA o NO_SHOW) no puede cancelarse nuevamente. */
+    /** Regla de ciclo de vida: solo una reserva pendiente o confirmada puede cancelarse. */
     public void cancelar() {
-        exigir(estado != null && !estado.esTerminal(), "Una reserva terminal no puede cancelarse.");
+        exigir(estado == EstadoReserva.PENDIENTE || estado == EstadoReserva.CONFIRMADA,
+                "Solo una reserva pendiente o confirmada puede cancelarse.");
         estado = EstadoReserva.CANCELADA;
     }
 
