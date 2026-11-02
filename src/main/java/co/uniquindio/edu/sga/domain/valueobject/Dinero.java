@@ -6,17 +6,16 @@ import java.math.BigDecimal;
 public record Dinero(BigDecimal valor) {
 
     public Dinero {
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) < 0) {
-            throw new ReglaDominioException("El valor monetario no puede ser nulo ni negativo.");
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ReglaDominioException("El valor monetario debe ser mayor a cero.");
         }
     }
 
     public static Dinero de(double valor) {
+        if (!Double.isFinite(valor)) {
+            throw new ReglaDominioException("El valor monetario debe ser finito.");
+        }
         return new Dinero(BigDecimal.valueOf(valor));
-    }
-
-    public static Dinero cero() {
-        return new Dinero(BigDecimal.ZERO);
     }
 
     public Dinero sumar(Dinero otro) {

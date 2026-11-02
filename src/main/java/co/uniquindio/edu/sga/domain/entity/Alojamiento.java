@@ -62,15 +62,49 @@ public class Alojamiento {
 
     /** Agrega un apartamento únicamente si todas las temporadas ya tienen su tarifa correspondiente. */
     public void agregarApartamento(Apartamento apartamento) {
+        validarNuevoApartamento(apartamento);
+        exigir(temporadas.stream().allMatch(temporada -> tieneTarifa(temporada, apartamento.getId())),
+                "Debe registrarse una tarifa del apartamento en cada temporada antes de agregarlo.");
+        apartamentos.add(apartamento);
+    }
+
+    /** Registra las tarifas del nuevo apartamento en todas las temporadas y lo agrega de forma atómica. */
+    public void agregarApartamento(Apartamento apartamento, List<Tarifa> tarifas) {
+        validarNuevoApartamento(apartamento);
+        exigir(tarifas != null && !tarifas.isEmpty()
+                        && tarifas.stream().noneMatch(tarifa -> tarifa == null),
+                "El apartamento debe tener una tarifa válida para cada temporada.");
+        List<Tarifa> tarifasNuevas = List.copyOf(tarifas);
+        for (Temporada temporada : temporadas) {
+            long cantidad = tarifasNuevas.stream()
+                    .filter(tarifa -> tarifa.temporadaId().equals(temporada.getId())
+                            && tarifa.apartamentoId().equals(apartamento.getId()))
+                    .count();
+            exigir(cantidad == 1, "Debe registrarse exactamente una tarifa por temporada para el apartamento.");
+        }
+        exigir(tarifasNuevas.stream().allMatch(tarifa -> temporadas.stream()
+                        .anyMatch(temporada -> temporada.getId().equals(tarifa.temporadaId()))
+                        && tarifa.apartamentoId().equals(apartamento.getId())),
+                "Las tarifas deben pertenecer a las temporadas del alojamiento y al nuevo apartamento.");
+
+        for (Temporada temporada : temporadas) {
+            Tarifa tarifa = tarifasNuevas.stream()
+                    .filter(actual -> actual.temporadaId().equals(temporada.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ReglaDominioException(
+                            "Debe registrarse una tarifa por temporada para el apartamento."));
+            temporada.establecerTarifa(tarifa);
+        }
+        apartamentos.add(apartamento);
+    }
+
+    private void validarNuevoApartamento(Apartamento apartamento) {
         exigir(apartamento != null, "El apartamento no puede ser nulo.");
         exigir(apartamentos.stream().noneMatch(actual -> actual.getId().equals(apartamento.getId())),
                 "El alojamiento ya contiene un apartamento con ese identificador.");
         exigir(apartamentos.stream().noneMatch(actual -> actual.getIdentificadorUnico()
                         .equalsIgnoreCase(apartamento.getIdentificadorUnico())),
                 "El identificador único del apartamento ya existe en este alojamiento.");
-        exigir(temporadas.stream().allMatch(temporada -> tieneTarifa(temporada, apartamento.getId())),
-                "Debe registrarse una tarifa del apartamento en cada temporada antes de agregarlo.");
-        apartamentos.add(apartamento);
     }
 
     /**
