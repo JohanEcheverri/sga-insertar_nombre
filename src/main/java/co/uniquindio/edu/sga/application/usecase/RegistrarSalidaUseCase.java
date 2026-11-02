@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,11 +23,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** PUT /api/reservas/{codigo}/registrar-salida — Check-out: RN-29 (folio cerrado). La reserva pasa a FINALIZADA. */
+@Service
+@Transactional
 public class RegistrarSalidaUseCase {
 
-    public record Command(UUID reservaId) { }
+    public record Command(UUID reservaId, Solicitante solicitante) { }
 
-    public record Result(UUID reservaId, EstadoReserva estadoReserva, EstadoOperativo estadoApartamento) { }
+    public record Result(UUID reservaId, EstadoReserva estadoReserva, EstadoOperativo estadoApartamento,
+                         ReservaDetalle detalle) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -41,6 +48,9 @@ public class RegistrarSalidaUseCase {
     public Result ejecutar(Command cmd) {
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Reserva reserva = Cargas.reserva(reservaRepository, cmd.reservaId());
+        if (cmd.solicitante() == null || !cmd.solicitante().esPersonalInterno()) {
+            throw new AccesoDenegadoException("Solo el personal interno puede registrar salidas.");
+        }
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
         Apartamento apartamento = Cargas.apartamento(alojamiento, reserva.getApartamentoId().valor());
 
@@ -48,6 +58,6 @@ public class RegistrarSalidaUseCase {
 
         reservaRepository.guardar(reserva);
         alojamientoRepository.guardar(alojamiento);
-        return new Result(reserva.getId().valor(), reserva.getEstado(), apartamento.getEstadoOperativo());
+        return new Result(reserva.getId().valor(), reserva.getEstado(), apartamento.getEstadoOperativo(), ReservaDetalle.de(reserva));
     }
 }

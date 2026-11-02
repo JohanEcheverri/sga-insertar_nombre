@@ -12,6 +12,7 @@ import java.util.List;
  * @param descripcion Descripción general del apartamento.
  * @param aforoMaximo Cantidad máxima de ocupantes permitida.
  * @param dormitorios Dormitorios que se registran como parte del apartamento.
+ * @param tarifas Tarifas iniciales por cada temporada del alojamiento.
  * @author Equipo SGA
  * @version 1.0
  */
@@ -26,6 +27,7 @@ public record CrearApartamentoRequest(
         @NotNull(message = "El aforo máximo es obligatorio") @Positive(message = "El aforo debe ser mayor que cero")
         Integer aforoMaximo,
 
-        @NotEmpty(message = "Debe registrar al menos un dormitorio") List<@Valid DormitorioRequest>
-        dormitorios
+        @NotEmpty(message = "Debe registrar al menos un dormitorio") List<@Valid DormitorioRequest> dormitorios,
+
+        @NotEmpty(message = "Debe proporcionar una tarifa por cada temporada") List<@Valid TarifaRequest> tarifas
 ) { }

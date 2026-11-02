@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 /** Información requerida para registrar un usuario.
  * @param nombre Nombres del usuario.
+ * @param apellido Apellidos del usuario.
  * @param documento Número de documento de identidad.
  * @param correo Dirección de correo electrónico de contacto.
  * @param telefono Número telefónico de contacto.
@@ -22,6 +23,9 @@ public record CrearUsuarioRequest(
 
         @NotBlank(message = "El nombre es obligatorio")
         String nombre,
+
+        @NotBlank(message = "El apellido es obligatorio")
+        String apellido,
 
         @NotBlank(message = "El documento de identidad es obligatorio")
         String documento,

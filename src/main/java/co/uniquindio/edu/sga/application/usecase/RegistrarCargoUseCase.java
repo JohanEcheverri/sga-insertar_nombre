@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,22 +26,30 @@ import java.util.stream.Collectors;
  * POST /api/reservas/{codigo}/folio/cargos — Cargos manuales: servicio adicional, ajuste o ajuste a favor
  * (movimiento inverso, RN-16). El alojamiento, los reversos y las penalidades los genera el sistema.
  */
+@Service
+@Transactional
 public class RegistrarCargoUseCase {
 
     private static final Set<TipoCargo> MANUALES =
             Set.of(TipoCargo.SERVICIO_ADICIONAL, TipoCargo.AJUSTE_MODIFICACION, TipoCargo.AJUSTE_A_FAVOR);
 
-    public record Command(UUID reservaId, TipoCargo tipo, String concepto, BigDecimal monto) { }
+    public record Command(UUID reservaId, TipoCargo tipo, String concepto, BigDecimal monto, Solicitante solicitante) { }
 
     private final FolioRepository folioRepository;
+    private final ReservaRepository reservaRepository;
     private final Clock clock;
 
-    public RegistrarCargoUseCase(FolioRepository folioRepository, Clock clock) {
+    public RegistrarCargoUseCase(FolioRepository folioRepository, ReservaRepository reservaRepository, Clock clock) {
         this.folioRepository = folioRepository;
+        this.reservaRepository = reservaRepository;
         this.clock = clock;
     }
 
     public FolioDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null || !cmd.solicitante().esPersonalInterno()) {
+            throw new AccesoDenegadoException("Solo personal interno puede registrar cargos manuales.");
+        }
+        Cargas.reserva(reservaRepository, cmd.reservaId());
         if (!MANUALES.contains(cmd.tipo())) {
             throw new OperacionNoPermitidaException("El cargo de tipo " + cmd.tipo()
                     + " lo genera el sistema; solo se registran manualmente: " + MANUALES);

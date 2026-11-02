@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** GET /api/reservas — Listado paginado (10 por página) con filtros; solo personal interno (lo protege el endpoint). */
+@Service
 public class ConsultarReservasUseCase {
 
     public record Command(FiltroReservas filtro, int pagina) { }

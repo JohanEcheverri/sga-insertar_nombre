@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,12 +23,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** PUT /api/reservas/{codigo}/no-show — Desde la hora límite del día de entrada; penalidad de la política congelada. */
+@Service
+@Transactional
 public class DeclararNoShowUseCase {
 
-    public record Command(UUID reservaId) { }
+    public record Command(UUID reservaId, Solicitante solicitante) { }
 
     public record Result(UUID reservaId, EstadoReserva estado, double porcentajeRetenido, BigDecimal penalidad,
-                         BigDecimal saldoAFavor, BigDecimal saldoPendiente) { }
+                         BigDecimal saldoAFavor, BigDecimal saldoPendiente, ReservaDetalle detalle) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -42,6 +48,9 @@ public class DeclararNoShowUseCase {
     }
 
     public Result ejecutar(Command cmd) {
+        if (cmd.solicitante() == null || !cmd.solicitante().esPersonalInterno()) {
+            throw new AccesoDenegadoException("Solo el personal interno puede declarar un no-show.");
+        }
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Reserva reserva = Cargas.reserva(reservaRepository, cmd.reservaId());
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
@@ -51,6 +60,6 @@ public class DeclararNoShowUseCase {
         reservaRepository.guardar(reserva);
         folioRepository.guardar(folio);
         return new Result(reserva.getId().valor(), reserva.getEstado(), r.porcentajeRetenido(), r.penalidad(),
-                r.saldoAFavor(), r.saldoPendiente());
+                r.saldoAFavor(), r.saldoPendiente(), ReservaDetalle.de(reserva));
     }
 }

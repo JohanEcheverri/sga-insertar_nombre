@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,9 +26,12 @@ import java.util.stream.Collectors;
  * PUT /api/apartamentos/{id} — 7.3: cambiar la capacidad NO afecta las reservas ya creadas, aunque
  * queden por encima de la nueva capacidad; el sistema advierte y las lista.
  */
+@Service
+@Transactional
 public class ModificarApartamentoUseCase {
 
-    public record Command(UUID apartamentoId, int capacidad, String descripcion, List<DormitorioDatos> dormitorios) { }
+    public record Command(UUID apartamentoId, int capacidad, String descripcion, List<DormitorioDatos> dormitorios,
+                          Solicitante solicitante) { }
 
     public record Result(ApartamentoDetalle apartamento, List<UUID> reservasQueExcedenLaNuevaCapacidad) { }
 
@@ -37,6 +44,8 @@ public class ModificarApartamentoUseCase {
     }
 
     public Result ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para modificar un apartamento.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Apartamento apartamento = Cargas.apartamento(alojamiento, cmd.apartamentoId());
         Capacidad nueva = CrearApartamentoUseCase.capacidad(cmd.capacidad());

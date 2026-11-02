@@ -4,10 +4,12 @@ import co.uniquindio.edu.sga.domain.entity.Folio;
 import co.uniquindio.edu.sga.domain.repository.FolioRepository;
 import co.uniquindio.edu.sga.domain.valueobject.FolioId;
 import co.uniquindio.edu.sga.domain.valueobject.ReservaId;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Repository
 public class FolioRepositoryInMemory implements FolioRepository {
 
     private final Map<FolioId, Folio> folios = new LinkedHashMap<>();

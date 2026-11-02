@@ -5,10 +5,12 @@ import co.uniquindio.edu.sga.domain.repository.FiltroReservas;
 import co.uniquindio.edu.sga.domain.repository.Pagina;
 import co.uniquindio.edu.sga.domain.repository.ReservaRepository;
 import co.uniquindio.edu.sga.domain.valueobject.*;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.*;
 
+@Repository
 public class ReservaRepositoryInMemory implements ReservaRepository {
 
     private final Map<ReservaId, Reserva> reservas = new LinkedHashMap<>();

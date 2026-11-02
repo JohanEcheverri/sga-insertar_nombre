@@ -13,12 +13,14 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  * RN-05 / RN-06 - Cotiza una estancia noche por noche: tarifa vigente del apartamento en la
  * temporada de cada noche × ocupantes facturables. No necesita repositorios: recibe el agregado
  * Alojamiento (que ya contiene temporadas y tarifas).
  */
+@Component
 public class CotizadorEstanciaService {
 
     /** Una noche del desglose (7.4): fecha, temporada, tarifa, ocupantes facturables y subtotal. */

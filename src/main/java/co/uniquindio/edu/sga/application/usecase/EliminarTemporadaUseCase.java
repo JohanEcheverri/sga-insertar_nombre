@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,9 +23,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** DELETE /api/temporadas/{id} — Sus fechas pasan automáticamente a la temporada base; la base no se elimina (F-05). */
+@Service
+@Transactional
 public class EliminarTemporadaUseCase {
 
-    public record Command(UUID temporadaId) { }
+    public record Command(UUID temporadaId, Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -30,6 +36,8 @@ public class EliminarTemporadaUseCase {
     }
 
     public void ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para retirar una temporada.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Temporada temporada = Cargas.temporada(alojamiento, cmd.temporadaId());
         alojamiento.retirarTemporada(temporada.getId());

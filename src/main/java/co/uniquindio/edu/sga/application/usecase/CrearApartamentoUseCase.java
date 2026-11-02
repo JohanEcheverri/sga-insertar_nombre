@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,11 +26,14 @@ import java.util.stream.Collectors;
  * POST /api/apartamentos — Nueva unidad vendible. Se crea junto con su tarifa en CADA temporada
  * (7.4: todo apartamento activo debe tener tarifas completas); si falta alguna, no se crea.
  */
+@Service
+@Transactional
 public class CrearApartamentoUseCase {
 
     /** tarifasPorTemporada: id de temporada → precio por ocupante facturable por noche. */
     public record Command(String identificadorUnico, String descripcion, int capacidad,
-                          List<DormitorioDatos> dormitorios, Map<UUID, BigDecimal> tarifasPorTemporada) { }
+                          List<DormitorioDatos> dormitorios, Map<UUID, BigDecimal> tarifasPorTemporada,
+                          Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -35,6 +42,8 @@ public class CrearApartamentoUseCase {
     }
 
     public ApartamentoDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para crear un apartamento.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Apartamento apartamento = Apartamento.crear(capacidad(cmd.capacidad()), cmd.descripcion(),
                 DormitorioDatos.aDominio(cmd.dormitorios()), EstadoOperativo.PREPARADO,

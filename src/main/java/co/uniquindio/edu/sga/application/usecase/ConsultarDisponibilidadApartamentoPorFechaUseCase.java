@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
  * GET /api/apartamentos/disponibilidad (y búsqueda por capacidad) — Apartamentos vendibles para un rango y
  * un grupo (3.3), con valor estimado y filtro opcional de precio. Los retirados no aparecen (7.3).
  */
+@Service
 public class ConsultarDisponibilidadApartamentoPorFechaUseCase {
 
     public record Command(LocalDate entrada, LocalDate salida, List<LocalDate> fechasNacimiento,

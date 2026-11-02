@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,19 +23,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** POST /api/reservas/{codigo}/folio/pagos — RN-15: todo pago lleva medio y fecha. Admite pagos parciales y medios distintos. */
+@Service
+@Transactional
 public class RegistrarPagoUseCase {
 
-    public record Command(UUID reservaId, MedioPago medio, BigDecimal monto, String referencia) { }
+    public record Command(UUID reservaId, MedioPago medio, BigDecimal monto, String referencia, Solicitante solicitante) { }
 
     private final FolioRepository folioRepository;
+    private final ReservaRepository reservaRepository;
     private final Clock clock;
 
-    public RegistrarPagoUseCase(FolioRepository folioRepository, Clock clock) {
+    public RegistrarPagoUseCase(FolioRepository folioRepository, ReservaRepository reservaRepository, Clock clock) {
         this.folioRepository = folioRepository;
+        this.reservaRepository = reservaRepository;
         this.clock = clock;
     }
 
     public FolioDetalle ejecutar(Command cmd) {
+        cmd.solicitante().exigirAccesoA(Cargas.reserva(reservaRepository, cmd.reservaId()));
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
         folio.registrarPago(new Pago(Dinero.de(cmd.monto()), cmd.medio(), cmd.referencia(), LocalDateTime.now(clock)));
         folioRepository.guardar(folio);

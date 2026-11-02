@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,12 +26,14 @@ import java.util.stream.Collectors;
  * PUT /api/reservas/{codigo}/cancelar — Retención según la política CONGELADA (RN-13), registrada
  * como cargo y saldo a favor en el folio. Libera las noches de inmediato (RN-12: ya no está activa).
  */
+@Service
+@Transactional
 public class CancelarReservaUseCase {
 
     public record Command(UUID reservaId, Solicitante solicitante) { }
 
     public record Result(UUID reservaId, EstadoReserva estado, double porcentajeRetenido, BigDecimal penalidad,
-                         BigDecimal saldoAFavor, BigDecimal saldoPendiente) { }
+                         BigDecimal saldoAFavor, BigDecimal saldoPendiente, ReservaDetalle detalle) { }
 
     private final ReservaRepository reservaRepository;
     private final FolioRepository folioRepository;
@@ -55,6 +61,6 @@ public class CancelarReservaUseCase {
         folioRepository.guardar(folio);
         Seguro.ejecutar("notificar reserva cancelada", () -> notificacion.reservaCancelada(reserva));
         return new Result(reserva.getId().valor(), reserva.getEstado(), r.porcentajeRetenido(), r.penalidad(),
-                r.saldoAFavor(), r.saldoPendiente());
+                r.saldoAFavor(), r.saldoPendiente(), ReservaDetalle.de(reserva));
     }
 }

@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 
 /** Datos editables para modificar fechas o apartamento de una reserva.
  * @param apartamentoId Identificador del apartamento asignado.
@@ -13,6 +16,7 @@ import java.time.LocalTime;
  * @param fechaSalida Nueva fecha de salida.
  * @param identificadorExterno Código opcional asociado al canal externo.
  * @param horaEstimadaLlegada Nueva hora prevista de llegada.
+ * @param ocupantes Lista actualizada de ocupantes de la reserva.
  * @author Equipo SGA
  * @version 1.0
  */
@@ -30,5 +34,7 @@ public record ModificarReservaRequest(
         String identificadorExterno,
 
         @NotNull(message = "La hora estimada de llegada es obligatoria")
-        LocalTime horaEstimadaLlegada
+        LocalTime horaEstimadaLlegada,
+
+        @NotEmpty(message = "La reserva debe incluir al menos un ocupante") List<@Valid OcupanteRequest> ocupantes
 ) { }

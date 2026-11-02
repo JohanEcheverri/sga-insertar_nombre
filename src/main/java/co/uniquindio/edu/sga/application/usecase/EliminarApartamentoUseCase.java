@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,9 +23,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** DELETE /api/apartamentos/{id} — Borrado lógico; solo si no tiene reservas activas ni futuras (7.3). */
+@Service
+@Transactional
 public class EliminarApartamentoUseCase {
 
-    public record Command(UUID apartamentoId) { }
+    public record Command(UUID apartamentoId, Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -34,6 +40,8 @@ public class EliminarApartamentoUseCase {
     }
 
     public void ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para retirar un apartamento.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Apartamento apartamento = Cargas.apartamento(alojamiento, cmd.apartamentoId());
         if (reservaRepository.existeActivaOFuturaDeApartamento(apartamento.getId(), LocalDate.now(clock))) {

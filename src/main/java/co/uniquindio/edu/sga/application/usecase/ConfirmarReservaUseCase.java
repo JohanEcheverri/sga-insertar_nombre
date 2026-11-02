@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,11 +23,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** PUT /api/reservas/{codigo}/confirmar — RN-09 (hora de llegada) y RN-26 (anticipo cubierto). */
+@Service
+@Transactional
 public class ConfirmarReservaUseCase {
 
-    public record Command(UUID reservaId) { }
+    public record Command(UUID reservaId, Solicitante solicitante) { }
 
-    public record Result(UUID reservaId, EstadoReserva estado, BigDecimal anticipoRequerido, BigDecimal pagado) { }
+    public record Result(UUID reservaId, EstadoReserva estado, BigDecimal anticipoRequerido, BigDecimal pagado,
+                         ReservaDetalle detalle) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -41,6 +48,7 @@ public class ConfirmarReservaUseCase {
     public Result ejecutar(Command cmd) {
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Reserva reserva = Cargas.reserva(reservaRepository, cmd.reservaId());
+        cmd.solicitante().exigirAccesoA(reserva);
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
 
         BigDecimal anticipo = alojamiento.getConfiguracion().anticipoPara(reserva.getValorCongelado());
@@ -48,6 +56,6 @@ public class ConfirmarReservaUseCase {
 
         reservaRepository.guardar(reserva);
         Seguro.ejecutar("notificar reserva confirmada", () -> notificacion.reservaConfirmada(reserva));
-        return new Result(reserva.getId().valor(), reserva.getEstado(), anticipo, folio.totalPagos());
+        return new Result(reserva.getId().valor(), reserva.getEstado(), anticipo, folio.totalPagos(), ReservaDetalle.de(reserva));
     }
 }

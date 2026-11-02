@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -23,6 +27,8 @@ import java.util.stream.Collectors;
  * EN_PREPARACION → PREPARADO. Solo el ADMINISTRADOR puede declarar FUERA_DE_SERVICIO (7.1).
  * OCUPADO y PENDIENTE_PREPARACION se alcanzan únicamente por registro y salida.
  */
+@Service
+@Transactional
 public class ModificarEstadoOperativoApartamentoUseCase {
 
     public record Command(UUID apartamentoId, EstadoOperativo nuevoEstado, Solicitante solicitante) { }

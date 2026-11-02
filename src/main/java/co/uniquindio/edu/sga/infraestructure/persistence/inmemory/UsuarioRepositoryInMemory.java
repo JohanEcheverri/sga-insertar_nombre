@@ -4,9 +4,11 @@ import co.uniquindio.edu.sga.domain.entity.Usuario;
 import co.uniquindio.edu.sga.domain.repository.UsuarioRepository;
 import co.uniquindio.edu.sga.domain.valueobject.CorreoElectronico;
 import co.uniquindio.edu.sga.domain.valueobject.UsuarioId;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class UsuarioRepositoryInMemory implements UsuarioRepository {
 
     private final Map<UsuarioId, Usuario> usuarios = new LinkedHashMap<>();

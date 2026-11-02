@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,9 +23,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** PUT /api/temporadas/{id} — Cambia nombre y fechas (inclusivas) sin solaparse (RN-27); conserva sus tarifas. La base no se modifica. */
+@Service
+@Transactional
 public class ModificarTemporadaUseCase {
 
-    public record Command(UUID temporadaId, String nombre, LocalDate desde, LocalDate hasta) { }
+    public record Command(UUID temporadaId, String nombre, LocalDate desde, LocalDate hasta, Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -30,6 +36,8 @@ public class ModificarTemporadaUseCase {
     }
 
     public TemporadaDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para modificar una temporada.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Temporada actual = Cargas.temporada(alojamiento, cmd.temporadaId());
         Temporada nueva = Temporada.crear(actual.getId(), cmd.nombre(),

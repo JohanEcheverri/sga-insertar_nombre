@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** GET /api/reservas/{codigo}/folio — Un huésped solo ve el folio de sus propias reservas. */
+@Service
 public class ConsultarFolioUseCase {
 
     public record Command(UUID reservaId, Solicitante solicitante) { }

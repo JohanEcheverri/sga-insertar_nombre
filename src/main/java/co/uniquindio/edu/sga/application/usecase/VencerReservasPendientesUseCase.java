@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -23,6 +27,8 @@ import java.util.stream.Collectors;
  * penalidad y sin intervención manual. La infraestructura lo dispara periódicamente
  * (p. ej. un @Scheduled cada minuto); este caso de uso no sabe de planificadores.
  */
+@Service
+@Transactional
 public class VencerReservasPendientesUseCase {
 
     private final AlojamientoRepository alojamientoRepository;

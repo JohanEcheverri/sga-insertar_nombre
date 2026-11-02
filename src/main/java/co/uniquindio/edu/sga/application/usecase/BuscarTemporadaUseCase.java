@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,9 +21,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** GET /api/temporadas — Temporadas configuradas (base primero, luego por fecha), paginadas. */
+@Service
 public class BuscarTemporadaUseCase {
 
-    public record Command(int pagina) { }
+    public record Command(int pagina, LocalDate fecha) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -30,7 +33,13 @@ public class BuscarTemporadaUseCase {
     }
 
     public Pagina<TemporadaDetalle> ejecutar(Command cmd) {
-        List<TemporadaDetalle> lista = Cargas.alojamiento(alojamientoRepository).getTemporadas().stream()
+        var temporadas = Cargas.alojamiento(alojamientoRepository).getTemporadas();
+        var filtradas = temporadas.stream().filter(t -> !t.esBase() && cmd.fecha() != null && t.cubreFecha(cmd.fecha())).toList();
+        if (cmd.fecha() != null && filtradas.isEmpty()) {
+            filtradas = temporadas.stream().filter(Temporada::esBase).toList();
+        }
+        if (cmd.fecha() == null) filtradas = temporadas;
+        List<TemporadaDetalle> lista = filtradas.stream()
                 .sorted(Comparator.comparing((Temporada t) -> !t.esBase())
                         .thenComparing(t -> t.esBase() ? LocalDate.MIN : t.getRangoFechas().fechaInicio()))
                 .map(TemporadaDetalle::de).toList();

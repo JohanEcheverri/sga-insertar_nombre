@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** GET /api/apartamentos/pendientes-preparacion — Unidades en PENDIENTE_PREPARACION o EN_PREPARACION. */
+@Service
 public class ConsultarApartamentoPreparacionPendienteUseCase {
 
     public record Command(int pagina) { }

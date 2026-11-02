@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** PUT /api/usuarios/{id} — Actualiza nombre y teléfono (el correo no es editable, 7.2). Solo el propio usuario o un administrador. */
+@Service
+@Transactional
 public class ModificarUsuarioUseCase {
 
     public record Command(UUID usuarioId, String nombre, String apellido, String telefono, Solicitante solicitante) { }

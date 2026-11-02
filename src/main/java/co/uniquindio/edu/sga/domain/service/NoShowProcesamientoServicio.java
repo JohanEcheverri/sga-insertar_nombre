@@ -7,8 +7,10 @@ import co.uniquindio.edu.sga.domain.valueobject.ConfiguracionAlojamiento;
 import co.uniquindio.edu.sga.domain.valueobject.TipoCargo;
 
 import java.time.LocalDateTime;
+import org.springframework.stereotype.Component;
 
 /** 7.5 - No-show: a partir de la hora límite del día de entrada; aplica la consecuencia de la política congelada. */
+@Component
 public class NoShowProcesamientoServicio {
 
     public CancelacionReservaService.Resultado ejecutarNoShow(Reserva reserva, Folio folio,

@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,10 +23,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** POST /api/apartamentos/{id}/bloqueos — Decisión administrativa; RN-28 (sin reservas activas) y RN-24 (no toca el estado operativo). */
+@Service
+@Transactional
 public class CrearBloqueoUseCase {
 
     /** hasta es EXCLUSIVO, igual que la fecha de salida de una estancia (3.1). */
-    public record Command(UUID apartamentoId, LocalDate desde, LocalDate hasta, String motivo) { }
+    public record Command(UUID apartamentoId, LocalDate desde, LocalDate hasta, String motivo, Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final BloqueoRepository bloqueoRepository;
@@ -36,6 +42,8 @@ public class CrearBloqueoUseCase {
     }
 
     public BloqueoDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para bloquear un apartamento.");
+        cmd.solicitante().exigirAdministrador();
         Apartamento apartamento = Cargas.apartamento(Cargas.alojamiento(alojamientoRepository), cmd.apartamentoId());
         Bloqueo bloqueo = bloqueosService.crearBloqueo(apartamento, new RangoFechas(cmd.desde(), cmd.hasta()), cmd.motivo());
         bloqueoRepository.guardar(bloqueo);

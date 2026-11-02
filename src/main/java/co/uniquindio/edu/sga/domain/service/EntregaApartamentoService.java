@@ -6,11 +6,13 @@ import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import co.uniquindio.edu.sga.domain.valueobject.EstadoReserva;
 
 import java.time.LocalDate;
+import org.springframework.stereotype.Component;
 
 /**
  * RN-10 / RN-11 - Registro (check-in). La Reserva no puede leer el estado operativo del Apartamento:
  * este servicio decide SI se entrega; cada agregado decide CÓMO cambia de estado.
  */
+@Component
 public class EntregaApartamentoService {
 
     public void registrarLlegada(Reserva reserva, Apartamento apartamento, LocalDate fechaActual) {

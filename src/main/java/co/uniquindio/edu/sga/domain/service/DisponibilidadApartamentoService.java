@@ -14,6 +14,7 @@ import co.uniquindio.edu.sga.domain.valueobject.RangoFechas;
 import co.uniquindio.edu.sga.domain.valueobject.ReservaId;
 
 import java.time.Duration;
+import org.springframework.stereotype.Component;
 
 /**
  * 3.3 - Disponibilidad de un apartamento para una estancia: activo, capacidad suficiente (RN-02),
@@ -21,6 +22,7 @@ import java.time.Duration;
  * preparación (RN-20). El estado operativo NO interviene (RN-24): un apartamento FUERA_DE_SERVICIO
  * sin bloqueo sigue siendo vendible a futuro.
  */
+@Component
 public class DisponibilidadApartamentoService {
 
     private final ReservaRepository reservaRepository;

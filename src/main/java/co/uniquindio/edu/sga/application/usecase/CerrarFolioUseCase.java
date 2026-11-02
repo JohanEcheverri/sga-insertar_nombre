@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,6 +26,8 @@ import java.util.stream.Collectors;
  * PUT /api/reservas/{codigo}/folio/cerrar — RN-17: con saldo pendiente solo cierra el ADMINISTRADOR,
  * dejando registrado autor y motivo. Con saldo en cero cierra recepción o administración.
  */
+@Service
+@Transactional
 public class CerrarFolioUseCase {
 
     public record Command(UUID reservaId, Solicitante solicitante, String motivo) { }

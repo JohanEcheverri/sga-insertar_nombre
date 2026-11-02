@@ -6,12 +6,14 @@ import co.uniquindio.edu.sga.domain.entity.Reserva;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import co.uniquindio.edu.sga.domain.repository.ReservaRepository;
 import co.uniquindio.edu.sga.domain.valueobject.RangoFechas;
+import org.springframework.stereotype.Component;
 
 /**
  * RN-28 - No se puede aplicar un bloqueo a un apartamento con reservas activas para esa estancia.
  * Requiere consultar las reservas de otros agregados, por eso vive en un servicio de dominio.
  * RN-24 - Crear un bloqueo NO modifica el estado operativo del apartamento.
  */
+@Component
 public class GestionBloqueosMantenimientoService {
 
     private final ReservaRepository reservaRepository;

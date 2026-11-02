@@ -4,9 +4,11 @@ import co.uniquindio.edu.sga.domain.entity.Bloqueo;
 import co.uniquindio.edu.sga.domain.repository.BloqueoRepository;
 import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
 import co.uniquindio.edu.sga.domain.valueobject.BloqueoId;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class BloqueoRepositoryInMemory implements BloqueoRepository {
 
     private final Map<BloqueoId, Bloqueo> bloqueos = new LinkedHashMap<>();

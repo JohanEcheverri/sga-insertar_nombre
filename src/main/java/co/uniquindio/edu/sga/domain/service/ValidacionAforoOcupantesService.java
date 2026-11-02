@@ -9,11 +9,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
 /**
  * Valida la composición del grupo de una reserva. La capacidad física (RN-02) la verifica
  * DisponibilidadApartamentoService junto con el resto de condiciones de disponibilidad.
  */
+@Component
 public class ValidacionAforoOcupantesService {
 
     /** Mayoría de edad en Colombia (RN-23). */

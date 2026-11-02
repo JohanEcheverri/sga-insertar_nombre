@@ -12,12 +12,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import org.springframework.stereotype.Component;
 
 /**
  * Coordina Reserva y Folio (dos agregados) al cancelar una reserva o al vencer su plazo de
  * confirmación. RN-13: la retención sale de la política CONGELADA en la reserva, no de la vigente.
  * Opera sobre los agregados ya cargados; la persistencia la hace el caso de uso.
  */
+@Component
 public class CancelacionReservaService {
 
     /**

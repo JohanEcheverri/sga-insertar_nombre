@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** POST /api/apartamentos/{id}/novedades — RN-31: reportar NO cambia el estado operativo (eso es decisión administrativa). */
+@Service
+@Transactional
 public class CrearNovedadUseCase {
 
     public record Command(UUID apartamentoId, String autor, String descripcion, GravedadNovedad gravedad) { }

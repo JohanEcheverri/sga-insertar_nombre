@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,13 +26,16 @@ import java.util.stream.Collectors;
  * PUT /api/reservas/{codigo} — RN-14: revalida las condiciones de creación, recalcula el valor con
  * las tarifas VIGENTES y registra la diferencia como ajuste en el folio. La política congelada no cambia.
  */
+@Service
+@Transactional
 public class ModificarReservaUseCase {
 
     /** apartamentoId y horaEstimadaLlegada son opcionales: null conserva el valor actual. */
     public record Command(UUID reservaId, UUID apartamentoId, LocalDate entrada, LocalDate salida,
-                          List<OcupanteDatos> ocupantes, LocalTime horaEstimadaLlegada) { }
+                          List<OcupanteDatos> ocupantes, LocalTime horaEstimadaLlegada, Solicitante solicitante) { }
 
-    public record Result(UUID reservaId, BigDecimal valorAnterior, BigDecimal valorNuevo, BigDecimal diferencia) { }
+    public record Result(UUID reservaId, BigDecimal valorAnterior, BigDecimal valorNuevo, BigDecimal diferencia,
+                         ReservaDetalle detalle) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -55,6 +62,7 @@ public class ModificarReservaUseCase {
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         ConfiguracionAlojamiento config = alojamiento.getConfiguracion();
         Reserva reserva = Cargas.reserva(reservaRepository, cmd.reservaId());
+        cmd.solicitante().exigirAccesoA(reserva);
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
         if (folio.getEstado() != EstadoFolio.ABIERTO) {
             throw new OperacionNoPermitidaException("El folio está cerrado: no se puede registrar el ajuste de la modificación.");
@@ -88,6 +96,6 @@ public class ModificarReservaUseCase {
         }
         reservaRepository.guardar(reserva);
         folioRepository.guardar(folio);
-        return new Result(reserva.getId().valor(), anterior, nuevoValor.valor(), diferencia);
+        return new Result(reserva.getId().valor(), anterior, nuevoValor.valor(), diferencia, ReservaDetalle.de(reserva));
     }
 }

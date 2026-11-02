@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -23,9 +27,12 @@ import java.util.stream.Collectors;
  * desde y hasta son INCLUSIVOS (lenguaje del negocio: "del 10 al 20 de julio"). Si no se envían tarifas,
  * se copian las de la temporada base para que el administrador las ajuste luego (AsignarTarifaUseCase).
  */
+@Service
+@Transactional
 public class CrearTemporadaUseCase {
 
-    public record Command(String nombre, LocalDate desde, LocalDate hasta, Map<UUID, BigDecimal> tarifasPorApartamento) { }
+    public record Command(String nombre, LocalDate desde, LocalDate hasta, Map<UUID, BigDecimal> tarifasPorApartamento,
+                          Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -34,6 +41,8 @@ public class CrearTemporadaUseCase {
     }
 
     public TemporadaDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para crear una temporada.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         TemporadaId id = TemporadaId.generar();
         List<Tarifa> tarifas = new ArrayList<>();

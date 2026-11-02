@@ -5,11 +5,11 @@ import java.math.BigDecimal; import java.time.*; import java.util.*;
 
 /** Resultado de aplicación: datos planos, nunca entidades de dominio. */
 /** Nunca expone la contraseña (ni su hash). */
-public record UsuarioDetalle(UUID id, String nombre, String correo, String telefono, String documento,
+public record UsuarioDetalle(UUID id, String nombre, String apellido, String correo, String telefono, String documento,
                              RolUsuario rol, boolean activo, LocalDate fechaNacimiento) {
 
     public static UsuarioDetalle de(Usuario u) {
-        return new UsuarioDetalle(u.getId().valor(), u.getNombreCompleto().obtenerNombreCompleto(),
+        return new UsuarioDetalle(u.getId().valor(), u.getNombreCompleto().nombre(), u.getNombreCompleto().apellido(),
                 u.getCorreo().direccion(), u.getTelefono().numeroTelefono(), u.getDocumento().numero(),
                 u.getRol(), u.estaActivo(), u.getFechaNacimiento().valor());
     }

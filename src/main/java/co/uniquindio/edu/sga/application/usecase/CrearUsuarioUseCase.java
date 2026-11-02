@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,6 +26,8 @@ import java.util.stream.Collectors;
  * POST /api/usuarios — Registro público (solicitante null) crea HUÉSPED; los roles internos solo los
  * asigna un ADMINISTRADOR (7.2). Contraseña segura validada y luego encriptada; correo único.
  */
+@Service
+@Transactional
 public class CrearUsuarioUseCase {
 
     public record Command(String nombre, String apellido, String documento, String correo, String telefono,

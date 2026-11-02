@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** GET /api/reservas/canales — Reservas por canal de origen, incluyendo canceladas y no-show (7.9). Reservas cuya estancia toca [desde, hasta). */
+@Service
 public class ConsultarReservaPorCanalUseCase {
 
     public record Command(LocalDate desde, LocalDate hasta) { }

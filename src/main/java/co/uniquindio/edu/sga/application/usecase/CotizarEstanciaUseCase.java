@@ -1,5 +1,7 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** POST /api/cotizaciones — Desglose noche por noche (RN-05, RN-06). No crea ni reserva nada. */
+@Service
 public class CotizarEstanciaUseCase {
 
     public record Command(UUID apartamentoId, LocalDate entrada, LocalDate salida, List<LocalDate> fechasNacimiento) { }

@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -22,11 +26,13 @@ import java.util.stream.Collectors;
  * PUT /api/politicas-cancelacion — Crea una NUEVA versión de la política (v1 → v2 …). Las reservas
  * existentes conservan la versión congelada (RN-13, RN-22). Sirve también para definir la inicial.
  */
+@Service
+@Transactional
 public class ActualizarPoliticaCancelacionUseCase {
 
     public record Tramo(int diasAntelacionMinimos, double porcentajeRetencion) { }
 
-    public record Command(List<Tramo> tramos, double porcentajeRetencionNoShow) { }
+    public record Command(List<Tramo> tramos, double porcentajeRetencionNoShow, Solicitante solicitante) { }
 
     public record Result(String versionAnterior, String versionNueva) { }
 
@@ -37,6 +43,8 @@ public class ActualizarPoliticaCancelacionUseCase {
     }
 
     public Result ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para modificar la política.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         String anterior = alojamiento.getPoliticaVigente().version().valor();
         String nueva = "v" + (numero(anterior) + 1);

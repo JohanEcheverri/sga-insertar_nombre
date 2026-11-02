@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
  * (RN-05/06) → Reserva.crear (RN-04, RN-22). RN-19: el mismo canal + identificador externo no
  * crea dos reservas: devuelve la ya existente.
  */
+@Service
+@Transactional
 public class CrearReservaUseCase {
 
     public record Command(TitularDatos titular, List<OcupanteDatos> ocupantes, UUID apartamentoId,
@@ -31,7 +37,7 @@ public class CrearReservaUseCase {
                           CanalOrigen canal, String identificadorExterno) { }
 
     public record Result(UUID reservaId, UUID folioId, EstadoReserva estado, BigDecimal valorTotal,
-                         BigDecimal anticipoRequerido, boolean yaExistia) { }
+                         BigDecimal anticipoRequerido, boolean yaExistia, ReservaDetalle detalle) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -71,7 +77,7 @@ public class CrearReservaUseCase {
             if (existente.isPresent()) {
                 Reserva r = existente.get();
                 return new Result(r.getId().valor(), r.getFolioId().valor(), r.getEstado(),
-                        r.getValorCongelado().valor(), config.anticipoPara(r.getValorCongelado()), true);
+                        r.getValorCongelado().valor(), config.anticipoPara(r.getValorCongelado()), true, ReservaDetalle.de(r));
             }
         }
 
@@ -101,6 +107,6 @@ public class CrearReservaUseCase {
         Seguro.ejecutar("notificar reserva creada", () -> notificacion.reservaCreada(reserva));
 
         return new Result(reserva.getId().valor(), folio.getId().valor(), reserva.getEstado(), valor.valor(),
-                config.anticipoPara(valor), false);
+                config.anticipoPara(valor), false, ReservaDetalle.de(reserva));
     }
 }

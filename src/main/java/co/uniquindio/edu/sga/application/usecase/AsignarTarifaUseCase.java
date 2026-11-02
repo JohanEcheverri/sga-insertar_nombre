@@ -1,5 +1,9 @@
 package co.uniquindio.edu.sga.application.usecase;
 
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.stereotype.Service;
+
 import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
@@ -19,9 +23,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** POST /api/tarifas — Asigna o actualiza la tarifa de un apartamento en una temporada. Las reservas existentes no cambian (RN-22). */
+@Service
+@Transactional
 public class AsignarTarifaUseCase {
 
-    public record Command(UUID temporadaId, UUID apartamentoId, BigDecimal precioPorNochePorOcupante) { }
+    public record Command(UUID temporadaId, UUID apartamentoId, BigDecimal precioPorNochePorOcupante,
+                          Solicitante solicitante) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -30,6 +37,8 @@ public class AsignarTarifaUseCase {
     }
 
     public TemporadaDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para asignar una tarifa.");
+        cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Temporada temporada = Cargas.temporada(alojamiento, cmd.temporadaId());
         Cargas.apartamento(alojamiento, cmd.apartamentoId());
