@@ -15,6 +15,6 @@ public record TemporadaDetalle(UUID id, String nombre, LocalDate desde, LocalDat
                 t.esBase() ? null : t.getRangoFechas().fechaInicio(),
                 t.esBase() ? null : t.getRangoFechas().fechaFin().minusDays(1), t.esBase(),
                 t.getTarifas().stream().map(x -> new TarifaDetalle(x.apartamentoId().valor(),
-                        x.precioPorNochePorOcupante().valor().doubleValue())).toList());
+                        x.precioPorNochePorOcupante().valor())).toList());
     }
 }

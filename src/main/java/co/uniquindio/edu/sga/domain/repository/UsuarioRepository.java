@@ -3,16 +3,17 @@ package co.uniquindio.edu.sga.domain.repository;
 import co.uniquindio.edu.sga.domain.entity.Usuario;
 import co.uniquindio.edu.sga.domain.valueobject.CorreoElectronico;
 import co.uniquindio.edu.sga.domain.valueobject.UsuarioId;
-import java.util.List;
+
 import java.util.Optional;
 
 public interface UsuarioRepository {
 
-    Usuario guardar(Usuario usuario);
+    void guardar(Usuario usuario);
 
-    Optional<Usuario> obtenerPorId(UsuarioId id);
+    Optional<Usuario> buscarPorId(UsuarioId id);
 
-    Optional<Usuario> obtenerPorCorreo(CorreoElectronico correo);
+    Optional<Usuario> buscarPorCorreo(CorreoElectronico correo);
 
-    List<Usuario> listarTodos();
+    /** 7.2 - El correo es único. */
+    boolean existePorCorreo(CorreoElectronico correo);
 }

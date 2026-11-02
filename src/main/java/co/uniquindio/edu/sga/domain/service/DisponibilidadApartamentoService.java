@@ -1,19 +1,26 @@
 package co.uniquindio.edu.sga.domain.service;
 
+import co.uniquindio.edu.sga.domain.entity.Apartamento;
 import co.uniquindio.edu.sga.domain.entity.Bloqueo;
 import co.uniquindio.edu.sga.domain.entity.Reserva;
-import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
+import co.uniquindio.edu.sga.domain.exception.AforoExcedidoException;
+import co.uniquindio.edu.sga.domain.exception.ApartamentoNoDisponibleException;
+import co.uniquindio.edu.sga.domain.exception.DomainException;
 import co.uniquindio.edu.sga.domain.repository.BloqueoRepository;
 import co.uniquindio.edu.sga.domain.repository.ReservaRepository;
-import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
+import co.uniquindio.edu.sga.domain.valueobject.ConfiguracionAlojamiento;
 import co.uniquindio.edu.sga.domain.valueobject.Estancia;
 import co.uniquindio.edu.sga.domain.valueobject.RangoFechas;
-import co.uniquindio.edu.sga.domain.valueobject.ConfiguracionAlojamiento;
+import co.uniquindio.edu.sga.domain.valueobject.ReservaId;
 
-import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.time.Duration;
 
-/** Servicio de dominio (Guía 05) */
+/**
+ * 3.3 - Disponibilidad de un apartamento para una estancia: activo, capacidad suficiente (RN-02),
+ * sin reservas activas solapadas (RN-01), sin bloqueos vigentes (RN-07) y respetando el tiempo de
+ * preparación (RN-20). El estado operativo NO interviene (RN-24): un apartamento FUERA_DE_SERVICIO
+ * sin bloqueo sigue siendo vendible a futuro.
+ */
 public class DisponibilidadApartamentoService {
 
     private final ReservaRepository reservaRepository;
@@ -24,62 +31,58 @@ public class DisponibilidadApartamentoService {
         this.bloqueoRepository = bloqueoRepository;
     }
 
-    public boolean estaDisponible(ApartamentoId apartamento, Estancia estancia, ConfiguracionAlojamiento configuracion) {
-        RangoFechas periodo = new RangoFechas(estancia.fechaEntrada(), estancia.fechaSalida());
+    /**
+     * @param reservaAExcluir reserva que se está modificando (no debe chocar consigo misma); puede ser null
+     * @throws DomainException con el motivo de negocio si el apartamento no está disponible
+     */
+    public void verificarDisponibilidad(Apartamento apartamento, Estancia estancia, int totalOcupantes,
+                                        ConfiguracionAlojamiento configuracion, ReservaId reservaAExcluir) {
+        if (!apartamento.isActivo()) {
+            throw new ApartamentoNoDisponibleException("El apartamento " + apartamento.getIdentificadorUnico() + " no está activo.");
+        }
+        if (!apartamento.capacidadPermitida(totalOcupantes)) {
+            throw new AforoExcedidoException(apartamento.getCapacidad().aforoMax(), totalOcupantes);
+        }
 
-        List<Reserva> activas = reservaRepository.buscarActivasPorApartamento(apartamento, periodo);
-        for (Reserva otra : activas) {
-            // RN-12: una reserva que dejó de estar activa no ocupa noches
-            if (!otra.estaActiva()) {
-                continue;
+        RangoFechas rango = estancia.rangoFechas();
+        boolean recambioImposible = ventanaRecambioHoras(configuracion) < configuracion.tiempoPreparacionHoras();
+
+        for (Reserva otra : reservaRepository.buscarActivasPorApartamento(apartamento.getId())) {
+            if (otra.getId().equals(reservaAExcluir)) continue;
+            RangoFechas rangoOtra = otra.getEstancia().rangoFechas();
+            if (rango.intersecta(rangoOtra)) {
+                throw new ApartamentoNoDisponibleException(
+                        "RN-01 - El apartamento ya tiene una reserva activa que solapa con las fechas solicitadas.");
             }
-            // RN-01: sin importar el canal de origen
-            if (estancia.seSolapaCon(otra.getEstancia())) {
-                return false;
-            }
-            // RN-20
-            if (violaTiempoPreparacion(estancia, otra.getEstancia(), configuracion)) {
-                return false;
+            // RN-20 - si el tiempo de preparación no cabe entre salida y entrada, no hay recambio el mismo día.
+            if (recambioImposible && (rangoOtra.fechaFin().equals(rango.fechaInicio())
+                    || rango.fechaFin().equals(rangoOtra.fechaInicio()))) {
+                throw new ApartamentoNoDisponibleException(
+                        "RN-20 - No se respeta el tiempo de preparación entre la salida de un grupo y la entrada del siguiente.");
             }
         }
 
-        // RN-07
-        List<Bloqueo> bloqueos = bloqueoRepository.buscarVigentesPorApartamento(apartamento, periodo);
-        for (Bloqueo bloqueo : bloqueos) {
-            if (bloqueo.afecta(estancia)) {
-                return false;
+        for (Bloqueo bloqueo : bloqueoRepository.buscarActivosPorApartamento(apartamento.getId())) {
+            if (bloqueo.seCruzaConEstancia(estancia)) {
+                throw new ApartamentoNoDisponibleException(
+                        "RN-07 - El apartamento tiene un bloqueo vigente en las fechas solicitadas (" + bloqueo.getMotivo() + ").");
             }
         }
-
-        return true;
     }
 
-    public void verificarDisponibilidad(ApartamentoId apartamento, Estancia estancia, ConfiguracionAlojamiento configuracion) {
-        if (!estaDisponible(apartamento, estancia, configuracion)) {
-            throw new ReglaDominioException(
-                    "El apartamento no está disponible para la estancia solicitada.");
-        }
-    }
-
-    // RN-20: entre la salida de un grupo y la entrada del siguiente debe respetarse
-    // el tiempo de preparación configurado
-    private boolean violaTiempoPreparacion(Estancia nueva, Estancia otra, ConfiguracionAlojamiento configuracion) {
-        long diasPreparacion = Math.ceilDiv(configuracion.tiempoPreparacionHoras(), 24);
-        if (diasPreparacion == 0) {
+    /** Versión booleana para búsquedas: no lanza excepciones de negocio. */
+    public boolean estaDisponible(Apartamento apartamento, Estancia estancia, int totalOcupantes,
+                                  ConfiguracionAlojamiento configuracion) {
+        try {
+            verificarDisponibilidad(apartamento, estancia, totalOcupantes, configuracion, null);
+            return true;
+        } catch (DomainException e) {
             return false;
         }
-        if (!nueva.fechaEntrada().isBefore(otra.fechaSalida())) {
-            long brecha = ChronoUnit.DAYS.between(otra.fechaSalida(), nueva.fechaEntrada());
-            if (brecha < diasPreparacion) {
-                return true;
-            }
-        }
-        if (!otra.fechaEntrada().isBefore(nueva.fechaSalida())) {
-            long brecha = ChronoUnit.DAYS.between(nueva.fechaSalida(), otra.fechaEntrada());
-            if (brecha < diasPreparacion) {
-                return true;
-            }
-        }
-        return false;
+    }
+
+    /** Horas entre la hora de salida y la hora de entrada del mismo día (3.3). */
+    private static long ventanaRecambioHoras(ConfiguracionAlojamiento configuracion) {
+        return Math.max(0, Duration.between(configuracion.salida(), configuracion.entrada()).toHours());
     }
 }

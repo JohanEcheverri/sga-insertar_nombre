@@ -2,39 +2,39 @@ package co.uniquindio.edu.sga.infraestructure.persistence.inmemory;
 
 import co.uniquindio.edu.sga.domain.entity.Folio;
 import co.uniquindio.edu.sga.domain.repository.FolioRepository;
+import co.uniquindio.edu.sga.domain.valueobject.FolioId;
 import co.uniquindio.edu.sga.domain.valueobject.ReservaId;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
-import org.springframework.stereotype.Repository;
-
-/** Adaptador en memoria del puerto (Guía 06), bean de Spring (Guía 09) */
-@Repository
 public class FolioRepositoryInMemory implements FolioRepository {
 
-    private final HashMap<ReservaId, Folio> folios = new HashMap<>();
+    private final Map<FolioId, Folio> folios = new LinkedHashMap<>();
 
     @Override
-    public Optional<Folio> obtenerPorReservaCodigo(ReservaId reserva) {
-        return Optional.ofNullable(folios.get(reserva));
+    public void guardar(Folio folio) {
+        folios.put(folio.getId(), folio);
     }
 
     @Override
-    public Folio guardar(Folio folio) {
-        folios.put(folio.getReservaId(), folio);
-        return folio; // Retornamos el folio guardado para cumplir con la firma del método
-    }
-
-    @Override
-    public List<Folio> listarTodos() {
-        return new ArrayList<>(folios.values());
-    }
-
-    @Override
-    public Optional<Folio> obtenerPorId(ReservaId id) {
+    public Optional<Folio> buscarPorId(FolioId id) {
         return Optional.ofNullable(folios.get(id));
+    }
+
+    @Override
+    public Optional<Folio> buscarPorReservaId(ReservaId reservaId) {
+        return folios.values().stream().filter(f -> f.getReservaId().equals(reservaId)).findFirst();
+    }
+
+    @Override
+    public List<Folio> buscarConPagosEntre(LocalDateTime desde, LocalDateTime hasta) {
+        return folios.values().stream().filter(f -> f.getPagos().stream()
+                .anyMatch(p -> !p.fechaRegistro().isBefore(desde) && p.fechaRegistro().isBefore(hasta))).toList();
+    }
+
+    @Override
+    public List<Folio> buscarTodos() {
+        return List.copyOf(folios.values());
     }
 }

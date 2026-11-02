@@ -3,20 +3,19 @@ package co.uniquindio.edu.sga.domain.repository;
 import co.uniquindio.edu.sga.domain.entity.Bloqueo;
 import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
 import co.uniquindio.edu.sga.domain.valueobject.BloqueoId;
-import co.uniquindio.edu.sga.domain.valueobject.RangoFechas;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
+/** Puerto de persistencia de Bloqueo (era una clase; debe ser interfaz). */
 public interface BloqueoRepository {
 
     void guardar(Bloqueo bloqueo);
 
-    Optional<Bloqueo> obtenerPorId(BloqueoId id);
+    Optional<Bloqueo> buscarPorId(BloqueoId id);
 
-    List<Bloqueo> listarBloqueos();
+    List<Bloqueo> buscarPorApartamento(ApartamentoId apartamentoId);
 
-    List<Bloqueo> buscarVigentesPorApartamento(ApartamentoId apartamento, RangoFechas periodo);
-
-    void eliminar(BloqueoId id);
+    /** Solo bloqueos vigentes (activos). */
+    List<Bloqueo> buscarActivosPorApartamento(ApartamentoId apartamentoId);
 }

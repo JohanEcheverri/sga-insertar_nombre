@@ -34,7 +34,7 @@ public class AsignarTarifaUseCase {
         Temporada temporada = Cargas.temporada(alojamiento, cmd.temporadaId());
         Cargas.apartamento(alojamiento, cmd.apartamentoId());
         alojamiento.establecerTarifa(new Tarifa(temporada.getId(), ApartamentoId.of(cmd.apartamentoId()),
-                Dinero.de(cmd.precioPorNochePorOcupante())));
+                new Dinero(cmd.precioPorNochePorOcupante())));
         alojamientoRepository.guardar(alojamiento);
         return TemporadaDetalle.de(temporada);
     }

@@ -15,6 +15,7 @@ public class Novedad {
     private final String descripcion;
     private final GravedadNovedad gravedad;
     private final LocalDateTime fechaReporte;
+    private boolean anulada;   // borrado lógico (12.4: las eliminaciones son lógicas)
 
     private Novedad(NovedadId id, ApartamentoId apartamentoId, String autor,
                     String descripcion, GravedadNovedad gravedad, LocalDateTime fechaReporte) {
@@ -24,13 +25,9 @@ public class Novedad {
         this.descripcion = descripcion;
         this.gravedad = gravedad;
         this.fechaReporte = fechaReporte;
+        this.anulada = false;
     }
 
-    /**
-     * Crea una novedad con sus datos completos.
-     * Regla de creación: cada reporte debe identificar la novedad, el apartamento,
-     * el autor, una descripción, su gravedad y el momento del reporte.
-     */
     public static Novedad crear(NovedadId id, ApartamentoId apartamentoId, String autor,
                                 String descripcion, GravedadNovedad gravedad,
                                 LocalDateTime fechaReporte) {
@@ -43,11 +40,21 @@ public class Novedad {
         return new Novedad(id, apartamentoId, autor.trim(), descripcion.trim(), gravedad, fechaReporte);
     }
 
-    /** Atajo de creación que genera identificador y fecha con el reloj del sistema. */
     public static Novedad reportar(ApartamentoId apartamentoId, String autor,
                                    String descripcion, GravedadNovedad gravedad) {
         return crear(NovedadId.generar(), apartamentoId, autor, descripcion, gravedad,
                 LocalDateTime.now());
+    }
+
+    /** Variante con reloj inyectado (los casos de uso usan Clock para poder probar). */
+    public static Novedad reportar(ApartamentoId apartamentoId, String autor, String descripcion,
+                                   GravedadNovedad gravedad, LocalDateTime fechaReporte) {
+        return crear(NovedadId.generar(), apartamentoId, autor, descripcion, gravedad, fechaReporte);
+    }
+
+    public void anular() {
+        exigir(!anulada, "La novedad ya está anulada.");
+        anulada = true;
     }
 
     private static void exigir(boolean condicion, String mensaje) {
@@ -60,4 +67,5 @@ public class Novedad {
     public String getDescripcion() { return descripcion; }
     public GravedadNovedad getGravedad() { return gravedad; }
     public LocalDateTime getFechaReporte() { return fechaReporte; }
+    public boolean isAnulada() { return anulada; }
 }

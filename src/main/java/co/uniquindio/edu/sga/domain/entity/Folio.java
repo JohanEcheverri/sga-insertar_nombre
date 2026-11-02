@@ -30,43 +30,45 @@ public class Folio {
         this.pagos = new ArrayList<>();
     }
 
-    /** Crea un folio abierto y vacío asociado a una reserva. */
     public static Folio crear(FolioId id, ReservaId reservaId) {
         exigir(id != null, "El folio debe tener identificador.");
         exigir(reservaId != null, "El folio debe estar asociado a una reserva.");
         return new Folio(id, reservaId);
     }
 
-    /** Regla de ciclo de vida: solo un folio ABIERTO puede recibir cargos. */
+    /** Solo un folio ABIERTO puede recibir cargos. */
     public void registrarCargo(Cargo cargo) {
         exigirAbierto();
         exigir(cargo != null, "El cargo no puede ser nulo.");
         cargos.add(cargo);
     }
 
-    /** Regla de ciclo de vida: solo un folio ABIERTO puede recibir pagos. */
+    /** RN-15 - Solo un folio ABIERTO puede recibir pagos. */
     public void registrarPago(Pago pago) {
         exigirAbierto();
         exigir(pago != null, "El pago no puede ser nulo.");
         pagos.add(pago);
     }
 
-    /**
-     * Cierra el folio con autorización.
-     * Regla contable: un folio con saldo pendiente no puede cerrarse. El cierre
-     * conserva la autorización que justifica quién lo cerró, cuándo y por qué.
-     */
+    /** Cierre ordinario: exige saldo pendiente en cero. Conserva quién cerró, cuándo y por qué. */
     public void cerrar(AutorizacionCierre autorizacion) {
         exigirAbierto();
         exigir(autorizacion != null, "El cierre del folio requiere autorización.");
         if (tieneSaldoPendiente()) {
-            throw new FolioSaldoPendienteException("No se puede cerrar el folio: tiene saldo pendiente.");
+            throw new FolioSaldoPendienteException(id.valor().toString());
         }
         this.autorizacionCierre = autorizacion;
         this.estado = EstadoFolio.CERRADO;
     }
 
-    /** Regla de ciclo de vida: un folio cerrado no puede volver a abrirse. */
+    /** RN-17 - Cierre con saldo pendiente: solo con autorización explícita registrada (la da el administrador). */
+    public void cerrarConSaldoAutorizado(AutorizacionCierre autorizacion) {
+        exigirAbierto();
+        exigir(autorizacion != null, "El cierre con saldo pendiente requiere autorización explícita.");
+        this.autorizacionCierre = autorizacion;
+        this.estado = EstadoFolio.CERRADO;
+    }
+
     public void reabrir(AutorizacionCierre autorizacion) {
         exigir(estado == EstadoFolio.CERRADO, "Solo un folio cerrado puede reabrirse.");
         exigir(autorizacion != null, "La reapertura del folio requiere autorización.");
@@ -74,19 +76,34 @@ public class Folio {
         this.estado = EstadoFolio.ABIERTO;
     }
 
+    /** Suma neta de cargos: los cargos de tipo crédito (reversos, ajustes a favor) restan. */
     public BigDecimal totalCargos() {
-        return cargos.stream().map(c -> c.monto().valor())
+        return cargos.stream()
+                .map(c -> {
+                    BigDecimal monto = BigDecimal.valueOf(c.monto().valor());
+                    return c.tipoCargo().esCredito() ? monto.negate() : monto;
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal totalPagos() {
-        return pagos.stream().map(p -> p.monto().valor())
+        return pagos.stream().map(p -> BigDecimal.valueOf(p.monto().valor()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** RN-15 - Saldo con signo: positivo debe el huésped, cero saldado, negativo saldo a favor. */
+    public BigDecimal saldo() {
+        return totalCargos().subtract(totalPagos());
     }
 
     /** El saldo pendiente se limita a deuda; un saldo a favor se considera saldado. */
     public BigDecimal saldoPendiente() {
-        return totalCargos().subtract(totalPagos()).max(BigDecimal.ZERO);
+        return saldo().max(BigDecimal.ZERO);
+    }
+
+    /** Monto a devolver al huésped (el sistema lo registra; el desembolso ocurre fuera, 3.4). */
+    public BigDecimal saldoAFavor() {
+        return saldo().negate().max(BigDecimal.ZERO);
     }
 
     public boolean tieneSaldoPendiente() {

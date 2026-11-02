@@ -12,6 +12,9 @@ import co.uniquindio.edu.sga.domain.valueobject.Ubicacion;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 /** Agregado raíz que coordina apartamentos, temporadas, tarifas y configuración del alojamiento. */
 public class Alojamiento {
@@ -35,11 +38,6 @@ public class Alojamiento {
         this.politicaVigente = politicaVigente;
     }
 
-    /**
-     * Crea el alojamiento validando sus componentes y las invariantes entre sus apartamentos y temporadas.
-     * F-05 - Existen temporadas que modifican la tarifa, incluida una temporada base obligatoria.
-     * RN-27 - Las temporadas no se pueden solapar entre sí; todo periodo no cubierto se considera base.
-     */
     public static Alojamiento crear(AlojamientoId id, String nombre, Ubicacion ubicacion,
                                     ConfiguracionAlojamiento configuracion,
                                     List<Apartamento> apartamentos, List<Temporada> temporadas,
@@ -49,9 +47,9 @@ public class Alojamiento {
         exigir(ubicacion != null, "El alojamiento debe tener ubicación.");
         exigir(configuracion != null, "El alojamiento debe tener configuración.");
         exigir(apartamentos != null && !apartamentos.isEmpty(), "El alojamiento debe tener al menos un apartamento.");
-        exigir(!apartamentos.contains(null), "La lista de apartamentos no puede contener valores nulos.");
+        exigir(apartamentos.stream().noneMatch(Objects::isNull), "La lista de apartamentos no puede contener valores nulos.");
         exigir(temporadas != null && !temporadas.isEmpty(), "El alojamiento debe tener temporadas configuradas.");
-        exigir(!temporadas.contains(null), "La lista de temporadas no puede contener valores nulos.");
+        exigir(temporadas.stream().noneMatch(Objects::isNull), "La lista de temporadas no puede contener valores nulos.");
         exigir(politicaVigente != null, "El alojamiento debe tener una política de cancelación vigente.");
 
         validarApartamentosUnicos(apartamentos);
@@ -68,49 +66,36 @@ public class Alojamiento {
         apartamentos.add(apartamento);
     }
 
-    /** Registra las tarifas del nuevo apartamento en todas las temporadas y lo agrega de forma atómica. */
-    public void agregarApartamento(Apartamento apartamento, List<Tarifa> tarifas) {
+    /**
+     * Agrega un apartamento junto con sus tarifas iniciales (una por temporada). Resuelve el círculo
+     * "no hay tarifa sin apartamento / no hay apartamento sin tarifa": valida todo y recién entonces aplica.
+     */
+    public void agregarApartamento(Apartamento apartamento, List<Tarifa> tarifasIniciales) {
         validarNuevoApartamento(apartamento);
-        exigir(tarifas != null && !tarifas.isEmpty()
-                        && tarifas.stream().noneMatch(tarifa -> tarifa == null),
-                "El apartamento debe tener una tarifa válida para cada temporada.");
-        List<Tarifa> tarifasNuevas = List.copyOf(tarifas);
-        for (Temporada temporada : temporadas) {
-            long cantidad = tarifasNuevas.stream()
-                    .filter(tarifa -> tarifa.temporadaId().equals(temporada.getId())
-                            && tarifa.apartamentoId().equals(apartamento.getId()))
-                    .count();
-            exigir(cantidad == 1, "Debe registrarse exactamente una tarifa por temporada para el apartamento.");
+        exigir(tarifasIniciales != null && tarifasIniciales.stream().noneMatch(Objects::isNull),
+                "Las tarifas iniciales del apartamento son obligatorias.");
+        for (Tarifa tarifa : tarifasIniciales) {
+            exigir(tarifa.apartamentoId().equals(apartamento.getId()),
+                    "Las tarifas iniciales deben pertenecer al apartamento que se agrega.");
         }
-        exigir(tarifasNuevas.stream().allMatch(tarifa -> temporadas.stream()
-                        .anyMatch(temporada -> temporada.getId().equals(tarifa.temporadaId()))
-                        && tarifa.apartamentoId().equals(apartamento.getId())),
-                "Las tarifas deben pertenecer a las temporadas del alojamiento y al nuevo apartamento.");
-
         for (Temporada temporada : temporadas) {
-            Tarifa tarifa = tarifasNuevas.stream()
-                    .filter(actual -> actual.temporadaId().equals(temporada.getId()))
-                    .findFirst()
-                    .orElseThrow(() -> new ReglaDominioException(
-                            "Debe registrarse una tarifa por temporada para el apartamento."));
-            temporada.establecerTarifa(tarifa);
+            long cantidad = tarifasIniciales.stream()
+                    .filter(t -> t.temporadaId().equals(temporada.getId())).count();
+            exigir(cantidad == 1,
+                    "Debe registrarse exactamente una tarifa del apartamento en cada temporada (falta/sobra en: "
+                            + temporada.getNombre() + ").");
+        }
+        exigir(tarifasIniciales.stream().allMatch(t -> temporadas.stream()
+                        .anyMatch(temporada -> temporada.getId().equals(t.temporadaId()))),
+                "Hay tarifas para temporadas que no pertenecen a este alojamiento.");
+        for (Tarifa tarifa : tarifasIniciales) {
+            temporadas.stream().filter(t -> t.getId().equals(tarifa.temporadaId())).findFirst()
+                    .orElseThrow().establecerTarifa(tarifa);
         }
         apartamentos.add(apartamento);
     }
 
-    private void validarNuevoApartamento(Apartamento apartamento) {
-        exigir(apartamento != null, "El apartamento no puede ser nulo.");
-        exigir(apartamentos.stream().noneMatch(actual -> actual.getId().equals(apartamento.getId())),
-                "El alojamiento ya contiene un apartamento con ese identificador.");
-        exigir(apartamentos.stream().noneMatch(actual -> actual.getIdentificadorUnico()
-                        .equalsIgnoreCase(apartamento.getIdentificadorUnico())),
-                "El identificador único del apartamento ya existe en este alojamiento.");
-    }
-
-    /**
-     * Agrega una temporada al alojamiento.
-     * RN-27 - Las temporadas no se pueden solapar entre sí; todo periodo no cubierto se considera base.
-     */
+    /** RN-27 - Las temporadas no se pueden solapar entre sí; todo periodo no cubierto se considera base. */
     public void agregarTemporada(Temporada temporada) {
         exigir(temporada != null, "La temporada no puede ser nula.");
         exigir(temporadas.stream().noneMatch(actual -> actual.getId().equals(temporada.getId())),
@@ -126,7 +111,28 @@ public class Alojamiento {
         temporadas.add(temporada);
     }
 
-    /** No se permite retirar la temporada base obligatoria del alojamiento. */
+    /**
+     * Reemplaza una temporada existente (mismo id) por una nueva versión — p. ej. al cambiar sus
+     * fechas o nombre. Atómico: si la nueva versión viola alguna regla, el agregado queda intacto.
+     */
+    public void reemplazarTemporada(Temporada nueva) {
+        exigir(nueva != null, "La temporada no puede ser nula.");
+        int indice = -1;
+        for (int i = 0; i < temporadas.size(); i++) {
+            if (temporadas.get(i).getId().equals(nueva.getId())) indice = i;
+        }
+        exigir(indice >= 0, "La temporada no pertenece a este alojamiento.");
+        exigir(temporadas.get(indice).esBase() == nueva.esBase(),
+                "F-05 - No se puede convertir la temporada base en especial ni al revés.");
+        for (int i = 0; i < temporadas.size(); i++) {
+            if (i != indice) {
+                exigir(!nueva.seSolapaCon(temporadas.get(i)), "RN-27 - Las temporadas no se pueden solapar entre sí.");
+            }
+        }
+        validarTarifasParaApartamentos(nueva, apartamentos);
+        temporadas.set(indice, nueva);
+    }
+
     public void retirarTemporada(TemporadaId temporadaId) {
         exigir(temporadaId != null, "El identificador de temporada no puede ser nulo.");
         Temporada temporada = temporadas.stream()
@@ -151,9 +157,7 @@ public class Alojamiento {
         return aplicables.isEmpty() ? temporadaBase : aplicables.get(0);
     }
 
-    /** Devuelve la tarifa del apartamento para la fecha, resolviendo la temporada aplicable. */
-    public co.uniquindio.edu.sga.domain.valueobject.Tarifa tarifaAplicable(ApartamentoId apartamentoId,
-                                                                           LocalDate fecha) {
+    public Tarifa tarifaAplicable(ApartamentoId apartamentoId, LocalDate fecha) {
         exigir(apartamentos.stream().anyMatch(apartamento -> apartamento.getId().equals(apartamentoId)),
                 "El apartamento no pertenece a este alojamiento.");
         return temporadaAplicable(fecha).tarifaPara(apartamentoId);
@@ -164,7 +168,6 @@ public class Alojamiento {
         politicaVigente = nuevaPolitica;
     }
 
-    /** Mantiene la actualización de tarifas dentro del agregado y evita tarifas para apartamentos externos. */
     public void establecerTarifa(Tarifa tarifa) {
         exigir(tarifa != null, "La tarifa no puede ser nula.");
         exigir(apartamentos.stream().anyMatch(apartamento -> apartamento.getId().equals(tarifa.apartamentoId())),
@@ -176,11 +179,35 @@ public class Alojamiento {
         temporada.establecerTarifa(tarifa);
     }
 
+    // ---- consultas de apoyo para los casos de uso ----
+
+    public Optional<Apartamento> buscarApartamento(ApartamentoId apartamentoId) {
+        return apartamentos.stream().filter(a -> a.getId().equals(apartamentoId)).findFirst();
+    }
+
+    public Optional<Temporada> buscarTemporada(TemporadaId temporadaId) {
+        return temporadas.stream().filter(t -> t.getId().equals(temporadaId)).findFirst();
+    }
+
+    /** Apartamentos vendibles: excluye los retirados (eliminación lógica). */
+    public List<Apartamento> apartamentosActivos() {
+        return apartamentos.stream().filter(Apartamento::isActivo).toList();
+    }
+
+    private void validarNuevoApartamento(Apartamento apartamento) {
+        exigir(apartamento != null, "El apartamento no puede ser nulo.");
+        exigir(apartamentos.stream().noneMatch(actual -> actual.getId().equals(apartamento.getId())),
+                "El alojamiento ya contiene un apartamento con ese identificador.");
+        exigir(apartamentos.stream().noneMatch(actual -> actual.getIdentificadorUnico()
+                        .equalsIgnoreCase(apartamento.getIdentificadorUnico())),
+                "El identificador único del apartamento ya existe en este alojamiento.");
+    }
+
     private static void validarApartamentosUnicos(List<Apartamento> apartamentos) {
         long idsDistintos = apartamentos.stream().map(Apartamento::getId).distinct().count();
         exigir(idsDistintos == apartamentos.size(), "No puede haber apartamentos con identificadores repetidos.");
         long identificadoresDistintos = apartamentos.stream()
-                .map(apartamento -> apartamento.getIdentificadorUnico().toLowerCase(java.util.Locale.ROOT))
+                .map(apartamento -> apartamento.getIdentificadorUnico().toLowerCase(Locale.ROOT))
                 .distinct().count();
         exigir(identificadoresDistintos == apartamentos.size(), "Los identificadores únicos de apartamentos no se pueden repetir.");
     }

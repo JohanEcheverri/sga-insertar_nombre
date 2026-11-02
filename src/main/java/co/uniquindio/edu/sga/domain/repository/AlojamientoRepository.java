@@ -1,18 +1,16 @@
 package co.uniquindio.edu.sga.domain.repository;
 
 import co.uniquindio.edu.sga.domain.entity.Alojamiento;
-import co.uniquindio.edu.sga.domain.valueobject.AlojamientoId;
 
-import java.util.List;
 import java.util.Optional;
 
+/**
+ * F-13: el sistema administra UN único alojamiento. Apartamentos, temporadas y tarifas viven dentro
+ * del agregado, por lo que se cargan y se guardan a través de este puerto.
+ */
 public interface AlojamientoRepository {
 
-    Alojamiento guardar(Alojamiento alojamiento);
+    Optional<Alojamiento> obtener();
 
-    Optional<Alojamiento> obtenerPorId(AlojamientoId id);
-
-    List<Alojamiento> listarTodos();
-
-    void eliminar(AlojamientoId id);
+    void guardar(Alojamiento alojamiento);
 }
