@@ -1,9 +1,14 @@
 package co.uniquindio.edu.sga.infraestructure.rest;
 
+import co.uniquindio.edu.sga.application.dto.request.AsignarTarifaRequest;
+import co.uniquindio.edu.sga.application.dto.request.CrearTemporadaRequest;
+import co.uniquindio.edu.sga.application.dto.request.ModificarTemporadaRequest;
+import co.uniquindio.edu.sga.application.dto.response.TemporadaResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
-import java.util.Map;
 
 /** Rutas REST de temporadas y asignación de tarifas. */
 @RestController
@@ -12,13 +17,13 @@ public class TemporadaController {
 
     // POST -> /api/temporadas
     @PostMapping("/temporadas")
-    public ResponseEntity<Void> crearTemporada(@RequestBody Map<String, Object> solicitud) {
+    public ResponseEntity<TemporadaResponse> crearTemporada(@Valid @RequestBody CrearTemporadaRequest solicitud) {
         return RestStub.noImplementado();
     }
 
     // PUT -> /api/temporadas/{id}
     @PutMapping("/temporadas/{id}")
-    public ResponseEntity<Void> modificarTemporada(@PathVariable String id, @RequestBody Map<String, Object> solicitud) {
+    public ResponseEntity<TemporadaResponse> modificarTemporada(@PathVariable String id, @Valid @RequestBody ModificarTemporadaRequest solicitud) {
         return RestStub.noImplementado();
     }
 
@@ -30,12 +35,12 @@ public class TemporadaController {
 
     // GET -> /api/temporadas
     @GetMapping("/temporadas")
-    public ResponseEntity<Void> buscarTemporada(@RequestParam(required = false) String fecha) {
+    public ResponseEntity<List<TemporadaResponse>> buscarTemporada(@RequestParam(required = false) String fecha) {
         return RestStub.noImplementado();
     }
 
     // POST -> /api/tarifas
-    @PostMapping("/tarifas") public ResponseEntity<Void> asignarTarifaATemporada(@RequestBody Map<String, Object> solicitud) {
+    @PostMapping("/tarifas") public ResponseEntity<TemporadaResponse> asignarTarifaATemporada(@Valid @RequestBody AsignarTarifaRequest solicitud) {
         return RestStub.noImplementado();
     }
 }

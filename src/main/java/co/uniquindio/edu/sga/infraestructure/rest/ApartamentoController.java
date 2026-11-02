@@ -1,9 +1,15 @@
 package co.uniquindio.edu.sga.infraestructure.rest;
 
+import co.uniquindio.edu.sga.application.dto.request.CrearApartamentoRequest;
+import co.uniquindio.edu.sga.application.dto.request.ModificarApartamentoRequest;
+import co.uniquindio.edu.sga.application.dto.request.CambiarEstadoApartamentoRequest;
+import co.uniquindio.edu.sga.application.dto.response.ApartamentoResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
+import java.util.List;
 
-import java.util.Map;
 
 /** Rutas REST de apartamentos y recursos dependientes de estos. */
 @RestController
@@ -12,13 +18,13 @@ public class ApartamentoController {
 
     // POST -> /api/apartamentos
     @PostMapping
-    public ResponseEntity<Void> crearApartamento(@RequestBody Map<String, Object> solicitud) {
+    public ResponseEntity<ApartamentoResponse> crearApartamento(@Valid @RequestBody CrearApartamentoRequest solicitud) {
         return RestStub.noImplementado();
     }
 
     // PUT -> /api/apartamentos/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Void> modificarApartamento(@PathVariable String id, @RequestBody Map<String, Object> solicitud) {
+    public ResponseEntity<ApartamentoResponse> modificarApartamento(@PathVariable String id, @Valid @RequestBody ModificarApartamentoRequest solicitud) {
         return RestStub.noImplementado();
     }
 
@@ -30,24 +36,24 @@ public class ApartamentoController {
 
     // GET -> /api/apartamentos/preparacion-pendiente
     @GetMapping("/preparacion-pendiente")
-    public ResponseEntity<Void> consultarApartamentosPreparacionPendientes() {
+    public ResponseEntity<List<ApartamentoResponse>> consultarApartamentosPreparacionPendientes() {
         return RestStub.noImplementado();
     }
 
     // PATCH -> /api/aparatmentos/{id}/estado-operativo
     @PatchMapping("/{id}/estado-operativo")
-    public ResponseEntity<Void> modificarEstadoOperativoApartamento(@PathVariable String id, @RequestBody Map<String, Object> solicitud) {
+    public ResponseEntity<ApartamentoResponse> modificarEstadoOperativoApartamento(@PathVariable String id, @Valid @RequestBody CambiarEstadoApartamentoRequest solicitud) {
         return RestStub.noImplementado();
     }
 
     // GET -> api/apartamentos/disponibilidad
     @GetMapping("/disponibilidad")
-    public ResponseEntity<Void> consultarDisponibilidadApartamentoPorFecha(@RequestParam String fechaEntrada, @RequestParam String fechaSalida) {
+    public ResponseEntity<List<ApartamentoResponse>> consultarDisponibilidadApartamentoPorFecha(@RequestParam LocalDate fechaEntrada, @RequestParam LocalDate fechaSalida) {
         return RestStub.noImplementado();
     }
 
     // GET -> api/apartamentos/buscar-capacidad
-    @GetMapping("/buscar-capacidad") public ResponseEntity<Void> buscarApartamentoPorCapacidad(@RequestParam int capacidad) {
+    @GetMapping("/buscar-capacidad") public ResponseEntity<List<ApartamentoResponse>> buscarApartamentoPorCapacidad(@RequestParam int capacidad) {
         return RestStub.noImplementado();
     }
 }

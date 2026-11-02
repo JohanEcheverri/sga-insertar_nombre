@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 final class RestStub {
     private RestStub() { }
 
-    static ResponseEntity<Void> noImplementado() {
+    static <T> ResponseEntity<T> noImplementado() {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 }

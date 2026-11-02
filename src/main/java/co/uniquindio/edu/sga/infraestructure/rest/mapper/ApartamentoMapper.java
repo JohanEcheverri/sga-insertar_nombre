@@ -1,20 +1,18 @@
 package co.uniquindio.edu.sga.infraestructure.rest.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import co.uniquindio.edu.sga.domain.entity.Apartamento;
+import co.uniquindio.edu.sga.application.dto.response.ApartamentoResponse;
+
+import java.util.List;
 
 /** Convierte Apartamento al modelo público de la API. */
-@Mapper(componentModel = "spring")
 public interface ApartamentoMapper {
-    static ApartamentoResponse aRespuesta(Apartamento apartamento) {
-        return new ApartamentoResponse(apartamento.getId().valor().toString(),
-                apartamento.getIdentificadorUnico(), apartamento.getDescripcion(),
-                apartamento.getCapacidad(), apartamento.getEstadoOperativo(),
-                apartamento.getDormitorios(), apartamento.isDisponible());
+    static ApartamentoResponse aRespuesta(Apartamento a) {
+        List<String> dormitorios = a.getDormitorios().stream()
+                .map(d -> d.nombre() + ": " + d.cantidadCamas() + " cama(s) " + d.tipoCamas())
+                .toList();
+        return new ApartamentoResponse(a.getId().valor().toString(), a.getIdentificadorUnico(),
+                a.getDescripcion(), (int) a.getCapacidad().aforoMax(),
+                a.getEstadoOperativo().name(), dormitorios, a.isDisponible());
     }
-
-    public record ApartamentoResponse(String id, String identificadorUnico, String descripcion,
-                                      Object capacidad, Object estadoOperativo,
-                                      Object dormitorios, boolean disponible) { }
 }

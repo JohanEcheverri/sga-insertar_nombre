@@ -1,5 +1,8 @@
 package co.uniquindio.edu.sga.infraestructure.rest;
 
+import co.uniquindio.edu.sga.application.dto.request.RegistrarNovedadRequest;
+import co.uniquindio.edu.sga.application.dto.response.NovedadResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,20 +11,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
-import java.util.Map;
 
 /** Rutas REST de eliminación de novedades reportadas en apartamentos. */
 @RestController
 @RequestMapping("/api")
 public class NovedadController {
     @PostMapping("/apartamentos/{id}/novedades")
-    public ResponseEntity<Void> crearNovedad(@PathVariable String id, @RequestBody Map<String, Object> solicitud) {
+    public ResponseEntity<NovedadResponse> crearNovedad(@PathVariable String id, @Valid @RequestBody RegistrarNovedadRequest solicitud) {
         return RestStub.noImplementado();
     }
 
     @GetMapping("/apartamentos/{id}/novedades")
-    public ResponseEntity<Void> consultarNovedad(@PathVariable String id) {
+    public ResponseEntity<List<NovedadResponse>> consultarNovedad(@PathVariable String id) {
         return RestStub.noImplementado();
     }
 

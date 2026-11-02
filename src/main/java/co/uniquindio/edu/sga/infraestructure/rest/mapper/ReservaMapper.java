@@ -1,22 +1,35 @@
 package co.uniquindio.edu.sga.infraestructure.rest.mapper;
 
 import co.uniquindio.edu.sga.domain.entity.Reserva;
+import co.uniquindio.edu.sga.application.dto.response.ReservaDetalleResponse;
+import co.uniquindio.edu.sga.application.dto.response.ReservaResumenResponse;
+
+import java.util.List;
 
 /** Convierte Reserva al modelo público de la API. */
 public interface ReservaMapper {
 
-    public static ReservaResponse aRespuesta(Reserva reserva) {
-        return new ReservaResponse(reserva.getId().valor().toString(),
+    static ReservaDetalleResponse aDetalle(Reserva reserva) {
+        var titular = reserva.getTitular();
+        List<String> ocupantes = reserva.getOcupantes().stream()
+                .map(o -> o.nombreCompleto().obtenerNombreCompleto() + " (" + o.documentoIdentidad().numero() + ")")
+                .toList();
+        return new ReservaDetalleResponse(reserva.getId().valor().toString(),
                 reserva.getFolioId().valor().toString(), reserva.getApartamentoId().valor().toString(),
-                reserva.getTitular(), reserva.getOcupantes(), reserva.getEstancia(),
+                titular.nombreCompleto().nombre(), titular.nombreCompleto().apellido(),
+                titular.usuarioId().valor().toString(), titular.correo().direccion(),
+                titular.telefono().numeroTelefono(), titular.documentoIdentidad().numero(),
+                ocupantes, reserva.getEstancia().fechaEntrada(), reserva.getEstancia().fechaSalida(),
                 reserva.getIdentificadorExterno(), reserva.getHoraEstimadaLlegada(),
-                reserva.getCanalOrigen(), reserva.getEstado(), reserva.getValorCongelado(),
-                reserva.getPoliticaCancelacion(), reserva.getFechaCreacion());
+                reserva.getCanalOrigen().name(), reserva.getEstado().name(), reserva.getValorCongelado().valor(),
+                reserva.getPoliticaCancelacion().version().valor(), reserva.getFechaCreacion());
     }
 
-    public record ReservaResponse(String codigo, String folioId, String apartamentoId,
-                                  Object titular, Object ocupantes, Object estancia,
-                                  String identificadorExterno, Object horaEstimadaLlegada,
-                                  Object canalOrigen, Object estado, Object valorCongelado,
-                                  Object politicaCancelacion, Object fechaCreacion) { }
+    static ReservaResumenResponse aResumen(Reserva reserva) {
+        return new ReservaResumenResponse(reserva.getId().valor().toString(),
+                reserva.getTitular().nombreCompleto().obtenerNombreCompleto(),
+                reserva.getApartamentoId().valor().toString(), reserva.getEstancia().fechaEntrada(),
+                reserva.getEstancia().fechaSalida(), reserva.getEstado().name(),
+                reserva.getValorCongelado().valor());
+    }
 }
