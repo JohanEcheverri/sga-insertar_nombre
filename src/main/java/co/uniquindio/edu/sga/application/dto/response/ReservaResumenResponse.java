@@ -5,7 +5,8 @@ import java.time.LocalDate;
 
 /** Vista breve de una reserva para listados e historiales.
  * @param codigo Identificador de la reserva.
- * @param nombreTitular Nombre completo del titular.
+ * @param nombreTitular Nombres del titular.
+ * @param apellidoTitular Apellidos del titular.
  * @param apartamentoId Identificador del apartamento reservado.
  * @param fechaEntrada Fecha de llegada.
  * @param fechaSalida Fecha de salida.
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 public record ReservaResumenResponse(
         String codigo,
         String nombreTitular,
+        String apellidoTitular,
         String apartamentoId,
         LocalDate fechaEntrada,
         LocalDate fechaSalida,

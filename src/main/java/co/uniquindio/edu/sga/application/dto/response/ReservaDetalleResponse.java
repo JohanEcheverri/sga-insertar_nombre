@@ -16,7 +16,7 @@ import java.util.List;
  * @param correoTitular Correo de contacto del titular.
  * @param telefonoTitular Teléfono de contacto del titular.
  * @param documentoTitular Documento de identidad del titular.
- * @param ocupantes Resumen de las personas incluidas en la reserva.
+ * @param ocupantes Personas incluidas en la reserva, con nombres y apellidos separados.
  * @param fechaEntrada Fecha de llegada.
  * @param fechaSalida Fecha de salida.
  * @param identificadorExterno Referencia opcional del canal externo.
@@ -39,7 +39,7 @@ public record ReservaDetalleResponse(
         String correoTitular,
         String telefonoTitular,
         String documentoTitular,
-        List<String> ocupantes,
+        List<OcupanteResponse> ocupantes,
         LocalDate fechaEntrada,
         LocalDate fechaSalida,
         String identificadorExterno,
