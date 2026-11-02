@@ -1,23 +1,63 @@
 package co.uniquindio.edu.sga.application.usecase;
 
-import co.uniquindio.edu.sga.domain.entity.Alojamiento;
-import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
-import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
+import co.uniquindio.edu.sga.application.command.*;
+import co.uniquindio.edu.sga.application.exception.*;
+import co.uniquindio.edu.sga.application.port.*;
+import co.uniquindio.edu.sga.application.result.*;
+import co.uniquindio.edu.sga.application.security.Solicitante;
+import co.uniquindio.edu.sga.application.support.*;
+import co.uniquindio.edu.sga.domain.entity.*;
+import co.uniquindio.edu.sga.domain.exception.*;
+import co.uniquindio.edu.sga.domain.repository.*;
+import co.uniquindio.edu.sga.domain.service.*;
+import co.uniquindio.edu.sga.domain.valueobject.*;
 
-/** Actualiza la política vigente con una versión nueva sin alterar reservas existentes. */
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * PUT /api/politicas-cancelacion — Crea una NUEVA versión de la política (v1 → v2 …). Las reservas
+ * existentes conservan la versión congelada (RN-13, RN-22). Sirve también para definir la inicial.
+ */
 public class ActualizarPoliticaCancelacionUseCase {
-    public PoliticaCancelacion ejecutar(Alojamiento alojamiento, PoliticaCancelacion nuevaPolitica) {
-        if (alojamiento == null) {
-            throw new ReglaDominioException("El alojamiento es obligatorio.");
-        }
-        if (nuevaPolitica == null) {
-            throw new ReglaDominioException("La nueva política de cancelación es obligatoria.");
-        }
-        if (alojamiento.getPoliticaVigente().version().equals(nuevaPolitica.version())) {
-            throw new ReglaDominioException("La política actualizada debe tener una versión nueva.");
-        }
 
-        alojamiento.cambiarPoliticaVigente(nuevaPolitica);
-        return alojamiento.getPoliticaVigente();
+    public record Tramo(int diasAntelacionMinimos, double porcentajeRetencion) { }
+
+    public record Command(List<Tramo> tramos, double porcentajeRetencionNoShow) { }
+
+    public record Result(String versionAnterior, String versionNueva) { }
+
+    private final AlojamientoRepository alojamientoRepository;
+
+    public ActualizarPoliticaCancelacionUseCase(AlojamientoRepository alojamientoRepository) {
+        this.alojamientoRepository = alojamientoRepository;
+    }
+
+    public Result ejecutar(Command cmd) {
+        Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
+        String anterior = alojamiento.getPoliticaVigente().version().valor();
+        String nueva = "v" + (numero(anterior) + 1);
+
+        List<TramoCancelacion> tramos = new ArrayList<>();
+        for (Tramo t : cmd.tramos()) tramos.add(new TramoCancelacion(t.diasAntelacionMinimos(), t.porcentajeRetencion()));
+        // L-10: al menos 2 tramos de antelación
+        if (tramos.size() < 2) {
+            throw new ReglaDominioException("La política debe tener al menos dos tramos de antelación.");
+        }
+        alojamiento.cambiarPoliticaVigente(
+                new PoliticaCancelacion(new VersionPolitica(nueva), tramos, cmd.porcentajeRetencionNoShow()));
+        alojamientoRepository.guardar(alojamiento);
+        return new Result(anterior, nueva);
+    }
+
+    private static int numero(String version) {
+        try {
+            return Integer.parseInt(version.replaceAll("\\D", ""));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

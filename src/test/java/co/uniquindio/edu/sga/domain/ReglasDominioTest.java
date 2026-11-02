@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReglasDominioTest {
 
     // =====================================================================
-    // Fábricas de apoyo
+    // Fábricas de apoyo|
     // =====================================================================
 
     private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 28, 10, 0);
