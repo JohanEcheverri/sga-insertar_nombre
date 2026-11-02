@@ -23,9 +23,10 @@ public class CotizarEstanciaUseCase {
 
     public record Command(UUID apartamentoId, LocalDate entrada, LocalDate salida, List<LocalDate> fechasNacimiento) { }
 
-    public record Linea(LocalDate noche, String temporada, double tarifa, int ocupantesFacturables, double subtotal) { }
+    public record Linea(LocalDate noche, String temporada, BigDecimal tarifa, int ocupantesFacturables,
+                        BigDecimal subtotal) { }
 
-    public record Result(UUID apartamentoId, int ocupantesFacturables, double total, List<Linea> lineas) { }
+    public record Result(UUID apartamentoId, int ocupantesFacturables, BigDecimal total, List<Linea> lineas) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final CotizadorEstanciaService cotizador;
@@ -46,6 +47,6 @@ public class CotizarEstanciaUseCase {
         var cot = cotizador.cotizar(alojamiento, apartamento.getId(), new Estancia(cmd.entrada(), cmd.salida()), fechas);
         return new Result(cmd.apartamentoId(), cot.ocupantesFacturables(), cot.total().valor(),
                 cot.lineas().stream().map(l -> new Linea(l.noche(), l.temporada(), l.tarifa().valor(),
-                        l.ocupantesFacturables(), l.subtotal().doubleValue())).toList());
+                        l.ocupantesFacturables(), l.subtotal())).toList());
     }
 }

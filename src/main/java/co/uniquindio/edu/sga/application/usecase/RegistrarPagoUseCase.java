@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /** POST /api/reservas/{codigo}/folio/pagos — RN-15: todo pago lleva medio y fecha. Admite pagos parciales y medios distintos. */
 public class RegistrarPagoUseCase {
 
-    public record Command(UUID reservaId, MedioPago medio, double monto, String referencia) { }
+    public record Command(UUID reservaId, MedioPago medio, BigDecimal monto, String referencia) { }
 
     private final FolioRepository folioRepository;
     private final Clock clock;
@@ -33,7 +33,7 @@ public class RegistrarPagoUseCase {
 
     public FolioDetalle ejecutar(Command cmd) {
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
-        folio.registrarPago(new Pago(new Dinero(cmd.monto()), cmd.medio(), cmd.referencia(), LocalDateTime.now(clock)));
+        folio.registrarPago(new Pago(Dinero.de(cmd.monto()), cmd.medio(), cmd.referencia(), LocalDateTime.now(clock)));
         folioRepository.guardar(folio);
         return FolioDetalle.de(folio);
     }

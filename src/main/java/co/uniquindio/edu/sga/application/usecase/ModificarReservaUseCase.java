@@ -28,7 +28,7 @@ public class ModificarReservaUseCase {
     public record Command(UUID reservaId, UUID apartamentoId, LocalDate entrada, LocalDate salida,
                           List<OcupanteDatos> ocupantes, LocalTime horaEstimadaLlegada) { }
 
-    public record Result(UUID reservaId, double valorAnterior, double valorNuevo, BigDecimal diferencia) { }
+    public record Result(UUID reservaId, BigDecimal valorAnterior, BigDecimal valorNuevo, BigDecimal diferencia) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -73,21 +73,21 @@ public class ModificarReservaUseCase {
                 .collect(Collectors.toCollection(ArrayList::new));
         Dinero nuevoValor = cotizador.cotizar(alojamiento, apartamento.getId(), estancia, fechas).total();
 
-        BigDecimal anterior = BigDecimal.valueOf(reserva.getValorCongelado().valor());
-        BigDecimal diferencia = BigDecimal.valueOf(nuevoValor.valor()).subtract(anterior);
+        BigDecimal anterior = reserva.getValorCongelado().valor();
+        BigDecimal diferencia = nuevoValor.valor().subtract(anterior);
         LocalDateTime ahora = LocalDateTime.now(clock);
 
         reserva.modificar(aptoId, ocupantes, estancia, hora, nuevoValor, ahora);     // valida estado y RN-04
 
         if (diferencia.signum() > 0) {
             folio.registrarCargo(new Cargo(TipoCargo.AJUSTE_MODIFICACION, "Ajuste por modificación de la reserva",
-                    new Dinero(diferencia.doubleValue()), ahora));
+                    new Dinero(diferencia), ahora));
         } else if (diferencia.signum() < 0) {
             folio.registrarCargo(new Cargo(TipoCargo.AJUSTE_A_FAVOR, "Ajuste a favor por modificación de la reserva",
-                    new Dinero(diferencia.negate().doubleValue()), ahora));
+                    new Dinero(diferencia.negate()), ahora));
         }
         reservaRepository.guardar(reserva);
         folioRepository.guardar(folio);
-        return new Result(reserva.getId().valor(), anterior.doubleValue(), nuevoValor.valor(), diferencia);
+        return new Result(reserva.getId().valor(), anterior, nuevoValor.valor(), diferencia);
     }
 }

@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 public class ConsultarDisponibilidadApartamentoPorFechaUseCase {
 
     public record Command(LocalDate entrada, LocalDate salida, List<LocalDate> fechasNacimiento,
-                          Double precioMinimo, Double precioMaximo, int pagina) { }
+                          BigDecimal precioMinimo, BigDecimal precioMaximo, int pagina) { }
 
-    public record ApartamentoDisponible(ApartamentoDetalle apartamento, double valorEstimado) { }
+    public record ApartamentoDisponible(ApartamentoDetalle apartamento, BigDecimal valorEstimado) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final DisponibilidadApartamentoService disponibilidad;
@@ -50,12 +50,12 @@ public class ConsultarDisponibilidadApartamentoPorFechaUseCase {
         List<ApartamentoDisponible> resultado = new ArrayList<>();
         for (Apartamento a : alojamiento.apartamentosActivos()) {
             if (!disponibilidad.estaDisponible(a, estancia, fechas.size(), alojamiento.getConfiguracion())) continue;
-            double valor = cotizador.cotizar(alojamiento, a.getId(), estancia, fechas).total().valor();
-            if (cmd.precioMinimo() != null && valor < cmd.precioMinimo()) continue;
-            if (cmd.precioMaximo() != null && valor > cmd.precioMaximo()) continue;
+            BigDecimal valor = cotizador.cotizar(alojamiento, a.getId(), estancia, fechas).total().valor();
+            if (cmd.precioMinimo() != null && valor.compareTo(cmd.precioMinimo()) < 0) continue;
+            if (cmd.precioMaximo() != null && valor.compareTo(cmd.precioMaximo()) > 0) continue;
             resultado.add(new ApartamentoDisponible(ApartamentoDetalle.de(a), valor));
         }
-        resultado.sort(Comparator.comparingDouble(ApartamentoDisponible::valorEstimado));
+        resultado.sort(Comparator.comparing(ApartamentoDisponible::valorEstimado));
         return Pagina.de(resultado, cmd.pagina());
     }
 }

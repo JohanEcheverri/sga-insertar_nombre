@@ -73,7 +73,7 @@ class ReglasDominioTest {
         ocupantes.add(ocupante());
         return Reserva.crear(ReservaId.generar(), FolioId.generar(), ApartamentoId.generar(),
                 titular(), ocupantes, estancia(entrada, salida), "EXT-1",
-                LocalTime.of(15, 0), CanalOrigen.PORTAL, new Dinero(240000),
+                LocalTime.of(15, 0), CanalOrigen.PORTAL, Dinero.pesos(240000),
                 politica(), AHORA);
     }
 
@@ -93,10 +93,10 @@ class ReglasDominioTest {
         return apartamento(identificador, aforo, EstadoOperativo.PREPARADO, true);
     }
 
-    private static List<Tarifa> tarifas(TemporadaId temporadaId, double precio, Apartamento... aptos) {
+    private static List<Tarifa> tarifas(TemporadaId temporadaId, long precio, Apartamento... aptos) {
         List<Tarifa> lista = new ArrayList<>();
         for (Apartamento a : aptos) {
-            lista.add(new Tarifa(temporadaId, a.getId(), new Dinero(precio)));
+            lista.add(new Tarifa(temporadaId, a.getId(), Dinero.pesos(precio)));
         }
         return lista;
     }
@@ -106,7 +106,7 @@ class ReglasDominioTest {
         return Temporada.crearBase(id, tarifas(id, 80000, aptos));
     }
 
-    private static Temporada especial(String nombre, LocalDate ini, LocalDate fin, double precio,
+    private static Temporada especial(String nombre, LocalDate ini, LocalDate fin, long precio,
                                       Apartamento... aptos) {
         TemporadaId id = TemporadaId.generar();
         return Temporada.crear(id, nombre, new RangoFechas(ini, fin), tarifas(id, precio, aptos));
@@ -124,12 +124,12 @@ class ReglasDominioTest {
         return new AutorizacionCierre("admin", "Cierre autorizado", AHORA);
     }
 
-    private static Cargo cargo(double monto) {
-        return new Cargo(TipoCargo.ALOJAMIENTO, "Alojamiento", new Dinero(monto), AHORA);
+    private static Cargo cargo(long monto) {
+        return new Cargo(TipoCargo.ALOJAMIENTO, "Alojamiento", Dinero.pesos(monto), AHORA);
     }
 
-    private static Pago pago(double monto) {
-        return new Pago(new Dinero(monto), MedioPago.EFECTIVO, "REF-1", AHORA);
+    private static Pago pago(long monto) {
+        return new Pago(Dinero.pesos(monto), MedioPago.EFECTIVO, "REF-1", AHORA);
     }
 
     private static Folio folio() {
@@ -145,12 +145,13 @@ class ReglasDominioTest {
     class ObjetosDeValor {
 
         @Test
-        void dineroRechazaCeroNegativoYNoFinito() {
-            assertThrows(ReglaDominioException.class, () -> new Dinero(0));
-            assertThrows(ReglaDominioException.class, () -> new Dinero(-1));
-            assertThrows(ReglaDominioException.class, () -> new Dinero(Double.NaN));
-            assertThrows(ReglaDominioException.class, () -> new Dinero(Double.POSITIVE_INFINITY));
-            assertEquals(1000.0, new Dinero(1000).valor());
+        void dineroPermiteCeroRechazaNegativosYRedondeaPesos() {
+            assertEquals(BigDecimal.ZERO, Dinero.CERO.valor());
+            assertFalse(Dinero.CERO.esPositivo());
+            assertThrows(ReglaDominioException.class, () -> Dinero.de(new BigDecimal("-1")));
+            assertThrows(ReglaDominioException.class, () -> Dinero.de(null));
+            assertEquals(new BigDecimal("1000"), Dinero.pesos(1000).valor());
+            assertEquals(new BigDecimal("2"), Dinero.de(new BigDecimal("1.5")).valor());
         }
 
         @Test
@@ -272,14 +273,17 @@ class ReglasDominioTest {
         @Test
         void pagoYCargoValidanCamposObligatorios() {
             assertThrows(ReglaDominioException.class, () -> new Pago(null, MedioPago.EFECTIVO, null, AHORA));
-            assertThrows(ReglaDominioException.class, () -> new Pago(new Dinero(1), null, null, AHORA));
-            assertThrows(ReglaDominioException.class, () -> new Pago(new Dinero(1), MedioPago.EFECTIVO, null, null));
-            assertNull(new Pago(new Dinero(1), MedioPago.EFECTIVO, "   ", AHORA).referencia());
+            assertThrows(ReglaDominioException.class, () -> new Pago(Dinero.pesos(1), null, null, AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Pago(Dinero.pesos(1), MedioPago.EFECTIVO, null, null));
+            assertNull(new Pago(Dinero.pesos(1), MedioPago.EFECTIVO, "   ", AHORA).referencia());
+            assertThrows(ReglaDominioException.class, () -> new Pago(Dinero.CERO, MedioPago.EFECTIVO, null, AHORA));
 
-            assertThrows(ReglaDominioException.class, () -> new Cargo(null, "c", new Dinero(1), AHORA));
-            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, " ", new Dinero(1), AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Cargo(null, "c", Dinero.pesos(1), AHORA));
+            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, " ", Dinero.pesos(1), AHORA));
             assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", null, AHORA));
-            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", new Dinero(1), null));
+            assertThrows(ReglaDominioException.class, () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", Dinero.pesos(1), null));
+            assertThrows(ReglaDominioException.class,
+                    () -> new Cargo(TipoCargo.ALOJAMIENTO, "c", Dinero.CERO, AHORA));
         }
     }
 
@@ -352,7 +356,7 @@ class ReglasDominioTest {
         void nuevaReservaNaceEnPendienteConValorYPoliticaCongelados() {
             Reserva r = reservaValida();
             assertEquals(EstadoReserva.PENDIENTE, r.getEstado());
-            assertEquals(240000.0, r.getValorCongelado().valor());
+            assertEquals(new BigDecimal("240000"), r.getValorCongelado().valor());
             assertEquals("v1", r.getPoliticaCancelacion().version().valor());
         }
 
@@ -373,21 +377,21 @@ class ReglasDominioTest {
             Estancia e = estancia(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
             assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
                     FolioId.generar(), ApartamentoId.generar(), titular(), new ArrayList<>(), e, null,
-                    LocalTime.of(15, 0), CanalOrigen.PORTAL, new Dinero(1), politica(), AHORA));
+                    LocalTime.of(15, 0), CanalOrigen.PORTAL, Dinero.pesos(1), politica(), AHORA));
             List<Ocupante> uno = new ArrayList<>();
             uno.add(ocupante());
             assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
                     FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
-                    null, CanalOrigen.PORTAL, new Dinero(1), politica(), AHORA));
+                    null, CanalOrigen.PORTAL, Dinero.pesos(1), politica(), AHORA));
             assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
                     FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
-                    LocalTime.of(15, 0), null, new Dinero(1), politica(), AHORA));
+                    LocalTime.of(15, 0), null, Dinero.pesos(1), politica(), AHORA));
             assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
                     FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
                     LocalTime.of(15, 0), CanalOrigen.PORTAL, null, politica(), AHORA));
             assertThrows(ReglaDominioException.class, () -> Reserva.crear(ReservaId.generar(),
                     FolioId.generar(), ApartamentoId.generar(), titular(), uno, e, null,
-                    LocalTime.of(15, 0), CanalOrigen.PORTAL, new Dinero(1), null, AHORA));
+                    LocalTime.of(15, 0), CanalOrigen.PORTAL, Dinero.pesos(1), null, AHORA));
         }
 
         @Test
@@ -396,7 +400,7 @@ class ReglasDominioTest {
             uno.add(ocupante());
             Reserva r = Reserva.crear(ReservaId.generar(), FolioId.generar(), ApartamentoId.generar(),
                     titular(), uno, estancia(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12)),
-                    "   ", LocalTime.of(15, 0), CanalOrigen.DIRECTO, new Dinero(1), politica(), AHORA);
+                    "   ", LocalTime.of(15, 0), CanalOrigen.DIRECTO, Dinero.pesos(1), politica(), AHORA);
             assertNull(r.getIdentificadorExterno());
         }
 
@@ -669,24 +673,26 @@ class ReglasDominioTest {
 
         @Test
         void rn05TarifaCalculaValorDeUnaNochePorOcupantesFacturables() {
-            Tarifa t = new Tarifa(TemporadaId.generar(), ApartamentoId.generar(), new Dinero(80000));
+            Tarifa t = new Tarifa(TemporadaId.generar(), ApartamentoId.generar(), Dinero.pesos(80000));
             assertEquals(0, new BigDecimal("240000").compareTo(t.calcularValorNoche(3)));
         }
 
         @Test
         void rn05NoSeCalculaConCeroOcupantesFacturables() {
-            Tarifa t = new Tarifa(TemporadaId.generar(), ApartamentoId.generar(), new Dinero(80000));
+            Tarifa t = new Tarifa(TemporadaId.generar(), ApartamentoId.generar(), Dinero.pesos(80000));
             assertThrows(ReglaDominioException.class, () -> t.calcularValorNoche(0));
         }
 
         @Test
         void tarifaExigeTemporadaApartamentoYPrecio() {
             assertThrows(ReglaDominioException.class,
-                    () -> new Tarifa(null, ApartamentoId.generar(), new Dinero(1)));
+                    () -> new Tarifa(null, ApartamentoId.generar(), Dinero.pesos(1)));
             assertThrows(ReglaDominioException.class,
-                    () -> new Tarifa(TemporadaId.generar(), null, new Dinero(1)));
+                    () -> new Tarifa(TemporadaId.generar(), null, Dinero.pesos(1)));
             assertThrows(ReglaDominioException.class,
                     () -> new Tarifa(TemporadaId.generar(), ApartamentoId.generar(), null));
+            assertThrows(ReglaDominioException.class,
+                    () -> new Tarifa(TemporadaId.generar(), ApartamentoId.generar(), Dinero.CERO));
         }
 
         @Test
@@ -722,9 +728,9 @@ class ReglasDominioTest {
             as.add(a);
             Alojamiento al = alojamiento(as, ts);
 
-            assertEquals(80000.0, al.tarifaAplicable(a.getId(), LocalDate.of(2027, 3, 1))
+            assertEquals(new BigDecimal("80000"), al.tarifaAplicable(a.getId(), LocalDate.of(2027, 3, 1))
                     .precioPorNochePorOcupante().valor());
-            assertEquals(120000.0, al.tarifaAplicable(a.getId(), LocalDate.of(2027, 7, 12))
+            assertEquals(new BigDecimal("120000"), al.tarifaAplicable(a.getId(), LocalDate.of(2027, 7, 12))
                     .precioPorNochePorOcupante().valor());
         }
 
@@ -839,7 +845,7 @@ class ReglasDominioTest {
 
             // con su tarifa inicial en cada temporada, sí puede agregarse
             List<Tarifa> iniciales = new ArrayList<>();
-            iniciales.add(new Tarifa(ts.get(0).getId(), nuevo.getId(), new Dinero(80000)));
+            iniciales.add(new Tarifa(ts.get(0).getId(), nuevo.getId(), Dinero.pesos(80000)));
             al.agregarApartamento(nuevo, iniciales);
             assertEquals(2, al.getApartamentos().size());
         }
@@ -865,7 +871,7 @@ class ReglasDominioTest {
             List<Apartamento> as = new ArrayList<>();
             as.add(a1);
             Alojamiento al = alojamiento(as, ts);
-            Tarifa ajena = new Tarifa(base.getId(), ApartamentoId.generar(), new Dinero(1000));
+            Tarifa ajena = new Tarifa(base.getId(), ApartamentoId.generar(), Dinero.pesos(1000));
             assertThrows(ReglaDominioException.class, () -> al.establecerTarifa(ajena));
         }
 
@@ -992,8 +998,8 @@ class ReglasDominioTest {
         void rn15AdmitePagosParcialesConMediosDistintos() {
             Folio f = folio();
             f.registrarCargo(cargo(100000));
-            f.registrarPago(new Pago(new Dinero(40000), MedioPago.EFECTIVO, null, AHORA));
-            f.registrarPago(new Pago(new Dinero(60000), MedioPago.TRANSFERENCIA, "TRX-9", AHORA));
+            f.registrarPago(new Pago(Dinero.pesos(40000), MedioPago.EFECTIVO, null, AHORA));
+            f.registrarPago(new Pago(Dinero.pesos(60000), MedioPago.TRANSFERENCIA, "TRX-9", AHORA));
             assertFalse(f.tieneSaldoPendiente());
             assertEquals(2, f.getPagos().size());
         }

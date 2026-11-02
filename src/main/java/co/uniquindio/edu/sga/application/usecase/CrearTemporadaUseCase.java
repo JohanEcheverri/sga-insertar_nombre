@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class CrearTemporadaUseCase {
 
-    public record Command(String nombre, LocalDate desde, LocalDate hasta, Map<UUID, Double> tarifasPorApartamento) { }
+    public record Command(String nombre, LocalDate desde, LocalDate hasta, Map<UUID, BigDecimal> tarifasPorApartamento) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -46,7 +46,7 @@ public class CrearTemporadaUseCase {
             }
         } else {
             cmd.tarifasPorApartamento().forEach((apto, precio) ->
-                    tarifas.add(new Tarifa(id, ApartamentoId.of(apto), new Dinero(precio))));
+                    tarifas.add(new Tarifa(id, ApartamentoId.of(apto), Dinero.de(precio))));
         }
         Temporada temporada = Temporada.crear(id, cmd.nombre(),
                 new RangoFechas(cmd.desde(), cmd.hasta().plusDays(1)), tarifas);

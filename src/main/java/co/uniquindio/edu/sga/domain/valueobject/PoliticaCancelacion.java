@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public record PoliticaCancelacion(VersionPolitica version,
         // si cancela con más de 48 horas de anticipación, la retención es del 10%, de lo contrario es del 50%.
         double porcentajeRetencion = (horasAntelacion >= 48) ? 0.10 : 0.50;
 
-        return valorBase.multiplicar(porcentajeRetencion);
+        return valorBase.multiplicar(BigDecimal.valueOf(porcentajeRetencion));
     }
 
     /**
@@ -57,7 +58,7 @@ public record PoliticaCancelacion(VersionPolitica version,
         //El no-show aplica una retención del 100%.
         double porcentajeNoShow = 1.0;
 
-        return valorBase.multiplicar(porcentajeNoShow);
+        return valorBase.multiplicar(BigDecimal.valueOf(porcentajeNoShow));
     }
 
     /** RN-13 - La retención de cancelación se determina según la antelación con que se cancela. */

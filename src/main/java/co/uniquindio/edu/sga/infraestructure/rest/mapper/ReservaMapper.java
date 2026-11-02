@@ -22,7 +22,7 @@ public interface ReservaMapper {
                 ocupantes, reserva.getEstancia().fechaEntrada(), reserva.getEstancia().fechaSalida(),
                 reserva.getIdentificadorExterno(), reserva.getHoraEstimadaLlegada(),
                 reserva.getCanalOrigen().name(), reserva.getEstado().name(),
-                reserva.getValorCongelado().valor().doubleValue(),
+                reserva.getValorCongelado().valor(),
                 reserva.getPoliticaCancelacion().version().valor(), reserva.getFechaCreacion());
     }
 
@@ -31,6 +31,6 @@ public interface ReservaMapper {
                 reserva.getTitular().nombreCompleto().obtenerNombreCompleto(),
                 reserva.getApartamentoId().valor().toString(), reserva.getEstancia().fechaEntrada(),
                 reserva.getEstancia().fechaSalida(), reserva.getEstado().name(),
-                reserva.getValorCongelado().valor().doubleValue());
+                reserva.getValorCongelado().valor());
     }
 }

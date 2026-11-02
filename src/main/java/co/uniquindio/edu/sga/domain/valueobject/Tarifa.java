@@ -16,11 +16,9 @@ public record Tarifa(TemporadaId temporadaId, ApartamentoId apartamentoId,
         if (precioPorNochePorOcupante == null) {
             throw new ReglaDominioException("El precio por noche y ocupante es obligatorio.");
         }
-    }
-
-    /** Método auxiliar para que el apartamento pueda filtrar por el identificador de la temporada. */
-    public Object getTemporadaId() {
-        return temporadaId;
+        if (!precioPorNochePorOcupante.esPositivo()) {
+            throw new ReglaDominioException("El precio por noche y ocupante debe ser mayor a cero.");
+        }
     }
 
     public BigDecimal calcularValorNoche(int ocupantesFacturables) {

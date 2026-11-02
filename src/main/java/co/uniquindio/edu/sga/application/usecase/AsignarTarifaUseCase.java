@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /** POST /api/tarifas — Asigna o actualiza la tarifa de un apartamento en una temporada. Las reservas existentes no cambian (RN-22). */
 public class AsignarTarifaUseCase {
 
-    public record Command(UUID temporadaId, UUID apartamentoId, double precioPorNochePorOcupante) { }
+    public record Command(UUID temporadaId, UUID apartamentoId, BigDecimal precioPorNochePorOcupante) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -34,7 +34,7 @@ public class AsignarTarifaUseCase {
         Temporada temporada = Cargas.temporada(alojamiento, cmd.temporadaId());
         Cargas.apartamento(alojamiento, cmd.apartamentoId());
         alojamiento.establecerTarifa(new Tarifa(temporada.getId(), ApartamentoId.of(cmd.apartamentoId()),
-                new Dinero(cmd.precioPorNochePorOcupante())));
+                Dinero.de(cmd.precioPorNochePorOcupante())));
         alojamientoRepository.guardar(alojamiento);
         return TemporadaDetalle.de(temporada);
     }

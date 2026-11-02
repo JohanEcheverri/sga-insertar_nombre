@@ -26,7 +26,7 @@ public class CrearApartamentoUseCase {
 
     /** tarifasPorTemporada: id de temporada → precio por ocupante facturable por noche. */
     public record Command(String identificadorUnico, String descripcion, int capacidad,
-                          List<DormitorioDatos> dormitorios, Map<UUID, Double> tarifasPorTemporada) { }
+                          List<DormitorioDatos> dormitorios, Map<UUID, BigDecimal> tarifasPorTemporada) { }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -41,9 +41,9 @@ public class CrearApartamentoUseCase {
                 ApartamentoId.generar(), cmd.identificadorUnico(), true);
 
         List<Tarifa> tarifas = new ArrayList<>();
-        Map<UUID, Double> precios = cmd.tarifasPorTemporada() == null ? Map.of() : cmd.tarifasPorTemporada();
+        Map<UUID, BigDecimal> precios = cmd.tarifasPorTemporada() == null ? Map.of() : cmd.tarifasPorTemporada();
         precios.forEach((temporadaId, precio) ->
-                tarifas.add(new Tarifa(TemporadaId.of(temporadaId), apartamento.getId(), new Dinero(precio))));
+                tarifas.add(new Tarifa(TemporadaId.of(temporadaId), apartamento.getId(), Dinero.de(precio))));
 
         alojamiento.agregarApartamento(apartamento, tarifas);
         alojamientoRepository.guardar(alojamiento);

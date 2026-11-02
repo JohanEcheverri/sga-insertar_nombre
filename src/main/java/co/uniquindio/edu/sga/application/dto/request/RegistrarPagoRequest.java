@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.application.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /** Solicitud para registrar un pago en el folio de una reserva.
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
  */
 public record RegistrarPagoRequest(
         @NotNull(message = "El monto del pago es obligatorio") @Positive(message = "El monto debe ser positivo")
-        Double monto,
+        BigDecimal monto,
 
         @NotBlank(message = "El medio de pago es obligatorio")
         String medio,

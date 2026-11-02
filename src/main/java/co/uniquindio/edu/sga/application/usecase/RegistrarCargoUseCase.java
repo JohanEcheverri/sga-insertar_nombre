@@ -27,7 +27,7 @@ public class RegistrarCargoUseCase {
     private static final Set<TipoCargo> MANUALES =
             Set.of(TipoCargo.SERVICIO_ADICIONAL, TipoCargo.AJUSTE_MODIFICACION, TipoCargo.AJUSTE_A_FAVOR);
 
-    public record Command(UUID reservaId, TipoCargo tipo, String concepto, double monto) { }
+    public record Command(UUID reservaId, TipoCargo tipo, String concepto, BigDecimal monto) { }
 
     private final FolioRepository folioRepository;
     private final Clock clock;
@@ -43,7 +43,7 @@ public class RegistrarCargoUseCase {
                     + " lo genera el sistema; solo se registran manualmente: " + MANUALES);
         }
         Folio folio = Cargas.folioDeReserva(folioRepository, cmd.reservaId());
-        folio.registrarCargo(new Cargo(cmd.tipo(), cmd.concepto(), new Dinero(cmd.monto()), LocalDateTime.now(clock)));
+        folio.registrarCargo(new Cargo(cmd.tipo(), cmd.concepto(), Dinero.de(cmd.monto()), LocalDateTime.now(clock)));
         folioRepository.guardar(folio);
         return FolioDetalle.de(folio);
     }

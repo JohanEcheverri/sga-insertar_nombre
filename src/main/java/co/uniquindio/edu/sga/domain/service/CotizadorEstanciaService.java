@@ -49,7 +49,7 @@ public class CotizadorEstanciaService {
         }
         // 3.4 - el redondeo al peso se aplica una sola vez, al final, nunca noche por noche.
         BigDecimal redondeado = total.setScale(0, RoundingMode.HALF_UP);
-        return new Cotizacion(List.copyOf(lineas), facturables, new Dinero(redondeado.doubleValue()));
+        return new Cotizacion(List.copyOf(lineas), facturables, new Dinero(redondeado));
     }
 
     /** RN-06 - Facturable si a la fecha de entrada alcanza el umbral. */

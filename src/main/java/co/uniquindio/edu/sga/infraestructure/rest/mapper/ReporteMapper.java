@@ -10,7 +10,7 @@ import java.util.Map;
 public interface ReporteMapper {
     static IndicadoresConsolidadosResponse aIndicadoresConsolidados(Reporte reporte) {
         return new IndicadoresConsolidadosResponse(reporte.periodo().fechaInicio(), reporte.periodo().fechaFin(),
-                valor(reporte, "ingresosTotales"), valor(reporte, "ocupacionGlobal"),
+                valorMonetario(reporte, "ingresosTotales"), valor(reporte, "ocupacionGlobal"),
                 (long) valor(reporte, "reservasTotales"), (long) valor(reporte, "reservasActivas"),
                 (long) valor(reporte, "reservasCanceladas"));
     }
@@ -23,5 +23,9 @@ public interface ReporteMapper {
 
     private static double valor(Reporte reporte, String indicador) {
         return reporte.indicadores().getOrDefault(indicador, java.math.BigDecimal.ZERO).doubleValue();
+    }
+
+    private static java.math.BigDecimal valorMonetario(Reporte reporte, String indicador) {
+        return reporte.indicadores().getOrDefault(indicador, java.math.BigDecimal.ZERO);
     }
 }

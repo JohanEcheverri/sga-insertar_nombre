@@ -8,7 +8,7 @@ import java.math.BigDecimal; import java.time.*; import java.util.*;
 public record TemporadaDetalle(UUID id, String nombre, LocalDate desde, LocalDate hasta, boolean base,
                                List<TarifaDetalle> tarifas) {
 
-    public record TarifaDetalle(UUID apartamentoId, double precioPorNochePorOcupante) { }
+    public record TarifaDetalle(UUID apartamentoId, BigDecimal precioPorNochePorOcupante) { }
 
     public static TemporadaDetalle de(Temporada t) {
         return new TemporadaDetalle(t.getId().valor(), t.getNombre(),

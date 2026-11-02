@@ -43,7 +43,7 @@ public record ConfiguracionAlojamiento(
 
     /** RN-26 - Anticipo exigido para confirmar: porcentaje del valor total, redondeado al peso (COP sin decimales). */
     public BigDecimal anticipoPara(Dinero valorTotal) {
-        return BigDecimal.valueOf(valorTotal.valor())
+        return valorTotal.valor()
                 .multiply(BigDecimal.valueOf(porcentajeAnticipo))
                 .setScale(0, RoundingMode.HALF_UP);
     }

@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.application.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /** Representación de un cargo registrado en un folio.
@@ -13,5 +14,5 @@ import java.time.LocalDateTime;
 public record CargoResponse(
         String tipoCargo,
         String concepto,
-        double monto,
+        BigDecimal monto,
         LocalDateTime fechaRegistro) { }

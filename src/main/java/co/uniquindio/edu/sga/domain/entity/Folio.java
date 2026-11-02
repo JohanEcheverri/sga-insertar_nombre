@@ -80,14 +80,14 @@ public class Folio {
     public BigDecimal totalCargos() {
         return cargos.stream()
                 .map(c -> {
-                    BigDecimal monto = BigDecimal.valueOf(c.monto().valor());
+                    BigDecimal monto = c.monto().valor();
                     return c.tipoCargo().esCredito() ? monto.negate() : monto;
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal totalPagos() {
-        return pagos.stream().map(p -> BigDecimal.valueOf(p.monto().valor()))
+        return pagos.stream().map(p -> p.monto().valor())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

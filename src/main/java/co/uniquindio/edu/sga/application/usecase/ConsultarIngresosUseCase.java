@@ -40,7 +40,7 @@ public class ConsultarIngresosUseCase {
         for (Folio folio : folioRepository.buscarConPagosEntre(ini, fin)) {
             for (Pago p : folio.getPagos()) {
                 if (p.fechaRegistro().isBefore(ini) || !p.fechaRegistro().isBefore(fin)) continue;
-                BigDecimal monto = BigDecimal.valueOf(p.monto().valor());
+                BigDecimal monto = p.monto().valor();
                 porMedio.merge(p.medio(), monto, BigDecimal::add);
                 total = total.add(monto);
             }

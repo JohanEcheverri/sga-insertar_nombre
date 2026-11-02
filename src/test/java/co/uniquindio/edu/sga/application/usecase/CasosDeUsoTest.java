@@ -21,6 +21,7 @@ import co.uniquindio.edu.sga.domain.valueobject.*;
 import co.uniquindio.edu.sga.infraestructure.persistence.inmemory.*;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -112,10 +113,10 @@ class CasosDeUsoTest {
                 EstadoOperativo.PREPARADO, ApartamentoId.generar(), id, true);
     }
 
-    private List<Tarifa> tarifas(TemporadaId t, double precio101, double precio201) {
+    private List<Tarifa> tarifas(TemporadaId t, long precio101, long precio201) {
         List<Tarifa> l = new ArrayList<>();
-        l.add(new Tarifa(t, apto101.getId(), new Dinero(precio101)));
-        l.add(new Tarifa(t, apto201.getId(), new Dinero(precio201)));
+        l.add(new Tarifa(t, apto101.getId(), Dinero.pesos(precio101)));
+        l.add(new Tarifa(t, apto201.getId(), Dinero.pesos(precio201)));
         return l;
     }
 
@@ -146,9 +147,9 @@ class CasosDeUsoTest {
         return crear101(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
     }
 
-    private void pagar(UUID reservaId, double monto) {
+    private void pagar(UUID reservaId, long monto) {
         new RegistrarPagoUseCase(folios, reloj).ejecutar(
-                new RegistrarPagoUseCase.Command(reservaId, MedioPago.TRANSFERENCIA, monto, "TRX"));
+                new RegistrarPagoUseCase.Command(reservaId, MedioPago.TRANSFERENCIA, BigDecimal.valueOf(monto), "TRX"));
     }
 
     private void confirmar(UUID reservaId) {
@@ -180,16 +181,16 @@ class CasosDeUsoTest {
         assertEquals(2, r.lineas().size());
         assertEquals("Base", r.lineas().get(0).temporada());
         assertEquals("Fiestas Patronales", r.lineas().get(1).temporada());
-        assertEquals(200000.0, r.total(), 0.001);          // 80.000 + 120.000
+        assertEquals(new BigDecimal("200000"), r.total());          // 80.000 + 120.000
     }
 
     @Test
     void ocupantesMenoresAlUmbralCuentanParaCapacidadPeroNoCobran() {
         var r = crear101(LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
-        assertEquals(160000.0, r.valorTotal(), 0.001);     // 1 facturable × 80.000 × 2 noches
-        assertEquals(40000.0, r.anticipoRequerido(), 0.001);
+        assertEquals(new BigDecimal("160000"), r.valorTotal());     // 1 facturable × 80.000 × 2 noches
+        assertEquals(new BigDecimal("40000"), r.anticipoRequerido());
         assertEquals(EstadoReserva.PENDIENTE, r.estado());
-        assertEquals(160000.0, folio(r.reservaId()).saldo().doubleValue(), 0.001);
+        assertEquals(new BigDecimal("160000"), folio(r.reservaId()).saldo());
     }
 
     @Test
@@ -271,8 +272,8 @@ class CasosDeUsoTest {
 
         assertEquals(EstadoReserva.CANCELADA, res.estado());
         assertEquals(0.10, res.porcentajeRetenido(), 0.0001);
-        assertEquals(16000.0, res.penalidad().doubleValue(), 0.001);
-        assertEquals(24000.0, res.saldoAFavor().doubleValue(), 0.001);        // 40.000 pagados − 16.000 retenidos
+        assertEquals(new BigDecimal("16000"), res.penalidad());
+        assertEquals(new BigDecimal("24000"), res.saldoAFavor());        // 40.000 pagados − 16.000 retenidos
         // RN-12: libera las noches de inmediato
         assertDoesNotThrow(() -> reserva10al12());
     }
@@ -285,8 +286,8 @@ class CasosDeUsoTest {
         var res = new CancelarReservaUseCase(reservas, folios, cancelacion, notificacion, reloj)
                 .ejecutar(new CancelarReservaUseCase.Command(r.reservaId(), recepcion));
         assertEquals(1.0, res.porcentajeRetenido(), 0.0001);
-        assertEquals(160000.0, res.penalidad().doubleValue(), 0.001);
-        assertEquals(120000.0, res.saldoPendiente().doubleValue(), 0.001);   // debe 160.000 − 40.000
+        assertEquals(new BigDecimal("160000"), res.penalidad());
+        assertEquals(new BigDecimal("120000"), res.saldoPendiente());   // debe 160.000 − 40.000
     }
 
     @Test
@@ -309,7 +310,7 @@ class CasosDeUsoTest {
         reloj.fijar(LocalDateTime.of(2026, 10, 28, 15, 0));                  // 5 h: vencida
         assertEquals(1, uc.ejecutar());
         assertEquals(EstadoReserva.CANCELADA, detalle(r.reservaId(), recepcion).estado());
-        assertEquals(0.0, folio(r.reservaId()).saldo().doubleValue(), 0.001);
+        assertEquals(BigDecimal.ZERO, folio(r.reservaId()).saldo());
     }
 
     @Test
@@ -325,8 +326,8 @@ class CasosDeUsoTest {
         reloj.fijar(LocalDateTime.of(2026, 11, 10, 18, 0));
         var res = uc.ejecutar(new DeclararNoShowUseCase.Command(r.reservaId()));
         assertEquals(EstadoReserva.NO_SHOW, res.estado());
-        assertEquals(160000.0, res.penalidad().doubleValue(), 0.001);
-        assertEquals(0.0, res.saldoPendiente().doubleValue(), 0.001);
+        assertEquals(new BigDecimal("160000"), res.penalidad());
+        assertEquals(BigDecimal.ZERO, res.saldoPendiente());
     }
 
     // ------------------------------------------------------------------ modificar
@@ -337,10 +338,10 @@ class CasosDeUsoTest {
         var uc = new ModificarReservaUseCase(alojamientos, reservas, folios, disponibilidad, cotizador, validacionGrupo, reloj);
         var res = uc.ejecutar(new ModificarReservaUseCase.Command(r.reservaId(), null,
                 LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 13), List.of(adulto(), nino()), null));
-        assertEquals(160000.0, res.valorAnterior(), 0.001);
-        assertEquals(240000.0, res.valorNuevo(), 0.001);
-        assertEquals(80000.0, res.diferencia().doubleValue(), 0.001);
-        assertEquals(240000.0, folio(r.reservaId()).saldo().doubleValue(), 0.001);
+        assertEquals(new BigDecimal("160000"), res.valorAnterior());
+        assertEquals(new BigDecimal("240000"), res.valorNuevo());
+        assertEquals(new BigDecimal("80000"), res.diferencia());
+        assertEquals(new BigDecimal("240000"), folio(r.reservaId()).saldo());
     }
 
     @Test
@@ -415,11 +416,13 @@ class CasosDeUsoTest {
         var r = reserva10al12();
         var uc = new RegistrarCargoUseCase(folios, reloj);
         assertThrows(OperacionNoPermitidaException.class, () -> uc.ejecutar(
-                new RegistrarCargoUseCase.Command(r.reservaId(), TipoCargo.PENALIDAD_NO_SHOW, "x", 1000)));
-        var f = uc.ejecutar(new RegistrarCargoUseCase.Command(r.reservaId(), TipoCargo.SERVICIO_ADICIONAL, "Desayuno", 10000));
-        assertEquals(170000.0, f.saldo().doubleValue(), 0.001);
-        var corregido = uc.ejecutar(new RegistrarCargoUseCase.Command(r.reservaId(), TipoCargo.AJUSTE_A_FAVOR, "Corrección desayuno", 10000));
-        assertEquals(160000.0, corregido.saldo().doubleValue(), 0.001);
+                new RegistrarCargoUseCase.Command(r.reservaId(), TipoCargo.PENALIDAD_NO_SHOW, "x", BigDecimal.valueOf(1000))));
+        var f = uc.ejecutar(new RegistrarCargoUseCase.Command(r.reservaId(), TipoCargo.SERVICIO_ADICIONAL,
+                "Desayuno", BigDecimal.valueOf(10000)));
+        assertEquals(new BigDecimal("170000"), f.saldo());
+        var corregido = uc.ejecutar(new RegistrarCargoUseCase.Command(r.reservaId(), TipoCargo.AJUSTE_A_FAVOR,
+                "Corrección desayuno", BigDecimal.valueOf(10000)));
+        assertEquals(new BigDecimal("160000"), corregido.saldo());
         assertEquals(3, corregido.cargos().size());                           // nada se borra: solo se agrega el inverso
     }
 
@@ -514,9 +517,10 @@ class CasosDeUsoTest {
         var uc = new CrearApartamentoUseCase(alojamientos);
         var dorm = List.of(new co.uniquindio.edu.sga.application.command.DormitorioDatos("P", 2, "Doble"));
         assertThrows(ReglaDominioException.class, () -> uc.ejecutar(new CrearApartamentoUseCase.Command(
-                "301", "Nuevo", 4, dorm, Map.of(base.getId().valor(), 90000.0))));            // falta la temporada Fiestas
+                "301", "Nuevo", 4, dorm,                 Map.of(base.getId().valor(), new BigDecimal("90000")))));            // falta la temporada Fiestas
         var creado = uc.ejecutar(new CrearApartamentoUseCase.Command("301", "Nuevo", 4, dorm,
-                Map.of(base.getId().valor(), 90000.0, fiestas.getId().valor(), 130000.0)));
+                Map.of(base.getId().valor(), new BigDecimal("90000"),
+                        fiestas.getId().valor(), new BigDecimal("130000"))));
         assertEquals("301", creado.identificador());
     }
 
@@ -539,12 +543,12 @@ class CasosDeUsoTest {
         var festival = new CrearTemporadaUseCase(alojamientos).ejecutar(new CrearTemporadaUseCase.Command(
                 "Festival", LocalDate.of(2026, 12, 15), LocalDate.of(2027, 1, 15), null));
         new AsignarTarifaUseCase(alojamientos).ejecutar(
-                new AsignarTarifaUseCase.Command(festival.id(), apto101.getId().valor(), 140000));
+                new AsignarTarifaUseCase.Command(festival.id(), apto101.getId().valor(), new BigDecimal("140000")));
 
-        assertEquals(160000.0, detalle(antes.reservaId(), recepcion).valor(), 0.001);      // congelada
+        assertEquals(new BigDecimal("160000"), detalle(antes.reservaId(), recepcion).valor());      // congelada
         var nueva = new CotizarEstanciaUseCase(alojamientos, cotizador).ejecutar(new CotizarEstanciaUseCase.Command(
                 apto101.getId().valor(), LocalDate.of(2026, 12, 20), LocalDate.of(2026, 12, 22), List.of(LocalDate.of(1990, 1, 1))));
-        assertEquals(280000.0, nueva.total(), 0.001);                                       // 2 × 140.000
+        assertEquals(new BigDecimal("280000"), nueva.total());                                       // 2 × 140.000
     }
 
     @Test
@@ -615,7 +619,7 @@ class CasosDeUsoTest {
 
         var ingresos = new ConsultarIngresosUseCase(folios).ejecutar(
                 new ConsultarIngresosUseCase.Command(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 1)));
-        assertEquals(40000.0, ingresos.total().doubleValue(), 0.001);          // solo pagos, no cargos
+        assertEquals(new BigDecimal("40000"), ingresos.total());          // solo pagos, no cargos
         assertEquals(40000.0, ingresos.porMedioPago().get(MedioPago.TRANSFERENCIA).doubleValue(), 0.001);
     }
 

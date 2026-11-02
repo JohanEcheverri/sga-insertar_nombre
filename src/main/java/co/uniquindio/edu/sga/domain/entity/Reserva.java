@@ -64,6 +64,7 @@ public class Reserva {
         exigir(horaEstimadaLlegada != null, "Debe indicarse la hora estimada de llegada.");
         exigir(canalOrigen != null, "La reserva debe tener canal de origen.");
         exigir(valorCongelado != null, "La reserva debe congelar el valor cotizado.");
+        exigir(valorCongelado.esPositivo(), "El valor congelado de la reserva debe ser mayor a cero.");
         exigir(politicaCancelacion != null, "La reserva debe conservar su política de cancelación.");
         exigir(fechaCreacion != null, "La reserva debe tener fecha de creación.");
         exigir(!estancia.fechaEntrada().isBefore(fechaCreacion.toLocalDate()),
@@ -132,6 +133,7 @@ public class Reserva {
         exigir(nuevaEstancia != null, "La reserva debe tener estancia.");
         exigir(nuevaHoraLlegada != null, "Debe indicarse la hora estimada de llegada.");
         exigir(nuevoValor != null, "La modificación debe recalcular el valor de la reserva.");
+        exigir(nuevoValor.esPositivo(), "El nuevo valor de la reserva debe ser mayor a cero.");
         exigir(ahora != null, "Debe indicarse el momento de la modificación.");
         exigir(!nuevaEstancia.fechaEntrada().isBefore(ahora.toLocalDate()),
                 "RN-04 - No se pueden crear reservas cuya fecha de entrada sea anterior a la fecha actual.");

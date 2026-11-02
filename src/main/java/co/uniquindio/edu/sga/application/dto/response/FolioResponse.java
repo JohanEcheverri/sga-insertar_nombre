@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.application.dto.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /** Resumen contable del folio asociado a una reserva.
@@ -21,7 +22,7 @@ public record FolioResponse(
         String estado,
         List<CargoResponse> cargos,
         int cantidadPagos,
-        double totalCargos,
-        double totalPagos,
-        double saldoPendiente,
+        BigDecimal totalCargos,
+        BigDecimal totalPagos,
+        BigDecimal saldoPendiente,
         AutorizacionCierreResponse autorizacionCierre) { }

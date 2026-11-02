@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.application.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /** Indicadores agregados del alojamiento para un período consultado.
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 public record IndicadoresConsolidadosResponse(
         LocalDate fechaInicio,
         LocalDate fechaFin,
-        double ingresosTotales,
+        BigDecimal ingresosTotales,
         double ocupacionGlobal,
         long reservasTotales,
         long reservasActivas,

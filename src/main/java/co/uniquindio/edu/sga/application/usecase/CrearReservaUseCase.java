@@ -30,8 +30,8 @@ public class CrearReservaUseCase {
                           LocalDate entrada, LocalDate salida, LocalTime horaEstimadaLlegada,
                           CanalOrigen canal, String identificadorExterno) { }
 
-    public record Result(UUID reservaId, UUID folioId, EstadoReserva estado, double valorTotal,
-                         double anticipoRequerido, boolean yaExistia) { }
+    public record Result(UUID reservaId, UUID folioId, EstadoReserva estado, BigDecimal valorTotal,
+                         BigDecimal anticipoRequerido, boolean yaExistia) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -71,7 +71,7 @@ public class CrearReservaUseCase {
             if (existente.isPresent()) {
                 Reserva r = existente.get();
                 return new Result(r.getId().valor(), r.getFolioId().valor(), r.getEstado(),
-                        r.getValorCongelado().valor(), config.anticipoPara(r.getValorCongelado()).doubleValue(), true);
+                        r.getValorCongelado().valor(), config.anticipoPara(r.getValorCongelado()), true);
             }
         }
 
@@ -101,6 +101,6 @@ public class CrearReservaUseCase {
         Seguro.ejecutar("notificar reserva creada", () -> notificacion.reservaCreada(reserva));
 
         return new Result(reserva.getId().valor(), folio.getId().valor(), reserva.getEstado(), valor.valor(),
-                config.anticipoPara(valor).doubleValue(), false);
+                config.anticipoPara(valor), false);
     }
 }

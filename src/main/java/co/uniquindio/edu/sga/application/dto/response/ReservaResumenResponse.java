@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.application.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /** Vista breve de una reserva para listados e historiales.
@@ -20,4 +21,4 @@ public record ReservaResumenResponse(
         LocalDate fechaEntrada,
         LocalDate fechaSalida,
         String estado,
-        double valorCongelado) { }
+        BigDecimal valorCongelado) { }

@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.application.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -45,7 +46,7 @@ public record ReservaDetalleResponse(
         LocalTime horaEstimadaLlegada,
         String canalOrigen,
         String estado,
-        double valorCongelado,
+        BigDecimal valorCongelado,
         String versionPoliticaCancelacion,
         LocalDateTime fechaCreacion
 ) { }

@@ -66,12 +66,12 @@ public class CancelacionReservaService {
                               String conceptoPenalidad, LocalDateTime ahora) {
         folio.registrarCargo(new Cargo(TipoCargo.REVERSO_ALOJAMIENTO,
                 "Reverso del alojamiento", reserva.getValorCongelado(), ahora));
-        BigDecimal penalidad = BigDecimal.valueOf(reserva.getValorCongelado().valor())
+        BigDecimal penalidad = reserva.getValorCongelado().valor()
                 .multiply(BigDecimal.valueOf(porcentaje))
                 .setScale(0, RoundingMode.HALF_UP);
         if (penalidad.signum() > 0) {
             folio.registrarCargo(new Cargo(tipoPenalidad, conceptoPenalidad,
-                    new Dinero(penalidad.doubleValue()), ahora));
+                    new Dinero(penalidad), ahora));
         }
         return new Resultado(porcentaje, penalidad, folio.saldoAFavor(), folio.saldoPendiente());
     }

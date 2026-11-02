@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.application.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /** Solicitud para añadir un cargo al folio de una reserva.
@@ -22,7 +23,7 @@ public record RegistrarCargoRequest(
         String concepto,
 
         @NotNull(message = "El monto del cargo es obligatorio") @Positive(message = "El monto debe ser positivo")
-        Double monto,
+        BigDecimal monto,
 
         @NotNull(message = "La fecha del cargo es obligatoria")
         LocalDateTime fechaRegistro

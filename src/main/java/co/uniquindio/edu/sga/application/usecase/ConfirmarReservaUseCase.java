@@ -23,7 +23,7 @@ public class ConfirmarReservaUseCase {
 
     public record Command(UUID reservaId) { }
 
-    public record Result(UUID reservaId, EstadoReserva estado, double anticipoRequerido, double pagado) { }
+    public record Result(UUID reservaId, EstadoReserva estado, BigDecimal anticipoRequerido, BigDecimal pagado) { }
 
     private final AlojamientoRepository alojamientoRepository;
     private final ReservaRepository reservaRepository;
@@ -48,7 +48,6 @@ public class ConfirmarReservaUseCase {
 
         reservaRepository.guardar(reserva);
         Seguro.ejecutar("notificar reserva confirmada", () -> notificacion.reservaConfirmada(reserva));
-        return new Result(reserva.getId().valor(), reserva.getEstado(), anticipo.doubleValue(),
-                folio.totalPagos().doubleValue());
+        return new Result(reserva.getId().valor(), reserva.getEstado(), anticipo, folio.totalPagos());
     }
 }

@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.application.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 
 
 /** Solicitud para asignar a un apartamento una tarifa por noche dentro de una temporada.
@@ -21,5 +22,5 @@ public record AsignarTarifaRequest(
         String apartamentoId,
 
         @NotNull(message = "El precio por noche y ocupante es obligatorio") @Positive(message = "El precio debe ser positivo")
-        Double precioPorNochePorOcupante
+        BigDecimal precioPorNochePorOcupante
 ) { }

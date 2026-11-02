@@ -6,7 +6,7 @@ import java.math.BigDecimal; import java.time.*; import java.util.*;
 /** Resultado de aplicación: datos planos, nunca entidades de dominio. */
 public record ReservaDetalle(UUID id, UUID folioId, UUID apartamentoId, EstadoReserva estado, CanalOrigen canal,
                              LocalDate entrada, LocalDate salida, LocalTime horaEstimadaLlegada,
-                             String titular, String documentoTitular, int ocupantes, double valor,
+                             String titular, String documentoTitular, int ocupantes, BigDecimal valor,
                              String versionPolitica, LocalDateTime fechaCreacion) {
 
     public static ReservaDetalle de(Reserva r) {
