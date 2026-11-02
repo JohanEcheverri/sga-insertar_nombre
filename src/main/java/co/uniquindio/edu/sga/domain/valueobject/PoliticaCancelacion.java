@@ -40,6 +40,26 @@ public record PoliticaCancelacion(VersionPolitica version,
         tramos = List.copyOf(tramosOrdenados);
     }
 
+    /**
+     * Calcula la retención por cancelación según las horas de antelación y el valor base de la reserva.
+     */
+    public Dinero calcularRetencionCancelacion(long horasAntelacion, Dinero valorBase) {
+        // si cancela con más de 48 horas de anticipación, la retención es del 10%, de lo contrario es del 50%.
+        double porcentajeRetencion = (horasAntelacion >= 48) ? 0.10 : 0.50;
+
+        return valorBase.multiplicar(porcentajeRetencion);
+    }
+
+    /**
+     * Calcula la retención por no-show aplicando las reglas de la política al valor base.
+     */
+    public Dinero calcularRetencionNoShow(Dinero valorBase) {
+        //El no-show aplica una retención del 100%.
+        double porcentajeNoShow = 1.0;
+
+        return valorBase.multiplicar(porcentajeNoShow);
+    }
+
     /** RN-13 - La retención de cancelación se determina según la antelación con que se cancela. */
     public double retencionParaDias(long diasAntelacion) {
         if (diasAntelacion < 0) {

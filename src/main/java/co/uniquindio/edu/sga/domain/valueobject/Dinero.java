@@ -26,6 +26,12 @@ public record Dinero(BigDecimal valor) {
         return new Dinero(this.valor.add(otro.valor()));
     }
 
+    public Dinero multiplicar(double factor) {
+        // Asumiendo que 'this.valor' es un BigDecimal
+        BigDecimal resultado = this.valor.multiply(BigDecimal.valueOf(factor));
+        return new Dinero(resultado);
+    }
+
     public Dinero multiplicarPor(int cantidad) {
         return new Dinero(this.valor.multiply(BigDecimal.valueOf(cantidad)));
     }
