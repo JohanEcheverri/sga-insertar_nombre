@@ -15,8 +15,7 @@ import java.time.LocalDate;
 public class BloqueoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "apartamento_id", nullable = false, length = 15)
     private String apartamentoId;
@@ -29,4 +28,6 @@ public class BloqueoEntity {
 
     @Column(name = "motivo", length = 250)
     private String motivo;
+    @Column(nullable = false)
+    private boolean activo = true;
 }

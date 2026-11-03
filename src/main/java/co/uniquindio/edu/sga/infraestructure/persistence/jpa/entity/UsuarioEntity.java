@@ -19,7 +19,12 @@ public class UsuarioEntity {
     @Id
     private String id;
     private String nombre;
+    private String apellido;
+    private String documento;
     private String correo;
     private String telefono;
+    private String contrasenia;
     private String rol;
+    private boolean activo;
+    private java.time.LocalDate fechaNacimiento;
 }

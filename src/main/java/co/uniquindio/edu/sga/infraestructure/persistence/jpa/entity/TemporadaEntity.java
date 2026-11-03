@@ -16,18 +16,22 @@ import java.time.LocalDate;
 public class TemporadaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 
-    @Column(name = "fecha_inicio", nullable = false)
+    @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
 
-    @Column(name = "fecha_fin", nullable = false)
+    @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
     @Column(name = "multiplicador_tarifa", nullable = false, precision = 5, scale = 2)
     private BigDecimal multiplicadorTarifa;
+    @Column(name = "es_base", nullable = false)
+    private boolean esBase;
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name = "temporada_tarifas", joinColumns = @jakarta.persistence.JoinColumn(name = "temporada_id"))
+    private java.util.List<TarifaEmbeddable> tarifas = new java.util.ArrayList<>();
 }

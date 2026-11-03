@@ -24,4 +24,5 @@ public class NovedadEntity {
     private String descripcion;
     private String gravedad;
     private LocalDateTime fechaReporte;
+    private boolean anulada;
 }

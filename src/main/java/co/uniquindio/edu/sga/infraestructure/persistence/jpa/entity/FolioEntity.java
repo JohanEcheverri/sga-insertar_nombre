@@ -16,8 +16,7 @@ import java.time.LocalDateTime;
 public class FolioEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "reserva_id", nullable = false, length = 15)
     private String reservaId;
@@ -30,4 +29,13 @@ public class FolioEntity {
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name="folio_cargos", joinColumns=@jakarta.persistence.JoinColumn(name="folio_id"))
+    private java.util.List<CargoEmbeddable> cargos = new java.util.ArrayList<>();
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name="folio_pagos", joinColumns=@jakarta.persistence.JoinColumn(name="folio_id"))
+    private java.util.List<PagoEmbeddable> pagos = new java.util.ArrayList<>();
+    private String autorizacionAutor;
+    private String autorizacionMotivo;
+    private LocalDateTime autorizacionFecha;
 }

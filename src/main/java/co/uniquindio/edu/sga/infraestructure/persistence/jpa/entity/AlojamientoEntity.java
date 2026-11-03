@@ -22,4 +22,15 @@ public class AlojamientoEntity {
     private String descripcion;
     private String ciudad;
     private String direccion;
+    private String departamento;
+    private int umbralEdadFacturable;
+    private java.time.LocalTime horaEntrada;
+    private java.time.LocalTime horaSalida;
+    private int tiempoPreparacionHoras;
+    private int plazoConfirmacionHoras;
+    private java.time.LocalTime horaLimiteNoShow;
+    @jakarta.persistence.Column(precision=5, scale=4)
+    private java.math.BigDecimal porcentajeAnticipo;
+    private String politicaVersion;
+    private java.time.LocalDate politicaVigenteDesde;
 }
