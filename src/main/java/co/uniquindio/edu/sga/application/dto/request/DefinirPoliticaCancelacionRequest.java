@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.math.BigDecimal;
 
 /** Solicitud para definir la política de cancelación inicial del alojamiento.
  * @param version Identificador de versión de la política.
@@ -24,5 +25,5 @@ public record DefinirPoliticaCancelacionRequest(
         List<@Valid TramoCancelacionRequest> tramos,
 
         @NotNull(message = "La retención por no-show es obligatoria") @DecimalMin(value = "0.0", message = "La retención mínima es 0") @DecimalMax(value = "1.0", message = "La retención máxima es 1")
-        Double porcentajeRetencionNoShow
+        BigDecimal porcentajeRetencionNoShow
 ) { }

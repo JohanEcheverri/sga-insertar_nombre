@@ -14,8 +14,9 @@ public class NovedadRepositoryInMemory implements NovedadRepository {
     private final Map<NovedadId, Novedad> novedades = new LinkedHashMap<>();
 
     @Override
-    public void guardar(Novedad novedad) {
+    public Novedad guardar(Novedad novedad) {
         novedades.put(novedad.getId(), novedad);
+        return novedad;
     }
 
     @Override

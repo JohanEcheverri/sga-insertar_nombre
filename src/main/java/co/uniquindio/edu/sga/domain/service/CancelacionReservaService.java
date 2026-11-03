@@ -28,7 +28,7 @@ public class CancelacionReservaService {
      * @param saldoAFavor        monto a devolver al huésped (se registra; el desembolso es externo, 3.4)
      * @param saldoPendiente     deuda restante del huésped (penalidad mayor a lo pagado)
      */
-    public record Resultado(double porcentajeRetenido, BigDecimal penalidad,
+    public record Resultado(BigDecimal porcentajeRetenido, BigDecimal penalidad,
                             BigDecimal saldoAFavor, BigDecimal saldoPendiente) { }
 
     /** Cancelación solicitada por el huésped o por recepción. */
@@ -36,7 +36,7 @@ public class CancelacionReservaService {
         exigirFolioDeLaReserva(reserva, folio);
         long diasAntelacion = Math.max(0,
                 ChronoUnit.DAYS.between(ahora.toLocalDate(), reserva.getEstancia().fechaEntrada()));
-        double porcentaje = reserva.getPoliticaCancelacion().retencionParaDias(diasAntelacion);
+        BigDecimal porcentaje = reserva.getPoliticaCancelacion().retencionParaDias(diasAntelacion);
         reserva.cancelar();                                    // RN-08: solo PENDIENTE o CONFIRMADA
         return liquidar(reserva, folio, porcentaje, TipoCargo.PENALIDAD_CANCELACION,
                 "Penalidad por cancelación (política " + reserva.getPoliticaCancelacion().version().valor() + ")", ahora);
@@ -46,7 +46,7 @@ public class CancelacionReservaService {
     public Resultado procesarVencimiento(Reserva reserva, Folio folio, LocalDateTime ahora) {
         exigirFolioDeLaReserva(reserva, folio);
         reserva.cancelar();
-        return liquidar(reserva, folio, 0.0, TipoCargo.PENALIDAD_CANCELACION, "Vencimiento", ahora);
+        return liquidar(reserva, folio, BigDecimal.ZERO, TipoCargo.PENALIDAD_CANCELACION, "Vencimiento", ahora);
     }
 
     // ---- compartido con NoShowProcesamientoServicio (mismo paquete) ----
@@ -64,12 +64,12 @@ public class CancelacionReservaService {
      * RN-16 - Sin editar ni borrar: se registra un reverso del alojamiento (movimiento inverso) y,
      * si corresponde, el cargo de penalidad. El saldo a favor resultante es la devolución.
      */
-    static Resultado liquidar(Reserva reserva, Folio folio, double porcentaje, TipoCargo tipoPenalidad,
+    static Resultado liquidar(Reserva reserva, Folio folio, BigDecimal porcentaje, TipoCargo tipoPenalidad,
                               String conceptoPenalidad, LocalDateTime ahora) {
         folio.registrarCargo(new Cargo(TipoCargo.REVERSO_ALOJAMIENTO,
                 "Reverso del alojamiento", reserva.getValorCongelado(), ahora));
         BigDecimal penalidad = reserva.getValorCongelado().valor()
-                .multiply(BigDecimal.valueOf(porcentaje))
+                .multiply(porcentaje)
                 .setScale(0, RoundingMode.HALF_UP);
         if (penalidad.signum() > 0) {
             folio.registrarCargo(new Cargo(tipoPenalidad, conceptoPenalidad,

@@ -79,8 +79,8 @@ public class ReservaEntity {
     @Column(name = "titular_telefono", nullable = false, length = 30)
     private String titularTelefono;
 
-    @Column(name = "porcentaje_retencion_no_show", nullable = false)
-    private double porcentajeRetencionNoShow;
+    @Column(name = "porcentaje_retencion_no_show", nullable = false, precision = 5, scale = 4)
+    private BigDecimal porcentajeRetencionNoShow;
 
     @ElementCollection
     @CollectionTable(name = "reserva_tramos_cancelacion", joinColumns = @JoinColumn(name = "reserva_id"))

@@ -13,7 +13,7 @@ public record ConfiguracionAlojamiento(
     int tiempoPreparacionHoras,
     int plazoConfirmacionHoras,
     LocalTime horaLimiteNoShow,
-    double porcentajeAnticipo          // L-11: 0 = no se exige anticipo; 0.25 = 25 % del valor total
+    BigDecimal porcentajeAnticipo          // L-11: 0 = no se exige anticipo; 0.25 = 25 % del valor total
 ) {
     public ConfiguracionAlojamiento {
         if (umbralEdadFacturable < 0) {
@@ -28,7 +28,7 @@ public record ConfiguracionAlojamiento(
         if (horaLimiteNoShow.isBefore(entrada)) {
             throw new ReglaDominioException("La hora límite de no-show no puede ser anterior a la hora de check-in.");
         }
-        if (!Double.isFinite(porcentajeAnticipo) || porcentajeAnticipo < 0 || porcentajeAnticipo > 1) {
+        if (porcentajeAnticipo == null || porcentajeAnticipo.signum() < 0 || porcentajeAnticipo.compareTo(BigDecimal.ONE) > 0) {
             throw new ReglaDominioException("El porcentaje de anticipo debe estar entre 0 y 1.");
         }
     }
@@ -38,13 +38,13 @@ public record ConfiguracionAlojamiento(
                                     int tiempoPreparacionHoras, int plazoConfirmacionHoras,
                                     LocalTime horaLimiteNoShow) {
         this(umbralEdadFacturable, entrada, salida, tiempoPreparacionHoras,
-                plazoConfirmacionHoras, horaLimiteNoShow, 0.0);
+                plazoConfirmacionHoras, horaLimiteNoShow, BigDecimal.ZERO);
     }
 
     /** RN-26 - Anticipo exigido para confirmar: porcentaje del valor total, redondeado al peso (COP sin decimales). */
     public BigDecimal anticipoPara(Dinero valorTotal) {
         return valorTotal.valor()
-                .multiply(BigDecimal.valueOf(porcentajeAnticipo))
+                .multiply(porcentajeAnticipo)
                 .setScale(0, RoundingMode.HALF_UP);
     }
 }

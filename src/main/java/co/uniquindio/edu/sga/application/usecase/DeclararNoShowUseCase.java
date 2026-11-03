@@ -17,10 +17,8 @@ import co.uniquindio.edu.sga.domain.service.*;
 import co.uniquindio.edu.sga.domain.valueobject.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /** PUT /api/reservas/{codigo}/no-show — Desde la hora límite del día de entrada; penalidad de la política congelada. */
 @Service
@@ -29,7 +27,7 @@ public class DeclararNoShowUseCase {
 
     public record Command(UUID reservaId, Solicitante solicitante) { }
 
-    public record Result(UUID reservaId, EstadoReserva estado, double porcentajeRetenido, BigDecimal penalidad,
+    public record Result(UUID reservaId, EstadoReserva estado, BigDecimal porcentajeRetenido, BigDecimal penalidad,
                          BigDecimal saldoAFavor, BigDecimal saldoPendiente, ReservaDetalle detalle) { }
 
     private final AlojamientoRepository alojamientoRepository;

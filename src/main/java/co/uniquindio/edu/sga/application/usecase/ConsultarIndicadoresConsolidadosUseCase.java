@@ -62,11 +62,13 @@ public class ConsultarIndicadoresConsolidadosUseCase {
                 }).sum();
         long nochesPeriodo = ChronoUnit.DAYS.between(command.desde(), command.hasta());
         long nochesDisponibles = Cargas.alojamiento(alojamientoRepository).apartamentosActivos().size() * nochesPeriodo;
-        double ocupacion = nochesDisponibles == 0 ? 0 : (double) nochesVendidas / nochesDisponibles * 100;
+        BigDecimal ocupacion = nochesDisponibles == 0 ? BigDecimal.ZERO
+                : BigDecimal.valueOf(nochesVendidas).multiply(BigDecimal.valueOf(100))
+                        .divide(BigDecimal.valueOf(nochesDisponibles), 2, java.math.RoundingMode.HALF_UP);
 
         return new Reporte(periodo, Map.of(
                 "ingresosTotales", ingresos,
-                "ocupacionGlobal", BigDecimal.valueOf(ocupacion),
+                "ocupacionGlobal", ocupacion,
                 "reservasTotales", BigDecimal.valueOf(total),
                 "reservasActivas", BigDecimal.valueOf(activas),
                 "reservasCanceladas", BigDecimal.valueOf(canceladas)), LocalDateTime.now(clock));

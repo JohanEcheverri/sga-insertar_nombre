@@ -12,17 +12,17 @@ import java.util.List;
 public class Reserva {
     private final ReservaId id;
     private final FolioId folioId;
-    private final ApartamentoId apartamentoId;
+    private ApartamentoId apartamentoId;
     private final Titular titular;
-    private final List<Ocupante> ocupantes;
-    private final Estancia estancia;
+    private List<Ocupante> ocupantes;
+    private Estancia estancia;
     private final String identificadorExterno;
-    private final LocalTime horaEstimadaLlegada;
+    private LocalTime horaEstimadaLlegada;
     private final CanalOrigen canalOrigen;
     private EstadoReserva estado;
 
     // RN-22 - El valor y la política de una reserva quedan congelados al crearla y solo cambian por modificación explícita.
-    private final Dinero valorCongelado;
+    private Dinero valorCongelado;
     private final PoliticaCancelacion politicaCancelacion;
     private final LocalDateTime fechaCreacion;
 
@@ -79,6 +79,48 @@ public class Reserva {
     public void confirmar() {
         exigir(estado == EstadoReserva.PENDIENTE, "Solo una reserva pendiente puede confirmarse.");
         estado = EstadoReserva.CONFIRMADA;
+    }
+
+    public void confirmar(java.math.BigDecimal anticipoRequerido, java.math.BigDecimal pagado) {
+        exigir(anticipoRequerido != null && pagado != null, "Los valores del anticipo son obligatorios.");
+        exigir(pagado.compareTo(anticipoRequerido) >= 0, "El anticipo requerido debe estar cubierto.");
+        confirmar();
+    }
+
+    public void modificar(ApartamentoId apartamentoId, List<Ocupante> ocupantes, Estancia estancia,
+                          LocalTime horaEstimadaLlegada, Dinero valor, LocalDateTime ahora) {
+        exigir(estado == EstadoReserva.PENDIENTE || estado == EstadoReserva.CONFIRMADA,
+                "Solo se puede modificar una reserva pendiente o confirmada.");
+        exigir(ahora != null && estancia != null && !estancia.fechaEntrada().isBefore(ahora.toLocalDate()),
+                "RN-04 - La entrada no puede ser anterior a la fecha actual.");
+        exigir(apartamentoId != null && ocupantes != null && !ocupantes.isEmpty()
+                        && !ocupantes.contains(null) && horaEstimadaLlegada != null && valor != null,
+                "Los datos de la reserva modificada son obligatorios.");
+        this.apartamentoId = apartamentoId;
+        this.ocupantes = List.copyOf(ocupantes);
+        this.estancia = estancia;
+        this.horaEstimadaLlegada = horaEstimadaLlegada;
+        this.valorCongelado = valor;
+    }
+
+    public boolean haVencidoPlazoConfirmacion(LocalDateTime ahora, int plazoHoras) {
+        exigir(ahora != null && plazoHoras > 0, "La fecha actual y el plazo deben ser válidos.");
+        return estado == EstadoReserva.PENDIENTE
+                && !ahora.isBefore(fechaCreacion.plusHours(plazoHoras));
+    }
+
+    public static Reserva recontruir(ReservaId id, FolioId folioId, ApartamentoId apartamentoId,
+                                     Titular titular, List<Ocupante> ocupantes, Estancia estancia,
+                                     String identificadorExterno, LocalTime horaEstimadaLlegada,
+                                     CanalOrigen canalOrigen, EstadoReserva estado, Dinero valorCongelado,
+                                     PoliticaCancelacion politicaCancelacion, LocalDateTime fechaCreacion,
+                                     String motivoCancelacion) {
+        Reserva reserva = new Reserva(id, folioId, apartamentoId, titular, ocupantes, estancia,
+                identificadorExterno, horaEstimadaLlegada, canalOrigen, valorCongelado,
+                politicaCancelacion, fechaCreacion);
+        exigir(estado != null, "La reserva debe tener estado.");
+        reserva.estado = estado;
+        return reserva;
     }
 
     /** Regla de ciclo de vida: solo una reserva confirmada puede pasar al estado EN_CURSO. */

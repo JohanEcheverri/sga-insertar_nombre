@@ -17,10 +17,8 @@ import co.uniquindio.edu.sga.domain.service.*;
 import co.uniquindio.edu.sga.domain.valueobject.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * PUT /api/politicas-cancelacion — Crea una NUEVA versión de la política (v1 → v2 …). Las reservas
@@ -30,9 +28,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class ActualizarPoliticaCancelacionUseCase {
 
-    public record Tramo(int diasAntelacionMinimos, double porcentajeRetencion) { }
+    public record Tramo(int diasAntelacionMinimos, BigDecimal porcentajeRetencion) { }
 
-    public record Command(List<Tramo> tramos, double porcentajeRetencionNoShow, Solicitante solicitante) { }
+    public record Command(List<Tramo> tramos, BigDecimal porcentajeRetencionNoShow, Solicitante solicitante) { }
 
     public record Result(String versionAnterior, String versionNueva) { }
 
@@ -56,7 +54,7 @@ public class ActualizarPoliticaCancelacionUseCase {
             throw new ReglaDominioException("La política debe tener al menos dos tramos de antelación.");
         }
         alojamiento.cambiarPoliticaVigente(
-                new PoliticaCancelacion(new VersionPolitica(nueva), tramos, cmd.porcentajeRetencionNoShow()));
+                new PoliticaCancelacion(new VersionPolitica(nueva, LocalDate.now()), tramos, cmd.porcentajeRetencionNoShow()));
         alojamientoRepository.guardar(alojamiento);
         return new Result(anterior, nueva);
     }

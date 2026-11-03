@@ -6,7 +6,6 @@ import co.uniquindio.edu.sga.application.command.*;
 import co.uniquindio.edu.sga.application.exception.*;
 import co.uniquindio.edu.sga.application.port.*;
 import co.uniquindio.edu.sga.application.result.*;
-import co.uniquindio.edu.sga.application.security.Solicitante;
 import co.uniquindio.edu.sga.application.support.*;
 import co.uniquindio.edu.sga.domain.entity.*;
 import co.uniquindio.edu.sga.domain.exception.*;
@@ -18,7 +17,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * GET /api/reportes/ocupacion — 7.9: noches vendidas y % de ocupación = noches vendidas /
@@ -30,7 +28,7 @@ public class ConsultarOcupacionApartamentoUseCase {
 
     public record Command(LocalDate desde, LocalDate hasta) { }
 
-    public record Result(long nochesVendidas, long nochesDisponibles, double porcentajeOcupacion) { }
+    public record Result(long nochesVendidas, long nochesDisponibles, BigDecimal porcentajeOcupacion) { }
 
     private static final Set<EstadoReserva> VENDEN = Set.of(EstadoReserva.PENDIENTE, EstadoReserva.CONFIRMADA,
             EstadoReserva.EN_CURSO, EstadoReserva.FINALIZADA);
@@ -55,7 +53,9 @@ public class ConsultarOcupacionApartamentoUseCase {
         }
         long noches = java.time.temporal.ChronoUnit.DAYS.between(cmd.desde(), cmd.hasta());
         long disponibles = activos * noches;
-        double pct = disponibles == 0 ? 0 : (double) vendidas / disponibles * 100.0;
+        BigDecimal pct = disponibles == 0 ? BigDecimal.ZERO
+                : BigDecimal.valueOf(vendidas).multiply(BigDecimal.valueOf(100))
+                        .divide(BigDecimal.valueOf(disponibles), 2, RoundingMode.HALF_UP);
         return new Result(vendidas, disponibles, pct);
     }
 }

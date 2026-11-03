@@ -1,4 +1,5 @@
 package co.uniquindio.edu.sga.application.dto.response;
+import java.math.BigDecimal;
 
 import java.time.LocalDate;
 
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 public record ReporteOcupacionResponse(
         LocalDate fechaInicio,
         LocalDate fechaFin,
-        double porcentajeOcupacion,
+        BigDecimal porcentajeOcupacion,
         long nochesVendidas,
         long nochesDisponibles,
         int apartamentosIncluidos) { }

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import java.math.BigDecimal;
 
 /** Umbral y porcentaje de retención aplicados a una cancelación.
  * @param diasAntelacionMinimos Antelación mínima, en días, para aplicar el tramo.
@@ -17,5 +18,5 @@ public record TramoCancelacionRequest(
         Integer diasAntelacionMinimos,
 
         @NotNull(message = "El porcentaje de retención es obligatorio") @DecimalMin(value = "0.0", message = "La retención mínima es 0") @DecimalMax(value = "1.0", message = "La retención máxima es 1")
-        Double porcentajeRetencion
+        BigDecimal porcentajeRetencion
 ) { }

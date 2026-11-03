@@ -1,4 +1,5 @@
 package co.uniquindio.edu.sga.application.dto.response;
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -12,4 +13,4 @@ import java.util.List;
 public record PoliticaCancelacionResponse(
         String version,
         List<TramoCancelacionResponse> tramos,
-        double porcentajeRetencionNoShow) { }
+        BigDecimal porcentajeRetencionNoShow) { }

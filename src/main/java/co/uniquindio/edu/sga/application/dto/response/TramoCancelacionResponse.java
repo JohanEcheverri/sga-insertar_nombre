@@ -1,4 +1,5 @@
 package co.uniquindio.edu.sga.application.dto.response;
+import java.math.BigDecimal;
 
 /** Tramo de retención incluido en la respuesta de una política de cancelación.
  * @param diasAntelacionMinimos Antelación mínima para aplicar el porcentaje.
@@ -8,4 +9,4 @@ package co.uniquindio.edu.sga.application.dto.response;
  */
 public record TramoCancelacionResponse(
         int diasAntelacionMinimos,
-        double porcentajeRetencion) { }
+        BigDecimal porcentajeRetencion) { }

@@ -9,7 +9,7 @@ import java.util.List;
 /** Política inmutable que define retenciones por antelación y para no-show. */
 public record PoliticaCancelacion(VersionPolitica version,
                                   List<TramoCancelacion> tramos,
-                                  double porcentajeRetencionNoShow) {
+                                  BigDecimal porcentajeRetencionNoShow) {
     public PoliticaCancelacion {
         if (version == null) {
             throw new ReglaDominioException("La política de cancelación debe tener una versión.");
@@ -21,8 +21,7 @@ public record PoliticaCancelacion(VersionPolitica version,
         if (tramos.contains(null)) {
             throw new ReglaDominioException("La política no puede contener tramos nulos.");
         }
-        if (!Double.isFinite(porcentajeRetencionNoShow)
-                || porcentajeRetencionNoShow < 0 || porcentajeRetencionNoShow > 1) {
+        if (porcentajeRetencionNoShow == null || porcentajeRetencionNoShow.signum() < 0 || porcentajeRetencionNoShow.compareTo(BigDecimal.ONE) > 0) {
             throw new ReglaDominioException("El porcentaje de retención por no-show debe estar entre 0 y 1.");
         }
 
@@ -46,9 +45,8 @@ public record PoliticaCancelacion(VersionPolitica version,
      */
     public Dinero calcularRetencionCancelacion(long horasAntelacion, Dinero valorBase) {
         // si cancela con más de 48 horas de anticipación, la retención es del 10%, de lo contrario es del 50%.
-        double porcentajeRetencion = (horasAntelacion >= 48) ? 0.10 : 0.50;
-
-        return valorBase.multiplicar(BigDecimal.valueOf(porcentajeRetencion));
+        BigDecimal porcentajeRetencion = (horasAntelacion >= 48) ? new BigDecimal("0.10") : new BigDecimal("0.50");
+        return valorBase.multiplicar(porcentajeRetencion);
     }
 
     /**
@@ -56,13 +54,11 @@ public record PoliticaCancelacion(VersionPolitica version,
      */
     public Dinero calcularRetencionNoShow(Dinero valorBase) {
         //él no-show aplica una retención del 100%.
-        double porcentajeNoShow = 1.0;
-
-        return valorBase.multiplicar(BigDecimal.valueOf(porcentajeNoShow));
+        return valorBase.multiplicar(BigDecimal.ONE);
     }
 
     /** RN-13 - La retención de cancelación se determina según la antelación con que se cancela. */
-    public double retencionParaDias(long diasAntelacion) {
+    public BigDecimal retencionParaDias(long diasAntelacion) {
         if (diasAntelacion < 0) {
             throw new ReglaDominioException("Los días de antelación no pueden ser negativos.");
         }
@@ -75,7 +71,7 @@ public record PoliticaCancelacion(VersionPolitica version,
     }
 
     /** RN-13 - La retención aplicable a un no-show se toma de la configuración específica de la política. */
-    public double retencionPorNoShow() {
+    public BigDecimal retencionPorNoShow() {
         return porcentajeRetencionNoShow;
     }
 }
