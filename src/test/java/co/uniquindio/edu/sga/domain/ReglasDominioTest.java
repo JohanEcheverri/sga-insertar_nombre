@@ -61,7 +61,7 @@ class ReglasDominioTest {
         tramos.add(new TramoCancelacion(0, 1.0));   // menos de 24 h
         tramos.add(new TramoCancelacion(1, 0.25));  // entre 24 y 72 h
         tramos.add(new TramoCancelacion(3, 0.10));  // más de 72 h
-        return new PoliticaCancelacion(new VersionPolitica("v1"), tramos, 1.0);
+        return new PoliticaCancelacion(new VersionPolitica("v1", LocalDate.now()), tramos, 1.0);
     }
 
     private static Estancia estancia(LocalDate entrada, LocalDate salida) {
@@ -887,7 +887,7 @@ class ReglasDominioTest {
 
             List<TramoCancelacion> tramos = new ArrayList<>();
             tramos.add(new TramoCancelacion(0, 0.5));
-            al.cambiarPoliticaVigente(new PoliticaCancelacion(new VersionPolitica("v2"), tramos, 0.5));
+            al.cambiarPoliticaVigente(new PoliticaCancelacion(new VersionPolitica("v2",LocalDate.now()), tramos, 0.5));
 
             assertEquals("v2", al.getPoliticaVigente().version().valor());
             assertEquals("v1", r.getPoliticaCancelacion().version().valor()); // RN-13 / RN-22
@@ -927,16 +927,16 @@ class ReglasDominioTest {
             List<TramoCancelacion> sinCero = new ArrayList<>();
             sinCero.add(new TramoCancelacion(1, 0.5));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v"), sinCero, 1.0));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), sinCero, 1.0));
 
             List<TramoCancelacion> duplicados = new ArrayList<>();
             duplicados.add(new TramoCancelacion(0, 0.5));
             duplicados.add(new TramoCancelacion(0, 0.3));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v"), duplicados, 1.0));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), duplicados, 1.0));
 
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v"), new ArrayList<>(), 1.0));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v", LocalDate.now()), new ArrayList<>(), 1.0));
         }
 
         @Test
@@ -945,9 +945,9 @@ class ReglasDominioTest {
             t.add(new TramoCancelacion(0, 0.5));
             assertThrows(ReglaDominioException.class, () -> new PoliticaCancelacion(null, t, 1.0));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v"), t, 1.5));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v", LocalDate.now()), t, 1.5));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v"), t, -0.1));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), t, -0.1));
         }
 
         @Test
@@ -960,8 +960,8 @@ class ReglasDominioTest {
 
         @Test
         void versionNoPuedeEstarVacia() {
-            assertThrows(ReglaDominioException.class, () -> new VersionPolitica(" "));
-            assertEquals("v1", new VersionPolitica(" v1 ").valor());
+            assertThrows(ReglaDominioException.class, () -> new VersionPolitica(" ", LocalDate.now()));
+            assertEquals("v1", new VersionPolitica(" v1 ",LocalDate.now()).valor());
         }
     }
 

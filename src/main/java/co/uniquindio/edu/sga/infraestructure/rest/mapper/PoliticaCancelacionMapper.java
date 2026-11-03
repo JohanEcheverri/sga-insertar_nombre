@@ -12,6 +12,7 @@ import co.uniquindio.edu.sga.application.security.Solicitante;
 import co.uniquindio.edu.sga.application.dto.response.PoliticaCancelacionResponse;
 import co.uniquindio.edu.sga.application.dto.response.TramoCancelacionResponse;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /** Convierte la política de cancelación entre el dominio y los modelos JSON de REST. */
@@ -30,18 +31,18 @@ public interface PoliticaCancelacionMapper {
     }
 
     default PoliticaCancelacion aDominio(DefinirPoliticaCancelacionRequest solicitud) {
-        return crearPolitica(solicitud.version(), solicitud.tramos(), solicitud.porcentajeRetencionNoShow());
+        return crearPolitica(solicitud.version(), LocalDate.now(), solicitud.tramos(), solicitud.porcentajeRetencionNoShow());
     }
 
     default PoliticaCancelacion aDominio(ActualizarPoliticaCancelacionRequest solicitud) {
-        return crearPolitica(solicitud.version(), solicitud.tramos(), solicitud.porcentajeRetencionNoShow());
+        return crearPolitica(solicitud.version(), LocalDate.now(), solicitud.tramos(), solicitud.porcentajeRetencionNoShow());
     }
 
-    private static PoliticaCancelacion crearPolitica(String version,
-            List<co.uniquindio.edu.sga.application.dto.request.TramoCancelacionRequest> tramos,
-            Double porcentajeRetencionNoShow) {
+    private static PoliticaCancelacion crearPolitica(String version, LocalDate fechaVigencia,
+                                                     List<co.uniquindio.edu.sga.application.dto.request.TramoCancelacionRequest> tramos,
+                                                     Double porcentajeRetencionNoShow) {
         return new PoliticaCancelacion(
-                new VersionPolitica(version),
+                new VersionPolitica(version, fechaVigencia), // <-- Añades la fecha de vigencia aquí
                 tramos.stream()
                         .map(tramo -> new TramoCancelacion(tramo.diasAntelacionMinimos(), tramo.porcentajeRetencion()))
                         .toList(),

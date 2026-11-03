@@ -1,0 +1,37 @@
+package co.uniquindio.edu.sga.infraestructure.persistence.inmemory;
+
+import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
+import co.uniquindio.edu.sga.domain.repository.PoliticaCancelacionRepository;
+import co.uniquindio.edu.sga.domain.valueobject.VersionPolitica;
+
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
+/** Adaptador en memoria del puerto (Guía 06), bean de Spring (Guía 09) */
+@Repository
+public class PoliticaCancelacionRepositoryInMemory implements PoliticaCancelacionRepository {
+
+    private final HashMap<VersionPolitica, PoliticaCancelacion> politicas = new HashMap<>();
+
+    @Override
+    public Optional<PoliticaCancelacion> obtenerVigenteEn(LocalDate fecha) {
+        // La vigente es la versión más reciente que ya empezó a regir en esa fecha
+        return politicas.values()
+                .stream()
+                .filter(politica -> !politica.version().vigenteDesde().isAfter(fecha))
+                .max(Comparator.comparing(politica -> politica.version().vigenteDesde()));
+    }
+
+    @Override
+    public Optional<PoliticaCancelacion> obtenerPorVersion(VersionPolitica version) {
+        return Optional.ofNullable(politicas.get(version));
+    }
+
+    public void guardar(PoliticaCancelacion politica) {
+        politicas.put(politica.version(), politica);
+    }
+}

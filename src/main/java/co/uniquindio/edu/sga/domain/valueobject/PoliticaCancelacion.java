@@ -29,7 +29,7 @@ public record PoliticaCancelacion(VersionPolitica version,
         List<TramoCancelacion> tramosOrdenados = tramos.stream()
                 .sorted(Comparator.comparingInt(TramoCancelacion::diasAntelacionMinimos))
                 .toList();
-        if (tramosOrdenados.get(0).diasAntelacionMinimos() != 0) {
+        if (tramosOrdenados.getFirst().diasAntelacionMinimos() != 0) {
             throw new ReglaDominioException("La política debe incluir un tramo desde cero días de antelación.");
         }
         for (int i = 1; i < tramosOrdenados.size(); i++) {
@@ -55,7 +55,7 @@ public record PoliticaCancelacion(VersionPolitica version,
      * Calcula la retención por no-show aplicando las reglas de la política al valor base.
      */
     public Dinero calcularRetencionNoShow(Dinero valorBase) {
-        //El no-show aplica una retención del 100%.
+        //él no-show aplica una retención del 100%.
         double porcentajeNoShow = 1.0;
 
         return valorBase.multiplicar(BigDecimal.valueOf(porcentajeNoShow));
@@ -66,7 +66,7 @@ public record PoliticaCancelacion(VersionPolitica version,
         if (diasAntelacion < 0) {
             throw new ReglaDominioException("Los días de antelación no pueden ser negativos.");
         }
-        TramoCancelacion aplicable = tramos.get(0);
+        TramoCancelacion aplicable = tramos.getFirst();
         for (TramoCancelacion tramo : tramos) {
             if (tramo.diasAntelacionMinimos() > diasAntelacion) break;
             aplicable = tramo;
