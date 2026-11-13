@@ -1,0 +1,1 @@
+export function AlertaNotificacion({ mensaje, tipo = 'info' }: { mensaje: string; tipo?: 'info' | 'exito' | 'error' }) { return <div role="status" className={`alerta alerta-${tipo}`}>{mensaje}</div> }
