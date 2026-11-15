@@ -105,7 +105,9 @@ public class Alojamiento {
                     "El alojamiento solo puede tener una temporada base.");
         }
         for (Temporada existente : temporadas) {
-            exigir(!temporada.seSolapaCon(existente), "RN-27 - Las temporadas no se pueden solapar entre sí.");
+            if (existente.isActiva()) {
+                exigir(!temporada.seSolapaCon(existente), "RN-27 - Las temporadas no se pueden solapar entre sí.");
+            }
         }
         validarTarifasParaApartamentos(temporada, apartamentos);
         temporadas.add(temporada);
@@ -125,7 +127,7 @@ public class Alojamiento {
         exigir(temporadas.get(indice).esBase() == nueva.esBase(),
                 "F-05 - No se puede convertir la temporada base en especial ni al revés.");
         for (int i = 0; i < temporadas.size(); i++) {
-            if (i != indice) {
+            if (i != indice && temporadas.get(i).isActiva()) {
                 exigir(!nueva.seSolapaCon(temporadas.get(i)), "RN-27 - Las temporadas no se pueden solapar entre sí.");
             }
         }
@@ -140,7 +142,7 @@ public class Alojamiento {
                 .findFirst()
                 .orElseThrow(() -> new ReglaDominioException("La temporada no pertenece a este alojamiento."));
         exigir(!temporada.esBase(), "F-05 - La temporada base es obligatoria y no se puede retirar.");
-        temporadas.remove(temporada);
+        temporada.retirar();
     }
 
     /** RN-27 - Usa la temporada especial que cubre la fecha; cuando ninguna la cubre, devuelve la base. */
@@ -148,10 +150,12 @@ public class Alojamiento {
         exigir(fecha != null, "La fecha consultada no puede ser nula.");
         Temporada temporadaBase = temporadas.stream()
                 .filter(Temporada::esBase)
+                .filter(Temporada::isActiva)
                 .findFirst()
                 .orElseThrow(() -> new ReglaDominioException("F-05 - El alojamiento debe tener temporada base."));
         List<Temporada> aplicables = temporadas.stream()
                 .filter(temporada -> temporada.cubreFecha(fecha))
+                .filter(Temporada::isActiva)
                 .toList();
         exigir(aplicables.size() <= 1, "RN-27 - Las temporadas no se pueden solapar entre sí.");
         return aplicables.isEmpty() ? temporadaBase : aplicables.get(0);
@@ -186,7 +190,7 @@ public class Alojamiento {
     }
 
     public Optional<Temporada> buscarTemporada(TemporadaId temporadaId) {
-        return temporadas.stream().filter(t -> t.getId().equals(temporadaId)).findFirst();
+        return temporadas.stream().filter(Temporada::isActiva).filter(t -> t.getId().equals(temporadaId)).findFirst();
     }
 
     /** Apartamentos vendibles: excluye los retirados (eliminación lógica). */
@@ -213,7 +217,7 @@ public class Alojamiento {
     }
 
     private static void validarTemporadas(List<Temporada> temporadas, List<Apartamento> apartamentos) {
-        long bases = temporadas.stream().filter(Temporada::esBase).count();
+        long bases = temporadas.stream().filter(Temporada::isActiva).filter(Temporada::esBase).count();
         exigir(bases == 1, "F-05 - El alojamiento debe tener exactamente una temporada base.");
 
         long idsDistintos = temporadas.stream().map(Temporada::getId).distinct().count();
@@ -222,9 +226,12 @@ public class Alojamiento {
         for (int i = 0; i < temporadas.size(); i++) {
             Temporada temporada = temporadas.get(i);
             validarTarifasParaApartamentos(temporada, apartamentos);
+            if (!temporada.isActiva()) continue;
             for (int j = i + 1; j < temporadas.size(); j++) {
-                exigir(!temporada.seSolapaCon(temporadas.get(j)),
-                        "RN-27 - Las temporadas no se pueden solapar entre sí.");
+                if (temporadas.get(j).isActiva()) {
+                    exigir(!temporada.seSolapaCon(temporadas.get(j)),
+                            "RN-27 - Las temporadas no se pueden solapar entre sí.");
+                }
             }
         }
     }

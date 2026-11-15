@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.application.dto.request.CrearApartamentoRequest;
 import co.uniquindio.edu.sga.application.dto.request.ModificarApartamentoRequest;
 import co.uniquindio.edu.sga.application.dto.request.CambiarEstadoApartamentoRequest;
 import co.uniquindio.edu.sga.application.dto.response.ApartamentoResponse;
+import co.uniquindio.edu.sga.application.dto.response.PaginaResponse;
 import co.uniquindio.edu.sga.application.usecase.BuscarApartamentoPorCapacidadUseCase;
 import co.uniquindio.edu.sga.application.usecase.ConsultarApartamentoPreparacionPendienteUseCase;
 import co.uniquindio.edu.sga.application.usecase.ConsultarDisponibilidadApartamentoPorFechaUseCase;
@@ -84,12 +85,12 @@ public class ApartamentoController {
 
     // GET -> /api/apartamentos/preparacion-pendiente
     @GetMapping("/preparacion-pendiente")
-    public ResponseEntity<List<ApartamentoResponse>> consultarApartamentosPreparacionPendientes() {
+    public ResponseEntity<PaginaResponse<ApartamentoResponse>> consultarApartamentosPreparacionPendientes(@RequestParam(defaultValue = "0") int pagina) {
         if (!solicitanteActual.obtener().esPersonalInterno()) {
             throw new AccesoDenegadoException("Solo el personal interno puede consultar unidades pendientes de preparación.");
         }
-        var pagina = consultarApartamentoPreparacionPendienteUseCase.ejecutar(new ConsultarApartamentoPreparacionPendienteUseCase.Command(0));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aRespuesta).toList());
+        var resultado = consultarApartamentoPreparacionPendienteUseCase.ejecutar(new ConsultarApartamentoPreparacionPendienteUseCase.Command(pagina));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aRespuesta));
     }
 
     // PATCH -> /api/aparatmentos/{id}/estado-operativo
@@ -102,17 +103,17 @@ public class ApartamentoController {
 
     // GET -> api/apartamentos/disponibilidad
     @GetMapping("/disponibilidad")
-    public ResponseEntity<List<ApartamentoResponse>> consultarDisponibilidadApartamentoPorFecha(@RequestParam LocalDate fechaEntrada, @RequestParam LocalDate fechaSalida,
-            @RequestParam List<LocalDate> fechasNacimiento) {
+    public ResponseEntity<PaginaResponse<ApartamentoResponse>> consultarDisponibilidadApartamentoPorFecha(@RequestParam LocalDate fechaEntrada, @RequestParam LocalDate fechaSalida,
+            @RequestParam List<LocalDate> fechasNacimiento, @RequestParam(defaultValue = "0") int pagina) {
         var comando = new ConsultarDisponibilidadApartamentoPorFechaUseCase.Command(fechaEntrada, fechaSalida,
-                fechasNacimiento, null, null, 0);
-        var pagina = consultarDisponibilidadApartamentoPorFechaUseCase.ejecutar(comando);
-        return ResponseEntity.ok(pagina.contenido().stream().map(disponible -> mapper.aRespuesta(disponible.apartamento())).toList());
+                fechasNacimiento, null, null, pagina);
+        var resultado = consultarDisponibilidadApartamentoPorFechaUseCase.ejecutar(comando);
+        return ResponseEntity.ok(PaginaResponse.de(resultado, disponible -> mapper.aRespuesta(disponible.apartamento())));
     }
 
     // GET -> api/apartamentos/buscar-capacidad
-    @GetMapping("/buscar-capacidad") public ResponseEntity<List<ApartamentoResponse>> buscarApartamentoPorCapacidad(@RequestParam int capacidad) {
-        var pagina = buscarApartamentoPorCapacidadUseCase.ejecutar(new BuscarApartamentoPorCapacidadUseCase.Command(capacidad, 0));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aRespuesta).toList());
+    @GetMapping("/buscar-capacidad") public ResponseEntity<PaginaResponse<ApartamentoResponse>> buscarApartamentoPorCapacidad(@RequestParam int capacidad, @RequestParam(defaultValue = "0") int pagina) {
+        var resultado = buscarApartamentoPorCapacidadUseCase.ejecutar(new BuscarApartamentoPorCapacidadUseCase.Command(capacidad, pagina));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aRespuesta));
     }
 }

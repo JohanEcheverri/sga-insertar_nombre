@@ -1,0 +1,72 @@
+@baseUrl = http://localhost:8080
+@apartamentoId = 20000000-0000-0000-0000-000000000001
+@usuarioId = REEMPLAZAR_POR_UUID_DE_USUARIO
+@reservaId = {{reservaIdRespuesta}}
+
+### Catálogo: apartamentos con capacidad mínima (paginado)
+GET {{baseUrl}}/api/apartamentos/buscar-capacidad?capacidad=2&pagina=0
+Accept: application/json
+
+### Consultar temporadas activas (paginado)
+GET {{baseUrl}}/api/temporadas?pagina=0
+Accept: application/json
+
+### Cotizar antes de reservar
+GET {{baseUrl}}/api/cotizaciones?apartamentoId={{apartamentoId}}&fechaEntrada=2027-02-20&fechaSalida=2027-02-22&fechasNacimiento=1990-04-12
+Accept: application/json
+
+### Crear reserva
+POST {{baseUrl}}/api/reservas
+Content-Type: application/json
+
+{
+  "apartamentoId": "{{apartamentoId}}",
+  "nombreTitular": "Ana",
+  "apellidoTitular": "Ejemplo",
+  "usuarioId": "{{usuarioId}}",
+  "correoTitular": "ana@example.com",
+  "telefonoTitular": "+573001112233",
+  "documentoTitular": "1000000000",
+  "ocupantes": [
+    { "nombre": "Ana", "apellido": "Ejemplo", "documento": "1000000000", "fechaNacimiento": "1990-04-12" }
+  ],
+  "fechaEntrada": "2027-02-20",
+  "fechaSalida": "2027-02-22",
+  "horaEstimadaLlegada": "16:00:00",
+  "canalOrigen": "DIRECTO"
+}
+
+> {% client.global.set("reservaIdRespuesta", response.body.codigo); %}
+
+### Registrar pago del alojamiento (el monto debe cubrir el total cotizado)
+POST {{baseUrl}}/api/reservas/{{reservaId}}/folio/pagos
+Content-Type: application/json
+
+{ "monto": 240000, "medio": "TRANSFERENCIA", "referencia": "DEMO-ALOJAMIENTO" }
+
+### Confirmar reserva
+PUT {{baseUrl}}/api/reservas/{{reservaId}}/confirmar
+
+### Check-in
+PUT {{baseUrl}}/api/reservas/{{reservaId}}/registrar-llegada
+
+### Agregar servicio al folio
+POST {{baseUrl}}/api/reservas/{{reservaId}}/folio/cargos
+Content-Type: application/json
+
+{ "tipoCargo": "SERVICIO_ADICIONAL", "concepto": "Desayuno", "monto": 25000 }
+
+### Pagar saldo y cargos pendientes antes del check-out
+POST {{baseUrl}}/api/reservas/{{reservaId}}/folio/pagos
+Content-Type: application/json
+
+{ "monto": 25000, "medio": "TRANSFERENCIA", "referencia": "DEMO-SALDO" }
+
+### Cerrar folio
+PUT {{baseUrl}}/api/reservas/{{reservaId}}/folio/cerrar
+Content-Type: application/json
+
+{ "motivo": "Cierre ordinario de demostraci�n" }
+
+### Check-out
+PUT {{baseUrl}}/api/reservas/{{reservaId}}/registrar-salida

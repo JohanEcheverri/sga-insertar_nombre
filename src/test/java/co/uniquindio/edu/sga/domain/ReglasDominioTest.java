@@ -58,10 +58,10 @@ class ReglasDominioTest {
 
     private static PoliticaCancelacion politica() {
         List<TramoCancelacion> tramos = new ArrayList<>();
-        tramos.add(new TramoCancelacion(0, 1.0));   // menos de 24 h
-        tramos.add(new TramoCancelacion(1, 0.25));  // entre 24 y 72 h
-        tramos.add(new TramoCancelacion(3, 0.10));  // más de 72 h
-        return new PoliticaCancelacion(new VersionPolitica("v1", LocalDate.now()), tramos, 1.0);
+        tramos.add(new TramoCancelacion(0, new BigDecimal("1.0")));   // menos de 24 h
+        tramos.add(new TramoCancelacion(1, new BigDecimal("0.25")));  // entre 24 y 72 h
+        tramos.add(new TramoCancelacion(3, new BigDecimal("0.10")));  // más de 72 h
+        return new PoliticaCancelacion(new VersionPolitica("v1", LocalDate.now()), tramos, new BigDecimal("1.0"));
     }
 
     private static Estancia estancia(LocalDate entrada, LocalDate salida) {
@@ -886,8 +886,8 @@ class ReglasDominioTest {
             Alojamiento al = alojamiento(as, ts);
 
             List<TramoCancelacion> tramos = new ArrayList<>();
-            tramos.add(new TramoCancelacion(0, 0.5));
-            al.cambiarPoliticaVigente(new PoliticaCancelacion(new VersionPolitica("v2",LocalDate.now()), tramos, 0.5));
+            tramos.add(new TramoCancelacion(0, new BigDecimal("0.5")));
+            al.cambiarPoliticaVigente(new PoliticaCancelacion(new VersionPolitica("v2",LocalDate.now()), tramos, new BigDecimal("0.5")));
 
             assertEquals("v2", al.getPoliticaVigente().version().valor());
             assertEquals("v1", r.getPoliticaCancelacion().version().valor()); // RN-13 / RN-22
@@ -905,11 +905,11 @@ class ReglasDominioTest {
         @Test
         void rn13LaRetencionSeDeterminaPorLaAntelacion() {
             PoliticaCancelacion p = politica();
-            assertEquals(1.0, p.retencionParaDias(0));
-            assertEquals(0.25, p.retencionParaDias(1));
-            assertEquals(0.25, p.retencionParaDias(2));
-            assertEquals(0.10, p.retencionParaDias(3));
-            assertEquals(0.10, p.retencionParaDias(30));
+            assertEquals(new BigDecimal("1.0"), p.retencionParaDias(0));
+            assertEquals(new BigDecimal("0.25"), p.retencionParaDias(1));
+            assertEquals(new BigDecimal("0.25"), p.retencionParaDias(2));
+            assertEquals(new BigDecimal("0.10"), p.retencionParaDias(3));
+            assertEquals(new BigDecimal("0.10"), p.retencionParaDias(30));
         }
 
         @Test
@@ -919,43 +919,43 @@ class ReglasDominioTest {
 
         @Test
         void retencionPorNoShowViveEnLaPolitica() {
-            assertEquals(1.0, politica().retencionPorNoShow());
+            assertEquals(new BigDecimal("1.0"), politica().retencionPorNoShow());
         }
 
         @Test
         void exigeTramoDesdeCeroDiasSinDuplicados() {
             List<TramoCancelacion> sinCero = new ArrayList<>();
-            sinCero.add(new TramoCancelacion(1, 0.5));
+            sinCero.add(new TramoCancelacion(1, new BigDecimal("0.5")));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), sinCero, 1.0));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), sinCero, new BigDecimal("1.0")));
 
             List<TramoCancelacion> duplicados = new ArrayList<>();
-            duplicados.add(new TramoCancelacion(0, 0.5));
-            duplicados.add(new TramoCancelacion(0, 0.3));
+            duplicados.add(new TramoCancelacion(0, new BigDecimal("0.5")));
+            duplicados.add(new TramoCancelacion(0, new BigDecimal("0.3")));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), duplicados, 1.0));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), duplicados, new BigDecimal("1.0")));
 
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v", LocalDate.now()), new ArrayList<>(), 1.0));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v", LocalDate.now()), new ArrayList<>(), new BigDecimal("1.0")));
         }
 
         @Test
         void validaVersionYPorcentajeDeNoShow() {
             List<TramoCancelacion> t = new ArrayList<>();
-            t.add(new TramoCancelacion(0, 0.5));
-            assertThrows(ReglaDominioException.class, () -> new PoliticaCancelacion(null, t, 1.0));
+            t.add(new TramoCancelacion(0, new BigDecimal("0.5")));
+            assertThrows(ReglaDominioException.class, () -> new PoliticaCancelacion(null, t, new BigDecimal("1.0")));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v", LocalDate.now()), t, 1.5));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v", LocalDate.now()), t, new BigDecimal("1.5")));
             assertThrows(ReglaDominioException.class,
-                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), t, -0.1));
+                    () -> new PoliticaCancelacion(new VersionPolitica("v",LocalDate.now()), t, new BigDecimal("-0.1")));
         }
 
         @Test
         void tramoValidaDiasYPorcentaje() {
-            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(-1, 0.5));
-            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(1, 1.01));
-            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(1, -0.01));
-            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(1, Double.NaN));
+            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(-1, new BigDecimal("0.5")));
+            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(1, new BigDecimal("1.01")));
+            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(1, new BigDecimal("-0.01")));
+            assertThrows(ReglaDominioException.class, () -> new TramoCancelacion(1, null));
         }
 
         @Test

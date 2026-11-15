@@ -17,6 +17,7 @@ public class Temporada {
     private final String nombre;
     private final RangoFechas rangoFechas;
     private final boolean esBase;
+    private boolean activa;
     private final Map<ApartamentoId, Tarifa> tarifasPorApartamento;
 
     private Temporada(TemporadaId id, String nombre, RangoFechas rangoFechas,
@@ -25,6 +26,7 @@ public class Temporada {
         this.nombre = nombre.trim();
         this.rangoFechas = rangoFechas;
         this.esBase = esBase;
+        this.activa = true;
         this.tarifasPorApartamento = new LinkedHashMap<>();
         for (Tarifa tarifa : tarifas) {
             this.tarifasPorApartamento.put(tarifa.apartamentoId(), tarifa);
@@ -54,6 +56,11 @@ public class Temporada {
         exigir(tarifa != null, "La tarifa no puede ser nula.");
         exigir(id.equals(tarifa.temporadaId()), "La tarifa debe pertenecer a esta temporada.");
         tarifasPorApartamento.put(tarifa.apartamentoId(), tarifa);
+    }
+
+    public void retirar() {
+        exigir(!esBase, "F-05 - La temporada base es obligatoria y no se puede retirar.");
+        activa = false;
     }
 
     /** Obtiene la tarifa del apartamento; elegir la temporada según fechas corresponde al servicio de cotización. */
@@ -105,5 +112,6 @@ public class Temporada {
     public String getNombre() { return nombre; }
     public RangoFechas getRangoFechas() { return rangoFechas; }
     public boolean esBase() { return esBase; }
+    public boolean isActiva() { return activa; }
     public List<Tarifa> getTarifas() { return List.copyOf(tarifasPorApartamento.values()); }
 }

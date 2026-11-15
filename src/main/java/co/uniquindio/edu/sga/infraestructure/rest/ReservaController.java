@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.application.dto.request.ModificarReservaRequest;
 import co.uniquindio.edu.sga.application.dto.request.CrearReservaRequest;
 import co.uniquindio.edu.sga.application.dto.response.ReservaDetalleResponse;
 import co.uniquindio.edu.sga.application.dto.response.ReservaResumenResponse;
+import co.uniquindio.edu.sga.application.dto.response.PaginaResponse;
 import co.uniquindio.edu.sga.application.command.OcupanteDatos;
 import co.uniquindio.edu.sga.application.command.TitularDatos;
 import co.uniquindio.edu.sga.application.security.SolicitanteActualPort;
@@ -88,12 +89,26 @@ public class ReservaController {
 
     // GET -> /api/reservas
     @GetMapping
-    public ResponseEntity<List<ReservaResumenResponse>> consultarReservasPorEstado(@RequestParam String estado) {
+    public ResponseEntity<PaginaResponse<ReservaResumenResponse>> consultarReservasPorEstado(
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String apartamentoId,
+            @RequestParam(required = false) String canal,
+            @RequestParam(required = false) String documentoTitular,
+            @RequestParam(required = false) java.time.LocalDate entrada,
+            @RequestParam(required = false) java.time.LocalDate salida,
+            @RequestParam(required = false) java.time.LocalDate desde,
+            @RequestParam(required = false) java.time.LocalDate hasta,
+            @RequestParam(defaultValue = "0") int pagina) {
         exigirPersonalInterno();
-        var estados = java.util.Arrays.stream(estado.split(",")).map(String::trim).map(EstadoReserva::valueOf).collect(java.util.stream.Collectors.toSet());
-        var pagina = consultarReservasUseCase.ejecutar(new ConsultarReservasUseCase.Command(
-                new FiltroReservas(estados, null, null, null, null, null, null, null, null), 0));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aResumen).toList());
+        var estados = estado == null || estado.isBlank() ? java.util.Set.<EstadoReserva>of()
+                : java.util.Arrays.stream(estado.split(",")).map(String::trim).map(EstadoReserva::valueOf).collect(java.util.stream.Collectors.toSet());
+        var filtro = new FiltroReservas(estados,
+                apartamentoId == null ? null : ApartamentoId.of(java.util.UUID.fromString(apartamentoId)),
+                canal == null ? null : CanalOrigen.valueOf(canal), documentoTitular, null,
+                entrada, salida, desde, hasta);
+        var resultado = consultarReservasUseCase.ejecutar(new ConsultarReservasUseCase.Command(
+                filtro, pagina));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aResumen));
     }
 
     // GET -> /api/reservas/{codigo}
@@ -157,26 +172,26 @@ public class ReservaController {
 
     // GET -> api/reservas/llegadas
     @GetMapping("/llegadas")
-    public ResponseEntity<List<ReservaResumenResponse>> consultarLlegadasPorDia(@RequestParam String fecha) {
+    public ResponseEntity<PaginaResponse<ReservaResumenResponse>> consultarLlegadasPorDia(@RequestParam String fecha, @RequestParam(defaultValue = "0") int pagina) {
         exigirPersonalInterno();
-        var pagina = consultarLlegadasPorDiaUseCase.ejecutar(new ConsultarLlegadasPorDiaUseCase.Command(java.time.LocalDate.parse(fecha), 0));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aResumen).toList());
+        var resultado = consultarLlegadasPorDiaUseCase.ejecutar(new ConsultarLlegadasPorDiaUseCase.Command(java.time.LocalDate.parse(fecha), pagina));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aResumen));
     }
 
     // GET -> api/reservas/salidas
     @GetMapping("/salidas")
-    public ResponseEntity<List<ReservaResumenResponse>> consultarSalidasPorDia(@RequestParam String fecha) {
+    public ResponseEntity<PaginaResponse<ReservaResumenResponse>> consultarSalidasPorDia(@RequestParam String fecha, @RequestParam(defaultValue = "0") int pagina) {
         exigirPersonalInterno();
-        var pagina = consultarSalidasPorDiaUseCase.ejecutar(new ConsultarSalidasPorDiaUseCase.Command(java.time.LocalDate.parse(fecha), 0));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aResumen).toList());
+        var resultado = consultarSalidasPorDiaUseCase.ejecutar(new ConsultarSalidasPorDiaUseCase.Command(java.time.LocalDate.parse(fecha), pagina));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aResumen));
     }
     // GET -> api/reservas/canales
     @GetMapping("/canales")
-    public ResponseEntity<List<ReservaResumenResponse>> consultarReservasPorCanal(@RequestParam String canal) {
+    public ResponseEntity<PaginaResponse<ReservaResumenResponse>> consultarReservasPorCanal(@RequestParam String canal, @RequestParam(defaultValue = "0") int pagina) {
         exigirPersonalInterno();
         var filtro = new FiltroReservas(java.util.Set.of(), null, CanalOrigen.valueOf(canal), null, null, null, null, null, null);
-        var pagina = consultarReservasUseCase.ejecutar(new ConsultarReservasUseCase.Command(filtro, 0));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aResumen).toList());
+        var resultado = consultarReservasUseCase.ejecutar(new ConsultarReservasUseCase.Command(filtro, pagina));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aResumen));
     }
 
     private void exigirPersonalInterno() {

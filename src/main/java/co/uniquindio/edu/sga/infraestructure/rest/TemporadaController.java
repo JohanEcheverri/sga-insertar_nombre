@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.application.dto.request.AsignarTarifaRequest;
 import co.uniquindio.edu.sga.application.dto.request.CrearTemporadaRequest;
 import co.uniquindio.edu.sga.application.dto.request.ModificarTemporadaRequest;
 import co.uniquindio.edu.sga.application.dto.response.TemporadaResponse;
+import co.uniquindio.edu.sga.application.dto.response.PaginaResponse;
 import co.uniquindio.edu.sga.application.usecase.AsignarTarifaUseCase;
 import co.uniquindio.edu.sga.application.usecase.BuscarTemporadaUseCase;
 import co.uniquindio.edu.sga.application.usecase.CrearTemporadaUseCase;
@@ -61,8 +62,8 @@ public class TemporadaController {
         return ResponseEntity.ok(mapper.aRespuesta(resultado));
     }
 
-    // DELETE -> /api/temporadas/{id}
-    @DeleteMapping("/temporadas/{id}")
+    // PUT -> /api/temporadas/{id}/retirar
+    @PutMapping("/temporadas/{id}/retirar")
     public ResponseEntity<Void> eliminarTemporada(@PathVariable String id) {
         eliminarTemporadaUseCase.ejecutar(new EliminarTemporadaUseCase.Command(java.util.UUID.fromString(id), solicitanteActual.obtener()));
         return ResponseEntity.noContent().build();
@@ -70,10 +71,10 @@ public class TemporadaController {
 
     // GET -> /api/temporadas
     @GetMapping("/temporadas")
-    public ResponseEntity<List<TemporadaResponse>> buscarTemporada(@RequestParam(required = false) String fecha) {
+    public ResponseEntity<PaginaResponse<TemporadaResponse>> buscarTemporada(@RequestParam(required = false) String fecha, @RequestParam(defaultValue = "0") int pagina) {
         var dia = fecha == null || fecha.isBlank() ? null : java.time.LocalDate.parse(fecha);
-        var pagina = buscarTemporadaUseCase.ejecutar(new BuscarTemporadaUseCase.Command(0, dia));
-        return ResponseEntity.ok(pagina.contenido().stream().map(mapper::aRespuesta).toList());
+        var resultado = buscarTemporadaUseCase.ejecutar(new BuscarTemporadaUseCase.Command(pagina, dia));
+        return ResponseEntity.ok(PaginaResponse.de(resultado, mapper::aRespuesta));
     }
 
     // POST -> /api/tarifas

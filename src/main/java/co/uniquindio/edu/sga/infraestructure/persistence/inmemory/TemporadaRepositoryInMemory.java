@@ -35,6 +35,6 @@ public class TemporadaRepositoryInMemory implements TemporadaRepository {
 
     @Override
     public void eliminar(TemporadaId id) {
-        temporadas.remove(id);
+        temporadas.computeIfPresent(id, (clave, temporada) -> { temporada.retirar(); return temporada; });
     }
 }

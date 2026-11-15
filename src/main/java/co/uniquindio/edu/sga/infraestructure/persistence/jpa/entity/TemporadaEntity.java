@@ -28,9 +28,11 @@ public class TemporadaEntity {
     private LocalDate fechaFin;
 
     @Column(name = "multiplicador_tarifa", nullable = false, precision = 5, scale = 2)
-    private BigDecimal multiplicadorTarifa;
+    private BigDecimal multiplicadorTarifa = BigDecimal.ONE;
     @Column(name = "es_base", nullable = false)
     private boolean esBase;
+    @jakarta.persistence.Column(name = "activa", nullable = false)
+    private boolean activa = true;
     @jakarta.persistence.ElementCollection
     @jakarta.persistence.CollectionTable(name = "temporada_tarifas", joinColumns = @jakarta.persistence.JoinColumn(name = "temporada_id"))
     private java.util.List<TarifaEmbeddable> tarifas = new java.util.ArrayList<>();

@@ -33,7 +33,7 @@ public class BuscarTemporadaUseCase {
     }
 
     public Pagina<TemporadaDetalle> ejecutar(Command cmd) {
-        var temporadas = Cargas.alojamiento(alojamientoRepository).getTemporadas();
+        var temporadas = Cargas.alojamiento(alojamientoRepository).getTemporadas().stream().filter(Temporada::isActiva).toList();
         var filtradas = temporadas.stream().filter(t -> !t.esBase() && cmd.fecha() != null && t.cubreFecha(cmd.fecha())).toList();
         if (cmd.fecha() != null && filtradas.isEmpty()) {
             filtradas = temporadas.stream().filter(Temporada::esBase).toList();
