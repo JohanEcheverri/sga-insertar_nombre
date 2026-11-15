@@ -1,7 +1,16 @@
 @baseUrl = http://localhost:8080
 @apartamentoId = 20000000-0000-0000-0000-000000000001
-@usuarioId = REEMPLAZAR_POR_UUID_DE_USUARIO
+@usuarioId = 40000000-0000-0000-0000-000000000001
 @reservaId = {{reservaIdRespuesta}}
+@token = {{tokenRespuesta}}
+
+### Login de desarrollo como administrador
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "username": "admin@sga.local", "password": "AdminSga2026" }
+
+> {% client.global.set("tokenRespuesta", response.body.token); %}
 
 ### Catálogo: apartamentos con capacidad mínima (paginado)
 GET {{baseUrl}}/api/apartamentos/buscar-capacidad?capacidad=2&pagina=0
@@ -9,6 +18,7 @@ Accept: application/json
 
 ### Consultar temporadas activas (paginado)
 GET {{baseUrl}}/api/temporadas?pagina=0
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Cotizar antes de reservar
@@ -17,6 +27,7 @@ Accept: application/json
 
 ### Crear reserva
 POST {{baseUrl}}/api/reservas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -40,33 +51,40 @@ Content-Type: application/json
 
 ### Registrar pago del alojamiento (el monto debe cubrir el total cotizado)
 POST {{baseUrl}}/api/reservas/{{reservaId}}/folio/pagos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "monto": 240000, "medio": "TRANSFERENCIA", "referencia": "DEMO-ALOJAMIENTO" }
 
 ### Confirmar reserva
 PUT {{baseUrl}}/api/reservas/{{reservaId}}/confirmar
+Authorization: Bearer {{token}}
 
 ### Check-in
 PUT {{baseUrl}}/api/reservas/{{reservaId}}/registrar-llegada
+Authorization: Bearer {{token}}
 
 ### Agregar servicio al folio
 POST {{baseUrl}}/api/reservas/{{reservaId}}/folio/cargos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "tipoCargo": "SERVICIO_ADICIONAL", "concepto": "Desayuno", "monto": 25000 }
 
 ### Pagar saldo y cargos pendientes antes del check-out
 POST {{baseUrl}}/api/reservas/{{reservaId}}/folio/pagos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "monto": 25000, "medio": "TRANSFERENCIA", "referencia": "DEMO-SALDO" }
 
 ### Cerrar folio
 PUT {{baseUrl}}/api/reservas/{{reservaId}}/folio/cerrar
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "motivo": "Cierre ordinario de demostraci�n" }
 
 ### Check-out
 PUT {{baseUrl}}/api/reservas/{{reservaId}}/registrar-salida
+Authorization: Bearer {{token}}

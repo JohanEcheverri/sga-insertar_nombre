@@ -1,7 +1,6 @@
 package co.uniquindio.edu.sga.infraestructure.persistence.inmemory;
 
 import co.uniquindio.edu.sga.application.port.EncriptadorContraseniaPort;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -10,7 +9,6 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /** Adaptador local para proteger contraseñas sin requerir servicios externos. */
-@Component
 public class EncriptadorContraseniaPbkdf2 implements EncriptadorContraseniaPort {
     private static final int ITERACIONES = 210_000;
     private static final int BITS = 256;

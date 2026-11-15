@@ -10,8 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /** Convierte excepciones de la aplicación en respuestas HTTP JSON consistentes. */
 @RestControllerAdvice
@@ -32,10 +35,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> manejarValidacion(
             MethodArgumentNotValidException exception, HttpServletRequest request) {
-        String mensaje = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getDefaultMessage())
+        Map<String, String> errores = exception.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(error -> error.getField(), error -> error.getDefaultMessage(), (a, b) -> a));
+        String mensaje = errores.values().stream()
                 .findFirst().orElse("La solicitud contiene datos inválidos.");
-        return crearRespuesta(HttpStatus.BAD_REQUEST, mensaje, request);
+        return crearRespuesta(HttpStatus.BAD_REQUEST, mensaje, request, errores);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> manejarAutenticacion(
+            AuthenticationException exception, HttpServletRequest request) {
+        return crearRespuesta(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos.", request);
     }
 
     @ExceptionHandler(ApplicationException.class)
@@ -59,12 +69,18 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> crearRespuesta(
             HttpStatus status, String message, HttpServletRequest request) {
+        return crearRespuesta(status, message, request, Map.of());
+    }
+
+    private ResponseEntity<ErrorResponse> crearRespuesta(
+            HttpStatus status, String message, HttpServletRequest request, Map<String, String> errores) {
         ErrorResponse body = new ErrorResponse(
                 Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 message,
-                request.getRequestURI()
+                request.getRequestURI(),
+                errores
         );
         return ResponseEntity.status(status).body(body);
     }

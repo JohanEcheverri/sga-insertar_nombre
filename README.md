@@ -39,15 +39,24 @@ npm run dev
 
 Copia `frontend/.env.example` a `frontend/.env.local` y ajusta `VITE_API_URL` si la API no usa la URL local predeterminada.
 
+Antes de iniciar el backend, copia `src/main/resources/application-secrets.properties.example` a `src/main/resources/application-secrets.properties`. El archivo local está ignorado por Git y excluido del JAR. El login es `POST /api/auth/login`, con `username` (correo) y `password`; `POST /api/auth/registro` crea siempre un usuario `HUESPED`. Envía el token como `Authorization: Bearer <token>` en las rutas protegidas.
+
 ## Datos y autenticación de prueba
 
 El catálogo inicial incluye cuatro apartamentos, tarifas base y de temporada, y la política versionada `triquinuelas-v1`. Los identificadores fijos de catálogo aparecen en `src/main/resources/data.sql`.
 
-El repositorio todavía no configura un proveedor de inicio de sesión ni credenciales demo. Las operaciones que requieren identidad esperan que el contenedor web proporcione un `Principal` con usuario y rol; no hay usuario/clave de prueba que se pueda usar directamente con Basic o JWT. La implementación de JWT queda pendiente. El registro HTTP de `docs/api-requests.http` sirve como guion y requiere un entorno de autenticación para completar operaciones internas.
+Los usuarios de desarrollo se crean si su correo no existe, con contraseñas BCrypt; se deshabilitan en el perfil `prod`.
+
+| Rol | Correo | Contraseña |
+|---|---|---|
+| ADMINISTRADOR | `admin@sga.local` | `AdminSga2026` |
+| RECEPCIONISTA | `recepcion@sga.local` | `RecepcionSga2026` |
+| PERSONAL_SERVICIO | `servicio@sga.local` | `ServicioSga2026` |
+| HUESPED | `huesped@sga.local` | `HuespedSga2026` |
 
 ## Despliegue
 
-El `Dockerfile` construye el JAR con Gradle y ejecuta Java 25. Activa el perfil `prod` con `SPRING_PROFILES_ACTIVE=prod` y configura `SGA_CORS_ALLOWED_ORIGINS`, `SGA_JWT_SECRET` y las variables `SGA_ADMIN_*` según el entorno de despliegue. La integración de JWT y la provisión del usuario administrador aún deben completarse en backend.
+El `Dockerfile` construye el JAR con Gradle y ejecuta Java 25. Activa el perfil `prod` con `SPRING_PROFILES_ACTIVE=prod` y configura `SGA_CORS_ALLOWED_ORIGINS`, `SGA_JWT_SECRET` (mínimo 32 bytes) y `SGA_ADMIN_*` para el entorno. Si se proporcionan nombre, correo y clave del administrador, se crea al iniciar cuando ese correo no existe. El secreto local no se incluye en el JAR.
 
 ## Artefactos API
 
