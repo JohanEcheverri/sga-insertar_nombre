@@ -1,4 +1,10 @@
 import { Link } from 'react-router'
-import { Encabezado } from '../componentes/Encabezado'
-import { PiePagina } from '../componentes/PiePagina'
-export default function Inicio() { return <><Encabezado /><main className="contenedor"><h1>Encuentra tu alojamiento</h1><p>Consulta apartamentos y gestiona tus reservas en un solo lugar.</p><Link to="/login">Iniciar sesión</Link></main><PiePagina /></> }
+
+export default function Inicio() {
+  return <main className="container py-5"><section className="p-5 rounded-4 bg-light shadow-sm">
+    <p className="text-primary fw-semibold">Alojamiento turístico en Armenia, Quindío</p>
+    <h1 className="display-5 fw-bold">Bienvenido a El Cam</h1>
+    <p className="lead">Encuentra un espacio para descansar y disfruta tu estancia.</p>
+    <Link className="btn btn-primary mt-3" to="/">Explorar catálogo</Link>
+  </section></main>
+}

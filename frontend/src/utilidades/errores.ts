@@ -1,13 +1,37 @@
 import axios from 'axios'
-import type { ErrorResponse } from '../modelos/error'
 
-function respuestaError(error: unknown): ErrorResponse | null {
-  if (!axios.isAxiosError<ErrorResponse>(error)) return null
-  return error.response?.data ?? null
+interface ErrorRespuesta {
+  mensaje?: string
+  error?: string
+  errores?: Record<string, string> | null
 }
-export function mensajeDeError(error: unknown): string { return respuestaError(error)?.mensaje ?? (error instanceof Error ? error.message : 'Ocurrió un error inesperado.') }
-export function estadoHttp(error: unknown): number | null { return axios.isAxiosError(error) ? error.response?.status ?? null : null }
-export function erroresDeCampo(error: unknown): Record<string, string> {
-  const errores = respuestaError(error)?.errores ?? {}
-  return Object.fromEntries(Object.entries(errores).map(([campo, mensaje]) => [campo.replace(/\[(\d+)\]/g, '.$1'), mensaje]))
+
+function esRegistro(valor: unknown): valor is Record<string, unknown> {
+  return typeof valor === 'object' && valor !== null
 }
+
+function cuerpoError(error: unknown): ErrorRespuesta | null {
+  if (!axios.isAxiosError(error) || !esRegistro(error.response?.data)) return null
+  return error.response.data as ErrorRespuesta
+}
+
+export function extraerErroresCampos(error: unknown): Record<string, string> {
+  const errores = cuerpoError(error)?.errores
+  return errores && typeof errores === 'object' ? errores : {}
+}
+
+export function extraerMensajeError(error: unknown): string {
+  if (axios.isAxiosError(error) && !error.response) {
+    return 'No fue posible conectar con el servidor. Verifica tu conexión e inténtalo de nuevo.'
+  }
+  const cuerpo = cuerpoError(error)
+  if (cuerpo?.mensaje) return cuerpo.mensaje
+  if (cuerpo?.errores) {
+    const detalle = Object.values(cuerpo.errores).find((mensaje) => Boolean(mensaje))
+    if (detalle) return detalle
+  }
+  if (cuerpo?.error) return cuerpo.error
+  return 'Ocurrió un error. Inténtalo de nuevo.'
+}
+
+export const mensajeDeError = extraerMensajeError

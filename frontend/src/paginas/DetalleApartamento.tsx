@@ -1,3 +1,6 @@
 import { useParams } from 'react-router'
-import { Encabezado } from '../componentes/Encabezado'
-export default function DetalleApartamento() { const { identificacion } = useParams(); return <><Encabezado /><main className="contenedor"><h1>Apartamento {identificacion}</h1><p>Consulta disponibilidad y tarifas para este alojamiento.</p></main></> }
+
+export default function DetalleApartamento() {
+  const { id } = useParams()
+  return <main className="container py-5"><h1 className="h2">Apartamento {id}</h1><p className="text-secondary">Aquí podrás consultar disponibilidad y tarifas del alojamiento.</p></main>
+}
