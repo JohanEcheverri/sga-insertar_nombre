@@ -85,23 +85,22 @@ INSERT INTO temporada (id, nombre, fecha_inicio, fecha_fin, multiplicador_tarifa
 SELECT '30000000-0000-0000-0000-000000000004', 'Festival de la Piña 2027-2028', DATE '2027-12-15', DATE '2028-01-16', 1.00, FALSE, TRUE
 WHERE NOT EXISTS (SELECT 1 FROM temporada WHERE id='30000000-0000-0000-0000-000000000004');
 
--- Los valores de tarifa son por apartamento (Standard) o por persona facturable (Premium).
-DELETE FROM temporada_tarifas WHERE temporada_id IN (
- '30000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000002',
- '30000000-0000-0000-0000-000000000003','30000000-0000-0000-0000-000000000004');
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001',80000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000002',80000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000003',150000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000004',150000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000001',120000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000002',120000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000003',220000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000004',220000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000001',140000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000002',140000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000003',250000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000004',250000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000001',140000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000002',140000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000003',250000);
-INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche) VALUES ('30000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000004',250000);
+-- Completa solo las tarifas faltantes para todos los apartamentos ya registrados.
+-- No reemplaza tarifas cargadas por administración. Valores por apartamento Standard
+-- y por persona facturable Premium, de acuerdo con la regla comercial de El Cam.
+INSERT INTO temporada_tarifas (temporada_id, apartamento_id, precio_por_noche)
+SELECT s.id, a.id,
+       CASE
+         WHEN a.categoria = 'PREMIUM' AND LOWER(s.nombre) LIKE '%fiesta%' THEN 220000
+         WHEN a.categoria = 'PREMIUM' AND LOWER(s.nombre) LIKE '%piña%' THEN 250000
+         WHEN a.categoria = 'PREMIUM' THEN 150000
+         WHEN LOWER(s.nombre) LIKE '%fiesta%' THEN 120000
+         WHEN LOWER(s.nombre) LIKE '%piña%' THEN 140000
+         ELSE 80000
+       END
+FROM temporada s
+CROSS JOIN apartamentos a
+WHERE NOT EXISTS (
+      SELECT 1 FROM temporada_tarifas st
+      WHERE st.temporada_id = s.id AND st.apartamento_id = a.id
+  );
