@@ -86,7 +86,8 @@ public class ApartamentoController {
     // GET -> /api/apartamentos/preparacion-pendiente
     @GetMapping("/preparacion-pendiente")
     public ResponseEntity<PaginaResponse<ApartamentoResponse>> consultarApartamentosPreparacionPendientes(@RequestParam(defaultValue = "0") int pagina) {
-        if (!solicitanteActual.obtener().esPersonalInterno()) {
+        if (!solicitanteActual.obtener().esPersonalInterno()
+                && solicitanteActual.obtener().rol() != co.uniquindio.edu.sga.domain.valueobject.RolUsuario.PERSONAL_SERVICIO) {
             throw new AccesoDenegadoException("Solo el personal interno puede consultar unidades pendientes de preparación.");
         }
         var resultado = consultarApartamentoPreparacionPendienteUseCase.ejecutar(new ConsultarApartamentoPreparacionPendienteUseCase.Command(pagina));

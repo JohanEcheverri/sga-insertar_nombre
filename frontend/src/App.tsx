@@ -11,14 +11,24 @@ import MisReservas from './paginas/MisReservas'
 import PanelRecepcion from './paginas/PanelRecepcion'
 import PanelAdmin from './paginas/PanelAdmin'
 import NoEncontrada from './paginas/NoEncontrada'
+import PanelServicio from './paginas/PanelServicio'
+import { Navigate } from 'react-router'
+import { useAuth } from './contexto/useAuth'
+
+function InicioPorRol() {
+  const { tieneRol } = useAuth()
+  return tieneRol(['PERSONAL_SERVICIO']) ? <Navigate to="/servicio" replace /> : <Inicio />
+}
 
 export default function App() {
   return <div className="d-flex flex-column min-vh-100">
     <Encabezado />
     <div className="flex-grow-1">
       <Routes>
-        <Route path="/" element={<Inicio />} />
-        <Route path="/apartamentos/:id" element={<DetalleApartamento />} />
+        <Route path="/" element={<InicioPorRol />} />
+        <Route element={<RutaProtegida rolesPermitidos={['HUESPED', 'RECEPCIONISTA', 'ADMINISTRADOR']} />}>
+          <Route path="/apartamentos/:id" element={<DetalleApartamento />} />
+        </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route element={<RutaProtegida rolesPermitidos={['HUESPED']} />}>
@@ -31,6 +41,9 @@ export default function App() {
         </Route>
         <Route element={<RutaProtegida rolesPermitidos={['ADMINISTRADOR']} />}>
           <Route path="/admin" element={<PanelAdmin />} />
+        </Route>
+        <Route element={<RutaProtegida rolesPermitidos={['PERSONAL_SERVICIO']} />}>
+          <Route path="/servicio" element={<PanelServicio />} />
         </Route>
         <Route path="*" element={<NoEncontrada />} />
       </Routes>

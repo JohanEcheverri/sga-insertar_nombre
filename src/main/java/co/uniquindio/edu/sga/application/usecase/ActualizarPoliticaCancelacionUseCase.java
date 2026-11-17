@@ -28,7 +28,7 @@ import java.util.*;
 @Transactional
 public class ActualizarPoliticaCancelacionUseCase {
 
-    public record Tramo(int diasAntelacionMinimos, BigDecimal porcentajeRetencion) { }
+    public record Tramo(int horasAntelacionMinimas, BigDecimal porcentajeRetencion) { }
 
     public record Command(List<Tramo> tramos, BigDecimal porcentajeRetencionNoShow, Solicitante solicitante) { }
 
@@ -48,7 +48,7 @@ public class ActualizarPoliticaCancelacionUseCase {
         String nueva = "v" + (numero(anterior) + 1);
 
         List<TramoCancelacion> tramos = new ArrayList<>();
-        for (Tramo t : cmd.tramos()) tramos.add(new TramoCancelacion(t.diasAntelacionMinimos(), t.porcentajeRetencion()));
+        for (Tramo t : cmd.tramos()) tramos.add(new TramoCancelacion(t.horasAntelacionMinimas(), t.porcentajeRetencion()));
         // L-10: al menos 2 tramos de antelación
         if (tramos.size() < 2) {
             throw new ReglaDominioException("La política debe tener al menos dos tramos de antelación.");

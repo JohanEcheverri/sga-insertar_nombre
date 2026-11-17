@@ -30,10 +30,16 @@ import java.util.stream.Collectors;
 @Transactional
 public class CrearApartamentoUseCase {
 
-    /** tarifasPorTemporada: id de temporada → precio por ocupante facturable por noche. */
-    public record Command(String identificadorUnico, String descripcion, int capacidad,
+    /** tarifasPorTemporada: id de temporada → tarifa por noche, según la categoría. */
+    public record Command(String identificadorUnico, String descripcion, CategoriaApartamento categoria, int capacidad,
                           List<DormitorioDatos> dormitorios, Map<UUID, BigDecimal> tarifasPorTemporada,
-                          Solicitante solicitante) { }
+                          Solicitante solicitante) {
+        public Command(String identificadorUnico, String descripcion, int capacidad,
+                       List<DormitorioDatos> dormitorios, Map<UUID, BigDecimal> tarifasPorTemporada,
+                       Solicitante solicitante) {
+            this(identificadorUnico, descripcion, null, capacidad, dormitorios, tarifasPorTemporada, solicitante);
+        }
+    }
 
     private final AlojamientoRepository alojamientoRepository;
 
@@ -45,9 +51,15 @@ public class CrearApartamentoUseCase {
         if (cmd.solicitante() == null) throw new AccesoDenegadoException("Debe autenticarse para crear un apartamento.");
         cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
+        CategoriaApartamento categoria = cmd.categoria() == null ? CategoriaApartamento.PREMIUM : cmd.categoria();
+        if (cmd.categoria() != null && (cmd.capacidad() != categoria.aforoMaximo()
+                || cmd.dormitorios() == null || cmd.dormitorios().size() != categoria.cantidadDormitorios())) {
+            throw new ReglaDominioException("La categoría " + categoria + " requiere aforo "
+                    + categoria.aforoMaximo() + " y " + categoria.cantidadDormitorios() + " dormitorios.");
+        }
         Apartamento apartamento = Apartamento.crear(capacidad(cmd.capacidad()), cmd.descripcion(),
                 DormitorioDatos.aDominio(cmd.dormitorios()), EstadoOperativo.PREPARADO,
-                ApartamentoId.generar(), cmd.identificadorUnico(), true);
+                ApartamentoId.generar(), cmd.identificadorUnico(), true, categoria);
 
         List<Tarifa> tarifas = new ArrayList<>();
         Map<UUID, BigDecimal> precios = cmd.tarifasPorTemporada() == null ? Map.of() : cmd.tarifasPorTemporada();
@@ -65,4 +77,5 @@ public class CrearApartamentoUseCase {
         }
         return new Capacidad((byte) valor);
     }
+
 }

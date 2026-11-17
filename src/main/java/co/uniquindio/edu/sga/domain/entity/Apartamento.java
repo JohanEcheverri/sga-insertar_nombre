@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.entity;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
 import co.uniquindio.edu.sga.domain.valueobject.Capacidad;
+import co.uniquindio.edu.sga.domain.valueobject.CategoriaApartamento;
 import co.uniquindio.edu.sga.domain.valueobject.Dormitorio;
 import co.uniquindio.edu.sga.domain.valueobject.EstadoOperativo;
 
@@ -13,6 +14,7 @@ import java.util.Objects;
 public class Apartamento {
     private final ApartamentoId id;
     private final String identificadorUnico;
+    private final CategoriaApartamento categoria;
     private String descripcion;
     private Capacidad capacidad;
     private EstadoOperativo estadoOperativo;
@@ -23,7 +25,7 @@ public class Apartamento {
 
     private Apartamento(Capacidad capacidad, String descripcion, List<Dormitorio> dormitorios,
                         EstadoOperativo estadoOperativo, ApartamentoId id,
-                        String identificadorUnico, boolean disponible) {
+                        String identificadorUnico, boolean disponible, CategoriaApartamento categoria) {
         this.capacidad = capacidad;
         this.descripcion = descripcion.trim();
         this.dormitorios = List.copyOf(dormitorios);
@@ -31,21 +33,31 @@ public class Apartamento {
         this.disponible = disponible;
         this.id = id;
         this.identificadorUnico = identificadorUnico.trim();
+        this.categoria = categoria;
     }
 
     public static Apartamento crear(Capacidad capacidad, String descripcion,
                                     List<Dormitorio> dormitorios, EstadoOperativo estadoOperativo,
                                     ApartamentoId id, String identificadorUnico, boolean disponible) {
+        return crear(capacidad, descripcion, dormitorios, estadoOperativo, id, identificadorUnico,
+                disponible, CategoriaApartamento.PREMIUM);
+    }
+
+    public static Apartamento crear(Capacidad capacidad, String descripcion,
+                                    List<Dormitorio> dormitorios, EstadoOperativo estadoOperativo,
+                                    ApartamentoId id, String identificadorUnico, boolean disponible,
+                                    CategoriaApartamento categoria) {
         exigir(capacidad != null, "El apartamento debe tener una capacidad definida.");
         exigir(descripcion != null && !descripcion.isBlank(), "La descripción del apartamento es obligatoria.");
         validarDormitorios(dormitorios);
         exigir(estadoOperativo != null, "El apartamento debe tener un estado operativo.");
         exigir(id != null, "El apartamento debe tener identificador.");
+        exigir(categoria != null, "El apartamento debe tener una categoría definida.");
         exigir(identificadorUnico != null && !identificadorUnico.isBlank(), "El identificador único del apartamento es obligatorio.");
         exigir(estadoOperativo != EstadoOperativo.OCUPADO || !disponible,
                 "Un apartamento OCUPADO no puede estar marcado como disponible.");
         return new Apartamento(capacidad, descripcion, dormitorios, estadoOperativo,
-                id, identificadorUnico, disponible);
+                id, identificadorUnico, disponible, categoria);
     }
 
     /**
@@ -97,6 +109,14 @@ public class Apartamento {
         disponible = false;
     }
 
+    /** El administrador puede apartar para alistamiento cualquier unidad que no esté ocupada por huéspedes. */
+    public void marcarPendientePreparacionAdministrativo() {
+        exigir(estadoOperativo != EstadoOperativo.OCUPADO,
+                "No se puede marcar pendiente de preparación un apartamento ocupado.");
+        estadoOperativo = EstadoOperativo.PENDIENTE_PREPARACION;
+        disponible = false;
+    }
+
     /** PENDIENTE_PREPARACION → EN_PREPARACION (personal de servicio). */
     public void iniciarPreparacion() {
         exigir(estadoOperativo == EstadoOperativo.PENDIENTE_PREPARACION,
@@ -133,6 +153,7 @@ public class Apartamento {
 
     public ApartamentoId getId() { return id; }
     public String getIdentificadorUnico() { return identificadorUnico; }
+    public CategoriaApartamento getCategoria() { return categoria; }
     public String getDescripcion() { return descripcion; }
     public Capacidad getCapacidad() { return capacidad; }
     public EstadoOperativo getEstadoOperativo() { return estadoOperativo; }

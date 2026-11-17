@@ -21,8 +21,8 @@ import java.time.*;
 import java.util.*;
 
 /**
- * PUT /api/reservas/{codigo}/cancelar — Retención según la política CONGELADA (RN-13), registrada
- * como cargo y saldo a favor en el folio. Libera las noches de inmediato (RN-12: ya no está activa).
+ * PUT /api/reservas/{codigo}/cancelar — aplica la política de cancelación de El Cam respecto al
+ * check-in y registra la penalidad como movimiento contable en el folio.
  */
 @Service
 @Transactional

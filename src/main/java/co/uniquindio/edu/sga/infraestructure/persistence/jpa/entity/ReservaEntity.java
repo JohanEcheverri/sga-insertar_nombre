@@ -70,7 +70,7 @@ public class ReservaEntity {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "titular_usuario_id", nullable = false)
+    @Column(name = "titular_usuario_id")
     private UUID titularUsuarioId;
 
     @Column(name = "titular_correo", nullable = false, length = 150)

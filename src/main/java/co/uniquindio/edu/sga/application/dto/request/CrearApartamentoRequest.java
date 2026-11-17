@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import co.uniquindio.edu.sga.domain.valueobject.CategoriaApartamento;
 import java.util.List;
 
 /** Datos de entrada para crear un apartamento junto con sus dormitorios.
@@ -23,6 +24,9 @@ public record CrearApartamentoRequest(
 
         @NotBlank(message = "La descripción es obligatoria")
         String descripcion,
+
+        @NotNull(message = "La categoría del apartamento es obligatoria")
+        CategoriaApartamento categoria,
 
         @NotNull(message = "El aforo máximo es obligatorio") @Positive(message = "El aforo debe ser mayor que cero")
         Integer aforoMaximo,

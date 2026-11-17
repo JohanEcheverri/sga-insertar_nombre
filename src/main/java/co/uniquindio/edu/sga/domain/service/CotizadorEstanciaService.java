@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.domain.entity.Alojamiento;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
 import co.uniquindio.edu.sga.domain.valueobject.Dinero;
+import co.uniquindio.edu.sga.domain.valueobject.CategoriaApartamento;
 import co.uniquindio.edu.sga.domain.valueobject.Estancia;
 import co.uniquindio.edu.sga.domain.valueobject.FechaNacimiento;
 import co.uniquindio.edu.sga.domain.valueobject.Tarifa;
@@ -15,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RN-05 / RN-06 - Cotiza una estancia noche por noche: tarifa vigente del apartamento en la
- * temporada de cada noche × ocupantes facturables. No necesita repositorios: recibe el agregado
+ * RN-05 / RN-06 - Cotiza una estancia noche por noche según la categoría del apartamento.
+ * No necesita repositorios: recibe el agregado
  * Alojamiento (que ya contiene temporadas y tarifas).
  */
 public class CotizadorEstanciaService {
@@ -32,6 +33,9 @@ public class CotizadorEstanciaService {
         if (alojamiento == null || apartamentoId == null || estancia == null || fechasNacimiento == null) {
             throw new ReglaDominioException("Para cotizar se requiere alojamiento, apartamento, estancia y ocupantes.");
         }
+        CategoriaApartamento categoria = alojamiento.buscarApartamento(apartamentoId)
+                .orElseThrow(() -> new ReglaDominioException("No encontramos el apartamento solicitado."))
+                .getCategoria();
         int facturables = contarFacturables(fechasNacimiento, estancia.fechaEntrada(),
                 alojamiento.getConfiguracion().umbralEdadFacturable());
         if (facturables == 0) {
@@ -42,7 +46,7 @@ public class CotizadorEstanciaService {
         BigDecimal total = BigDecimal.ZERO;
         for (LocalDate noche = estancia.fechaEntrada(); noche.isBefore(estancia.fechaSalida()); noche = noche.plusDays(1)) {
             Tarifa tarifa = alojamiento.tarifaAplicable(apartamentoId, noche);
-            BigDecimal subtotal = tarifa.calcularValorNoche(facturables);
+            BigDecimal subtotal = tarifa.calcularValorNoche(facturables, categoria);
             lineas.add(new Linea(noche, alojamiento.temporadaAplicable(noche).getNombre(),
                     tarifa.precioPorNochePorOcupante(), facturables, subtotal));
             total = total.add(subtotal);

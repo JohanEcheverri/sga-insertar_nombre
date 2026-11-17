@@ -4,12 +4,15 @@ import co.uniquindio.edu.sga.application.dto.request.ModificarReservaRequest;
 import co.uniquindio.edu.sga.application.dto.request.CrearReservaRequest;
 import co.uniquindio.edu.sga.application.dto.response.ReservaDetalleResponse;
 import co.uniquindio.edu.sga.application.dto.response.ReservaResumenResponse;
+import co.uniquindio.edu.sga.application.dto.response.CancelacionReservaResponse;
+import co.uniquindio.edu.sga.application.dto.response.PrevisualizacionCancelacionResponse;
 import co.uniquindio.edu.sga.application.dto.response.PaginaResponse;
 import co.uniquindio.edu.sga.application.command.OcupanteDatos;
 import co.uniquindio.edu.sga.application.command.TitularDatos;
 import co.uniquindio.edu.sga.application.security.SolicitanteActualPort;
 import co.uniquindio.edu.sga.application.exception.AccesoDenegadoException;
 import co.uniquindio.edu.sga.application.usecase.CancelarReservaUseCase;
+import co.uniquindio.edu.sga.application.usecase.ConsultarPenalidadCancelacionUseCase;
 import co.uniquindio.edu.sga.application.usecase.ConfirmarReservaUseCase;
 import co.uniquindio.edu.sga.application.usecase.ConsultarLlegadasPorDiaUseCase;
 import co.uniquindio.edu.sga.application.usecase.ConsultarReservaPorCodigoUseCase;
@@ -41,6 +44,7 @@ public class ReservaController {
     private final ConsultarReservaPorCodigoUseCase consultarReservaPorCodigoUseCase;
     private final ConfirmarReservaUseCase confirmarReservaUseCase;
     private final CancelarReservaUseCase cancelarReservaUseCase;
+    private final ConsultarPenalidadCancelacionUseCase consultarPenalidadCancelacionUseCase;
     private final RegistrarLlegadaUseCase registrarLlegadaUseCase;
     private final RegistrarSalidaUseCase registrarSalidaUseCase;
     private final DeclararNoShowUseCase declararNoShowUseCase;
@@ -53,6 +57,7 @@ public class ReservaController {
     public ReservaController(CrearReservaUseCase crearReservaUseCase, ConsultarReservasUseCase consultarReservasUseCase,
             ConsultarReservaPorCodigoUseCase consultarReservaPorCodigoUseCase, ConfirmarReservaUseCase confirmarReservaUseCase,
             CancelarReservaUseCase cancelarReservaUseCase, RegistrarLlegadaUseCase registrarLlegadaUseCase,
+            ConsultarPenalidadCancelacionUseCase consultarPenalidadCancelacionUseCase,
             RegistrarSalidaUseCase registrarSalidaUseCase, DeclararNoShowUseCase declararNoShowUseCase,
             ModificarReservaUseCase modificarReservaUseCase, ConsultarLlegadasPorDiaUseCase consultarLlegadasPorDiaUseCase,
             ConsultarSalidasPorDiaUseCase consultarSalidasPorDiaUseCase, ReservaMapper mapper,
@@ -62,6 +67,7 @@ public class ReservaController {
         this.consultarReservaPorCodigoUseCase = consultarReservaPorCodigoUseCase;
         this.confirmarReservaUseCase = confirmarReservaUseCase;
         this.cancelarReservaUseCase = cancelarReservaUseCase;
+        this.consultarPenalidadCancelacionUseCase = consultarPenalidadCancelacionUseCase;
         this.registrarLlegadaUseCase = registrarLlegadaUseCase;
         this.registrarSalidaUseCase = registrarSalidaUseCase;
         this.declararNoShowUseCase = declararNoShowUseCase;
@@ -75,14 +81,29 @@ public class ReservaController {
     // POST -> /api/reservas/
     @PostMapping
     public ResponseEntity<ReservaDetalleResponse> crearReserva(@Valid @RequestBody CrearReservaRequest solicitud) {
+        var solicitante = solicitanteActual.obtener();
+        var canal = CanalOrigen.valueOf(solicitud.canalOrigen());
+        java.util.UUID usuarioId;
+        if (canal == CanalOrigen.PORTAL) {
+            if (solicitante.rol() != co.uniquindio.edu.sga.domain.valueobject.RolUsuario.HUESPED || solicitante.usuarioId() == null) {
+                throw new AccesoDenegadoException("El canal Portal está disponible para huéspedes autenticados.");
+            }
+            usuarioId = solicitante.usuarioId().valor();
+        } else if (canal == CanalOrigen.DIRECTO) {
+            if (!solicitante.esPersonalInterno()) throw new AccesoDenegadoException("Solo recepción puede crear reservas directas.");
+            usuarioId = solicitud.usuarioId() == null || solicitud.usuarioId().isBlank() ? null : java.util.UUID.fromString(solicitud.usuarioId());
+        } else {
+            if (!solicitante.esAdministrador()) throw new AccesoDenegadoException("El canal externo requiere autorización administrativa.");
+            usuarioId = solicitud.usuarioId() == null || solicitud.usuarioId().isBlank() ? null : java.util.UUID.fromString(solicitud.usuarioId());
+        }
         var titular = new TitularDatos(solicitud.nombreTitular(), solicitud.apellidoTitular(),
-                java.util.UUID.fromString(solicitud.usuarioId()), solicitud.correoTitular(), solicitud.telefonoTitular(),
+                usuarioId, solicitud.correoTitular(), solicitud.telefonoTitular(),
                 solicitud.documentoTitular());
         var ocupantes = solicitud.ocupantes().stream().map(o -> new OcupanteDatos(o.nombre(), o.apellido(),
                 o.documento(), o.fechaNacimiento())).toList();
         var comando = new CrearReservaUseCase.Command(titular, ocupantes, java.util.UUID.fromString(solicitud.apartamentoId()),
                 solicitud.fechaEntrada(), solicitud.fechaSalida(), solicitud.horaEstimadaLlegada(),
-                CanalOrigen.valueOf(solicitud.canalOrigen()), solicitud.identificadorExterno());
+                canal, solicitud.identificadorExterno());
         var resultado = crearReservaUseCase.ejecutar(comando);
         return ResponseEntity.status(resultado.yaExistia() ? 200 : 201).body(mapper.aDetalle(resultado.detalle()));
     }
@@ -128,11 +149,22 @@ public class ReservaController {
     }
 
     // PUT -> /api/reservas/{codigo}/cancelar
+    @GetMapping("/{codigo}/cancelacion")
+    public ResponseEntity<PrevisualizacionCancelacionResponse> previsualizarCancelacion(@PathVariable String codigo) {
+        var resultado = consultarPenalidadCancelacionUseCase.ejecutar(new ConsultarPenalidadCancelacionUseCase.Command(
+                java.util.UUID.fromString(codigo), solicitanteActual.obtener()));
+        return ResponseEntity.ok(new PrevisualizacionCancelacionResponse(resultado.horasAntelacion(), resultado.tramo(),
+                resultado.porcentajeRetenido(), resultado.penalidad(), resultado.anticipoRequerido(),
+                resultado.pagosRegistrados(), resultado.saldoAFavorEstimado(), resultado.saldoPendienteEstimado()));
+    }
+
     @PutMapping("/{codigo}/cancelar")
-    public ResponseEntity<ReservaDetalleResponse> cancelarReserva(@PathVariable String codigo) {
+    public ResponseEntity<CancelacionReservaResponse> cancelarReserva(@PathVariable String codigo) {
         var resultado = cancelarReservaUseCase.ejecutar(new CancelarReservaUseCase.Command(
                 java.util.UUID.fromString(codigo), solicitanteActual.obtener()));
-        return ResponseEntity.ok(mapper.aDetalle(resultado.detalle()));
+        return ResponseEntity.ok(new CancelacionReservaResponse(resultado.reservaId().toString(), resultado.estado().name(),
+                resultado.porcentajeRetenido(), resultado.penalidad(), resultado.saldoAFavor(), resultado.saldoPendiente(),
+                mapper.aDetalle(resultado.detalle())));
     }
 
     // PUT -> api/reservas/{codigo}/registrar-llegada

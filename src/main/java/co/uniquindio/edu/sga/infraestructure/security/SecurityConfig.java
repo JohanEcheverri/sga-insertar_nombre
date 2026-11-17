@@ -35,7 +35,7 @@ public class SecurityConfig {
             @Value("${sga.cors.allowed-origins:http://localhost:5173,http://localhost:5174}") String origenes) {
         CorsConfiguration cors = new CorsConfiguration();
         cors.setAllowedOrigins(Arrays.stream(origenes.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList());
-        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
+        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         cors.setAllowCredentials(false);
         cors.setMaxAge(3600L);
@@ -57,11 +57,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/auth/login", "/api/auth/registro", "/error", "/actuator/health").permitAll();
                     auth.requestMatchers("/api/apartamentos/preparacion-pendiente",
-                            "/api/apartamentos/*/novedades/**", "/api/novedades/**",
                             "/api/reservas/*/registrar-llegada", "/api/reservas/*/registrar-salida",
-                            "/api/reservas/*/folio/**", "/api/reservas/llegadas", "/api/reservas/salidas")
-                            .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.GET, "/api/apartamentos/**", "/api/cotizaciones/**").permitAll();
+                            "/api/reservas/llegadas", "/api/reservas/salidas")
+                            .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR", "PERSONAL_SERVICIO");
+                    auth.requestMatchers("/api/apartamentos/*/novedades/**", "/api/novedades/**")
+                            .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR", "PERSONAL_SERVICIO");
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/apartamentos/*/estado-operativo")
+                            .hasAnyRole("ADMINISTRADOR", "PERSONAL_SERVICIO");
+                    auth.requestMatchers(HttpMethod.GET, "/api/reservas/*/folio").authenticated();
+                    auth.requestMatchers("/api/reservas/*/folio/**").hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
+                    auth.requestMatchers(HttpMethod.GET,
+                            "/api/apartamentos/disponibilidad", "/api/apartamentos/buscar-capacidad",
+                            "/api/cotizaciones").permitAll();
                     auth.requestMatchers(HttpMethod.POST, "/api/cotizaciones").permitAll();
                     if (herramientasDesarrollo) {
                         auth.requestMatchers("/api-docs/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll();

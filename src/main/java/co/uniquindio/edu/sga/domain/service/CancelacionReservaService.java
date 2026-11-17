@@ -11,11 +11,11 @@ import co.uniquindio.edu.sga.domain.valueobject.TipoCargo;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 
 /**
  * Coordina Reserva y Folio (dos agregados) al cancelar una reserva o al vencer su plazo de
- * confirmación. RN-13: la retención sale de la política CONGELADA en la reserva, no de la vigente.
+ * confirmación. La cancelación de El Cam se calcula con horas exactas hasta el check-in de las 15:00.
  * Opera sobre los agregados ya cargados; la persistencia la hace el caso de uso.
  */
 public class CancelacionReservaService {
@@ -32,12 +32,30 @@ public class CancelacionReservaService {
     /** Cancelación solicitada por el huésped o por recepción. */
     public Resultado procesarCancelacion(Reserva reserva, Folio folio, LocalDateTime ahora) {
         exigirFolioDeLaReserva(reserva, folio);
-        long diasAntelacion = Math.max(0,
-                ChronoUnit.DAYS.between(ahora.toLocalDate(), reserva.getEstancia().fechaEntrada()));
-        BigDecimal porcentaje = reserva.getPoliticaCancelacion().retencionParaDias(diasAntelacion);
+        // Política pública de El Cam: el umbral se calcula contra el check-in (15:00),
+        // no truncando la diferencia a días calendario.
+        BigDecimal porcentaje = porcentajeRetencion(reserva, ahora);
         reserva.cancelar();                                    // RN-08: solo PENDIENTE o CONFIRMADA
         return liquidar(reserva, folio, porcentaje, TipoCargo.PENALIDAD_CANCELACION,
                 "Penalidad por cancelación (política " + reserva.getPoliticaCancelacion().version().valor() + ")", ahora);
+    }
+
+    public static long horasAntelacion(Reserva reserva, LocalDateTime ahora) {
+        return duracionAntelacion(reserva, ahora).toHours();
+    }
+
+    public static BigDecimal porcentajeRetencion(Reserva reserva, LocalDateTime ahora) {
+        return reserva.getPoliticaCancelacion().retencionParaHoras(duracionAntelacion(reserva, ahora));
+    }
+
+    public static int tramoCancelacion(Reserva reserva, LocalDateTime ahora) {
+        return reserva.getPoliticaCancelacion().tramoIndexParaHoras(duracionAntelacion(reserva, ahora)) + 1;
+    }
+
+    private static Duration duracionAntelacion(Reserva reserva, LocalDateTime ahora) {
+        LocalDateTime checkIn = reserva.getEstancia().fechaEntrada().atTime(15, 0);
+        Duration diferencia = Duration.between(ahora, checkIn);
+        return diferencia.isNegative() ? Duration.ZERO : diferencia;
     }
 
     /** RN-21 - Cancelación automática por vencimiento del plazo de confirmación: sin penalidad. */

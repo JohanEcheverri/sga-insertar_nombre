@@ -32,4 +32,7 @@ public class UsuarioRepositoryInMemory implements UsuarioRepository {
     public boolean existePorCorreo(CorreoElectronico correo) {
         return buscarPorCorreo(correo).isPresent();
     }
+
+    @Override
+    public List<Usuario> buscarTodos() { return List.copyOf(usuarios.values()); }
 }

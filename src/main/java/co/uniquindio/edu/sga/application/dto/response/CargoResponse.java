@@ -15,4 +15,5 @@ public record CargoResponse(
         String tipoCargo,
         String concepto,
         BigDecimal monto,
-        LocalDateTime fechaRegistro) { }
+        LocalDateTime fechaRegistro,
+        boolean esCredito) { }

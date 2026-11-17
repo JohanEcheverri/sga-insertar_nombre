@@ -27,7 +27,12 @@ import java.util.stream.Collectors;
 @Transactional
 public class CrearNovedadUseCase {
 
-    public record Command(UUID apartamentoId, String autor, String descripcion, GravedadNovedad gravedad) { }
+    public record Command(UUID apartamentoId, String autor, String descripcion, GravedadNovedad gravedad,
+                          Solicitante solicitante) {
+        public Command(UUID apartamentoId, String autor, String descripcion, GravedadNovedad gravedad) {
+            this(apartamentoId, autor, descripcion, gravedad, null);
+        }
+    }
 
     private final AlojamientoRepository alojamientoRepository;
     private final NovedadRepository novedadRepository;
@@ -40,6 +45,10 @@ public class CrearNovedadUseCase {
     }
 
     public NovedadDetalle ejecutar(Command cmd) {
+        if (cmd.solicitante() == null || (!cmd.solicitante().esAdministrador()
+                && cmd.solicitante().rol() != RolUsuario.PERSONAL_SERVICIO)) {
+            throw new AccesoDenegadoException("Solo administración o personal de servicio puede registrar novedades.");
+        }
         Apartamento apartamento = Cargas.apartamento(Cargas.alojamiento(alojamientoRepository), cmd.apartamentoId());
         Novedad novedad = Novedad.reportar(apartamento.getId(), cmd.autor(), cmd.descripcion(), cmd.gravedad(),
                 LocalDateTime.now(clock));

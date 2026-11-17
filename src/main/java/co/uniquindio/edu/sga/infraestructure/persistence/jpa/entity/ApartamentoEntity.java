@@ -29,6 +29,7 @@ public class ApartamentoEntity {
     private String alojamientoId;
     private String identificadorUnico;
     private String descripcion;
+    private String categoria;
     private int capacidad;
     private String estadoOperativo;
     private boolean disponible;

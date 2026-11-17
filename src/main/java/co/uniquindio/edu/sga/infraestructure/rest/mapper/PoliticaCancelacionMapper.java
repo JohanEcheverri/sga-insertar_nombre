@@ -21,13 +21,13 @@ import java.util.List;
 public interface PoliticaCancelacionMapper {
     default ActualizarPoliticaCancelacionUseCase.Command aComando(DefinirPoliticaCancelacionRequest solicitud, Solicitante solicitante) {
         return new ActualizarPoliticaCancelacionUseCase.Command(solicitud.tramos().stream()
-                .map(t -> new ActualizarPoliticaCancelacionUseCase.Tramo(t.diasAntelacionMinimos(), t.porcentajeRetencion()))
+                .map(t -> new ActualizarPoliticaCancelacionUseCase.Tramo(t.horasAntelacionMinimas(), t.porcentajeRetencion()))
                 .toList(), solicitud.porcentajeRetencionNoShow(), solicitante);
     }
 
     default ActualizarPoliticaCancelacionUseCase.Command aComando(ActualizarPoliticaCancelacionRequest solicitud, Solicitante solicitante) {
         return new ActualizarPoliticaCancelacionUseCase.Command(solicitud.tramos().stream()
-                .map(t -> new ActualizarPoliticaCancelacionUseCase.Tramo(t.diasAntelacionMinimos(), t.porcentajeRetencion()))
+                .map(t -> new ActualizarPoliticaCancelacionUseCase.Tramo(t.horasAntelacionMinimas(), t.porcentajeRetencion()))
                 .toList(), solicitud.porcentajeRetencionNoShow(), solicitante);
     }
 
@@ -45,14 +45,14 @@ public interface PoliticaCancelacionMapper {
         return new PoliticaCancelacion(
                 new VersionPolitica(version, fechaVigencia), // <-- Añades la fecha de vigencia aquí
                 tramos.stream()
-                        .map(tramo -> new TramoCancelacion(tramo.diasAntelacionMinimos(), tramo.porcentajeRetencion()))
+                        .map(tramo -> new TramoCancelacion(tramo.horasAntelacionMinimas(), tramo.porcentajeRetencion()))
                         .toList(),
                 porcentajeRetencionNoShow);
     }
 
     default PoliticaCancelacionResponse aRespuesta(PoliticaCancelacion politica) {
         List<TramoCancelacionResponse> tramos = politica.tramos().stream()
-                .map(t -> new TramoCancelacionResponse(t.diasAntelacionMinimos(), t.porcentajeRetencion()))
+                .map(t -> new TramoCancelacionResponse(t.horasAntelacionMinimas(), t.porcentajeRetencion()))
                 .toList();
         return new PoliticaCancelacionResponse(politica.version().valor(), tramos,
                 politica.porcentajeRetencionNoShow());
@@ -61,7 +61,7 @@ public interface PoliticaCancelacionMapper {
     default PoliticaCancelacionResponse aRespuesta(List<co.uniquindio.edu.sga.application.dto.request.TramoCancelacionRequest> tramos,
                                                    BigDecimal retencionNoShow, String version) {
         return new PoliticaCancelacionResponse(version, tramos.stream()
-                .map(t -> new TramoCancelacionResponse(t.diasAntelacionMinimos(), t.porcentajeRetencion()))
+                .map(t -> new TramoCancelacionResponse(t.horasAntelacionMinimas(), t.porcentajeRetencion()))
                 .toList(), retencionNoShow);
     }
 }

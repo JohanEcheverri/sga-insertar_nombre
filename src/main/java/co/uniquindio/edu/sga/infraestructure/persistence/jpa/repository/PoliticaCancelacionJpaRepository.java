@@ -18,5 +18,5 @@ public class PoliticaCancelacionJpaRepository implements PoliticaCancelacionRepo
     public Optional<PoliticaCancelacion> obtenerVigenteEn(LocalDate fecha) { return data.findFirstByVigenteDesdeLessThanEqualOrderByVigenteDesdeDesc(fecha).map(this::map); }
     /** Busca una versión concreta de la política. */
     public Optional<PoliticaCancelacion> obtenerPorVersion(VersionPolitica version) { return data.findById(version.valor()).map(this::map); }
-    private PoliticaCancelacion map(PoliticaCancelacionEntity e) { return new PoliticaCancelacion(new VersionPolitica(e.getVersion(),e.getVigenteDesde()),e.getTramos().stream().map(t->new TramoCancelacion(t.diasAntelacionMinimos(),t.porcentajeRetencion())).toList(),e.getPorcentajeNoShow()); }
+    private PoliticaCancelacion map(PoliticaCancelacionEntity e) { return new PoliticaCancelacion(new VersionPolitica(e.getVersion(),e.getVigenteDesde()),e.getTramos().stream().map(t->new TramoCancelacion(t.horasAntelacionMinimas(),t.porcentajeRetencion())).toList(),e.getPorcentajeNoShow()); }
 }
