@@ -8,6 +8,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/** Entidad JPA que almacena los datos de temporada. */
 @Entity
 @Table(name = "Temporada")
 @Getter

@@ -8,6 +8,7 @@ import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
 import java.util.List;
 import java.util.Optional;
 
+/** Define las operaciones de consulta y persistencia de novedad. */
 public interface NovedadRepository {
 
     Novedad guardar(Novedad novedad);

@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+/** Crea y valida tokens JWT usados para autenticar solicitudes. */
 @Service
 public class JwtService {
     private final SecretKey llave;

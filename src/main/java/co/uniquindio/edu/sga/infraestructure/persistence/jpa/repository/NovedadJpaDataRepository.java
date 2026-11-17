@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.infraestructure.persistence.jpa.entity.NovedadEntit
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
+/** Repositorio Spring Data para consultar entidades de novedad. */
 public interface NovedadJpaDataRepository extends JpaRepository<NovedadEntity, String> {
     List<NovedadEntity> findByApartamentoIdAndAnuladaFalse(String apartamentoId);
 }

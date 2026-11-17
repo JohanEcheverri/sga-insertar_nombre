@@ -13,6 +13,8 @@ El backend organiza el código en capas hexagonales:
 - `infraestructure/config/`: configuración de Spring, servicios del dominio y OpenAPI.
 - `frontend/src/`: modelos, servicios HTTP, esquemas Zod, componentes, páginas, rutas y contexto de sesión.
 
+La estructura, responsabilidades y flujo de trabajo del backend se describen en [Documentación del backend](docs/backend.md).
+
 ## Requisitos
 
 - Java 25.
@@ -39,6 +41,8 @@ npm run dev
 
 Copia `frontend/.env.example` a `frontend/.env.local` y ajusta `VITE_API_URL` si la API no usa la URL local predeterminada.
 
+En desarrollo, Vite reenvía las solicitudes `/api` a `http://localhost:8080`; inicia el backend antes de consultar el catálogo.
+
 Antes de iniciar el backend, copia `src/main/resources/application-secrets.properties.example` a `src/main/resources/application-secrets.properties`. El archivo local está ignorado por Git y excluido del JAR. El login es `POST /api/auth/login`, con `username` (correo) y `password`; `POST /api/auth/registro` crea siempre un usuario `HUESPED`. Envía el token como `Authorization: Bearer <token>` en las rutas protegidas.
 
 ## Datos y autenticación de prueba
@@ -56,7 +60,7 @@ Los usuarios de desarrollo se crean si su correo no existe, con contraseñas BCr
 
 ## Despliegue
 
-El `Dockerfile` construye el JAR con Gradle y ejecuta Java 25. Activa el perfil `prod` con `SPRING_PROFILES_ACTIVE=prod` y configura `SGA_CORS_ALLOWED_ORIGINS`, `SGA_JWT_SECRET` (mínimo 32 bytes) y `SGA_ADMIN_*` para el entorno. Si se proporcionan nombre, correo y clave del administrador, se crea al iniciar cuando ese correo no existe. El secreto local no se incluye en el JAR.
+El `Dockerfile` construye el JAR con Gradle y ejecuta Java 25. Activa el perfil `prod` con `SPRING_PROFILES_ACTIVE=prod` y configura `SGA_CORS_ALLOWED_ORIGINS`, `SGA_JWT_SECRET` (mínimo 32 bytes) y `SGA_ADMIN_*` para el entorno. Si se proporcionan nombre, correo y clave del administrador, se crea al iniciar cuando ese correo no existe. La base H2 usa `data/sga.mv.db`; monta `data/` en un volumen persistente en producción para conservar usuarios y reservas después de reiniciar o desplegar el contenedor. `SPRING_DATASOURCE_URL` permite cambiar la URL. El secreto local no se incluye en el JAR.
 
 ## Artefactos API
 

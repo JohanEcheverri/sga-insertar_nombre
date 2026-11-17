@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Datos que la aplicación necesita para procesar ocupante. */
 public record OcupanteDatos(String nombre, String apellido, String documento, LocalDate fechaNacimiento) {
 
     public Ocupante aDominio() {

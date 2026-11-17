@@ -5,6 +5,7 @@ import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import java.time.LocalDate;
 import java.time.Period;
 
+/** Fecha de nacimiento validada para las reglas de edad. */
 public record FechaNacimiento(LocalDate valor) {
 
     public FechaNacimiento {

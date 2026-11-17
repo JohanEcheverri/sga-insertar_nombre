@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.*;
 
+/** Implementación en memoria del repositorio de reserva. */
 @Repository
 public class ReservaRepositoryInMemory implements ReservaRepository {
 

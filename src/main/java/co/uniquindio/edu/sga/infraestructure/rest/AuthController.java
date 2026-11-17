@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** Controlador REST para las operaciones de autenticación. */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

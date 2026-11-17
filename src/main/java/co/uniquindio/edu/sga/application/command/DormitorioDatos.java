@@ -5,6 +5,7 @@ import co.uniquindio.edu.sga.domain.valueobject.Dormitorio;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Datos que la aplicación necesita para procesar dormitorio. */
 public record DormitorioDatos(String nombre, int cantidadCamas, String tipoCamas) {
 
     public Dormitorio aDominio() {

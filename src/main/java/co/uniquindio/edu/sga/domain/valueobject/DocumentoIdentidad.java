@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Número de identificación de una persona. */
 public record DocumentoIdentidad(String numero) {
 
     public DocumentoIdentidad{

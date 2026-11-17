@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 
+/** Entidad JPA que almacena los datos de reserva. */
 @Entity
 @Table(name = "Reserva")
 @Getter

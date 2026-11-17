@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/** Crea el usuario administrador inicial cuando la configuración de producción lo permite. */
 @Component
 @Profile("prod")
 public class AdminProdInitializer implements ApplicationRunner {

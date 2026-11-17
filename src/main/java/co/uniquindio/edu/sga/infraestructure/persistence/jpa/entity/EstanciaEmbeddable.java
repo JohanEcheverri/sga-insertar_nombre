@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.LocalDate;
 
+/** Modelo JPA embebible que almacena los datos de estancia. */
 @Embeddable
 public record EstanciaEmbeddable(
         @Column(name = "fecha_entrada", nullable = false)

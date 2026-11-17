@@ -7,6 +7,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
+/** Agrupa la configuración necesaria para emitir y validar tokens JWT. */
 @Configuration(proxyBeanMethods = false)
 public class JwtConfig {
     @Bean

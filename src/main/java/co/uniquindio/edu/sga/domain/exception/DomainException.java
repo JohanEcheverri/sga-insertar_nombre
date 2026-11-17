@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.domain.exception;
 
+/** Excepción base para fallos de las reglas del dominio. */
 public abstract class DomainException extends RuntimeException {
 
     protected DomainException(String message) {

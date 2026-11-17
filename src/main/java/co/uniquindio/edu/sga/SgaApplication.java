@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 
 import java.time.Clock;
 
+/** Punto de entrada de Spring Boot y configuración del reloj de la aplicación. */
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class SgaApplication {

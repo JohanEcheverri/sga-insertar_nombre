@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/** Representación JPA embebible de dormitorio. */
 @Embeddable
 @Getter @Setter @NoArgsConstructor
 public class DormitorioEmbeddable {

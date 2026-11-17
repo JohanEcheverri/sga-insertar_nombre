@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 import java.util.UUID;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Identificador tipado de temporada usado por el dominio. */
 public record TemporadaId(UUID valor) {
 
     public TemporadaId {

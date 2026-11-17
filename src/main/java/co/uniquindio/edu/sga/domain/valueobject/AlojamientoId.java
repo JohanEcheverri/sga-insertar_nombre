@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Identificador tipado de alojamiento usado por el dominio. */
 public record AlojamientoId(UUID valor) {
 
     // Constructor compacto

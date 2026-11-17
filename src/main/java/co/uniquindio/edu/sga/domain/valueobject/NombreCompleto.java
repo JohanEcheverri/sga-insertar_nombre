@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Nombre y apellido de una persona. */
 public record NombreCompleto(String nombre, String apellido) {
     /*
     Método constructor de la clase

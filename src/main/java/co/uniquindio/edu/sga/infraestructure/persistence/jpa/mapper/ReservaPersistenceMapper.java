@@ -14,6 +14,7 @@ import org.mapstruct.Mapping;
 import java.util.List;
 import java.util.UUID;
 
+/** Mapea reserva entre el dominio y las entidades JPA. */
 @Mapper(componentModel = "spring")
 public interface ReservaPersistenceMapper {
 

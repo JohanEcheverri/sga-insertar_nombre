@@ -107,10 +107,14 @@ class CasosDeUsoTest {
     // ------------------------------------------------------------------ fábricas
 
     private static Apartamento apartamento(String id, int aforo) {
+        CategoriaApartamento categoria = aforo <= CategoriaApartamento.STANDARD.aforoMaximo()
+                ? CategoriaApartamento.STANDARD : CategoriaApartamento.PREMIUM;
         List<Dormitorio> dormitorios = new ArrayList<>();
-        dormitorios.add(new Dormitorio("Principal", 2, "Doble"));
+        for (int i = 0; i < categoria.cantidadDormitorios(); i++) {
+            dormitorios.add(new Dormitorio(i == 0 ? "Principal" : "Habitación " + (i + 1), 2, "Doble"));
+        }
         return Apartamento.crear(new Capacidad((byte) aforo), "Apartamento " + id, dormitorios,
-                EstadoOperativo.PREPARADO, ApartamentoId.generar(), id, true);
+                EstadoOperativo.PREPARADO, ApartamentoId.generar(), id, true, categoria);
     }
 
     private List<Tarifa> tarifas(TemporadaId t, long precio101, long precio201) {
@@ -279,10 +283,10 @@ class CasosDeUsoTest {
     }
 
     @Test
-    void cancelarConMenosDeUnDiaRetieneTodo() {
+    void cancelarConMenosDeUnaHoraRetieneTodo() {
         var r = reserva10al12();
         pagar(r.reservaId(), 40000);
-        reloj.fijar(LocalDateTime.of(2026, 11, 10, 9, 0));                   // el mismo día de la entrada
+        reloj.fijar(LocalDateTime.of(2026, 11, 10, 14, 30));                // 30 minutos antes del check-in
         var res = new CancelarReservaUseCase(reservas, folios, cancelacion, notificacion, reloj)
                 .ejecutar(new CancelarReservaUseCase.Command(r.reservaId(), recepcion));
         assertEquals(0, BigDecimal.ONE.compareTo(res.porcentajeRetenido()));
@@ -482,12 +486,12 @@ class CasosDeUsoTest {
     @Test
     void rn31UnaNovedadNoCambiaElEstadoOperativo() {
         new CrearNovedadUseCase(alojamientos, novedades, reloj).ejecutar(new CrearNovedadUseCase.Command(
-                apto101.getId().valor(), "Sandra", "Grifo dañado", GravedadNovedad.CRITICA));
+                apto101.getId().valor(), "Sandra", "Grifo dañado", GravedadNovedad.CRITICA, servicio));
         assertEquals(EstadoOperativo.PREPARADO, apartamentoActual(apto101).getEstadoOperativo());
         var lista = new ConsultarNovedadUseCase(alojamientos, novedades)
                 .ejecutar(new ConsultarNovedadUseCase.Command(apto101.getId().valor(), 0));
         assertEquals(1, lista.contenido().size());
-        new EliminarNovedadUseCase(novedades).ejecutar(new EliminarNovedadUseCase.Command(lista.contenido().get(0).id(), recepcion));
+        new EliminarNovedadUseCase(novedades).ejecutar(new EliminarNovedadUseCase.Command(lista.contenido().get(0).id(), servicio));
         assertEquals(0, new ConsultarNovedadUseCase(alojamientos, novedades)
                 .ejecutar(new ConsultarNovedadUseCase.Command(apto101.getId().valor(), 0)).contenido().size());
     }

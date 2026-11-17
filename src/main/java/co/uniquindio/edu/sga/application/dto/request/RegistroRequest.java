@@ -7,6 +7,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
+/** Datos de entrada de la API para registro. */
 public record RegistroRequest(
         @NotBlank(message = "El nombre es obligatorio") String nombre,
         @NotBlank(message = "El apellido es obligatorio") String apellido,

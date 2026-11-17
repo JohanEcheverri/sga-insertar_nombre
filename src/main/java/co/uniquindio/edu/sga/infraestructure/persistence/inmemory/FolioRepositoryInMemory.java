@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/** Implementación en memoria del repositorio de folio. */
 @Repository
 public class FolioRepositoryInMemory implements FolioRepository {
 

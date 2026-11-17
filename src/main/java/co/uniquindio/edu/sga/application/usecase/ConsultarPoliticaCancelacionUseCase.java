@@ -7,6 +7,7 @@ import co.uniquindio.edu.sga.domain.repository.AlojamientoRepository;
 import co.uniquindio.edu.sga.domain.valueobject.PoliticaCancelacion;
 import org.springframework.stereotype.Service;
 
+/** Caso de uso que consulta la política de cancelación vigente. */
 @Service
 public class ConsultarPoliticaCancelacionUseCase {
     private final AlojamientoRepository alojamientos;

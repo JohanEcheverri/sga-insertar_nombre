@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 import java.util.regex.Pattern;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Dirección de correo validada como dato de contacto. */
 public record CorreoElectronico(String direccion) {
 
     // Patrón Regex estándar para correos electrónicos

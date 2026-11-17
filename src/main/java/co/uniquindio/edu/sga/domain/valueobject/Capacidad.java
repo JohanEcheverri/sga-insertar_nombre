@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Capacidad máxima de ocupación de un apartamento. */
 public record Capacidad(byte aforoMax) {
 
     public Capacidad{

@@ -5,6 +5,7 @@ import co.uniquindio.edu.sga.domain.valueobject.ApartamentoId;
 import java.util.List;
 import java.util.Optional;
 
+/** Define las operaciones de consulta y persistencia de apartamento. */
 public interface ApartamentoRepository {
 
     Apartamento guardar(Apartamento apartamento);

@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/** Entidad JPA que almacena los datos de bloqueo. */
 @Entity
 @Table(name = "Bloqueo")
 @Getter

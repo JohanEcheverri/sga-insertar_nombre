@@ -7,6 +7,7 @@ import co.uniquindio.edu.sga.domain.valueobject.UsuarioId;
 import java.util.Optional;
 import java.util.List;
 
+/** Define las operaciones de consulta y persistencia de usuario. */
 public interface UsuarioRepository {
 
     void guardar(Usuario usuario);

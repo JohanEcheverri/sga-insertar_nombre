@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Descripción de un dormitorio y su capacidad. */
 public record Dormitorio(String nombre, int cantidadCamas, String tipoCamas) {
 
     public Dormitorio{

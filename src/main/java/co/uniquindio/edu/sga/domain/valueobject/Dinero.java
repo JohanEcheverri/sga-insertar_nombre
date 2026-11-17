@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/** Importe monetario con las operaciones y validaciones del dominio. */
 public record Dinero(BigDecimal valor) {
 
     public static final Dinero CERO = new Dinero(BigDecimal.ZERO);

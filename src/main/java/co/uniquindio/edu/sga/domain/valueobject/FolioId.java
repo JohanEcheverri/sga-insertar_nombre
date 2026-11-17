@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import java.util.UUID;
 
+/** Identificador tipado de folio usado por el dominio. */
 public record FolioId(UUID valor) {
     
     public FolioId {

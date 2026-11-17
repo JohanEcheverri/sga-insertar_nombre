@@ -6,6 +6,7 @@ import co.uniquindio.edu.sga.domain.valueobject.TemporadaId;
 import java.util.List;
 import java.util.Optional;
 
+/** Define las operaciones de consulta y persistencia de temporada. */
 public interface TemporadaRepository {
 
     Temporada guardar(Temporada temporada);

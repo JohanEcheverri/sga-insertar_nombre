@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/** Caso de uso que cambia el estado de un usuario. */
 @Service
 @Transactional
 public class CambiarEstadoUsuarioUseCase {

@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
 
+/** Adapta el principal de Spring Security al solicitante de la aplicación. */
 @Component
 public class SolicitanteActualSecurityAdapter implements SolicitanteActualPort {
     @Override
