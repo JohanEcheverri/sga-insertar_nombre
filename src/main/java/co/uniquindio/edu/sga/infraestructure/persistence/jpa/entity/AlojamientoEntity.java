@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/** Entidad JPA que almacena los datos de alojamiento. */
 @Entity
 @Table(name = "alojamientos")
 @Getter

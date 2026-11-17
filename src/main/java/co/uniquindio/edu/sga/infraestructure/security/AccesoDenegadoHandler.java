@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 
+/** Genera la respuesta HTTP para solicitudes sin permisos suficientes. */
 @Component
 public class AccesoDenegadoHandler implements AccessDeniedHandler {
     private final ObjectMapper objectMapper;

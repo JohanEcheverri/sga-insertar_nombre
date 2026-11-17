@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+/** Implementación en memoria del repositorio de usuario. */
 @Repository
 public class UsuarioRepositoryInMemory implements UsuarioRepository {
 

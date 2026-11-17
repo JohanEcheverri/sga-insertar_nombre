@@ -13,6 +13,7 @@ import co.uniquindio.edu.sga.domain.service.ValidacionAforoOcupantesService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/** Registra servicios de dominio compartidos por los casos de uso. */
 @Configuration(proxyBeanMethods = false)
 public class DomainConfig {
     @Bean public CancelacionReservaService cancelacionReservaService() { return new CancelacionReservaService(); }

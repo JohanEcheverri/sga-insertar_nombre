@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.domain.exception;
 
+/** Indica que el folio conserva un saldo pendiente que impide cerrarlo. */
 public class FolioSaldoPendienteException extends DomainException {
 
     public FolioSaldoPendienteException(String folioId) {

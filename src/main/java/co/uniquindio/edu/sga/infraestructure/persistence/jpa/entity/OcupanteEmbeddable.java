@@ -4,6 +4,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.Column;
 import java.time.LocalDate;
 
+/** Modelo JPA embebible que almacena los datos de ocupante. */
 @Embeddable
 public record OcupanteEmbeddable(
         @Column(name = "Documento", nullable = false, length = 20)

@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.domain.exception;
 
+/** Indica que la cantidad de ocupantes supera la capacidad permitida. */
 public class AforoExcedidoException extends DomainException {
 
     public AforoExcedidoException(int aforoMax, int ocupantesSolicitados) {

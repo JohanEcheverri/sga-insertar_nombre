@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
 
+/** Modelo JPA embebible que almacena los datos de tramo cancelacion. */
 @Embeddable
 public record TramoCancelacionEmbeddable(
         @Column(name = "dias_antelacion_minimos", nullable = false)

@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.LocalDate;
 import java.util.List;
 
+/** Propiedades de configuración para los usuarios iniciales. */
 @ConfigurationProperties(prefix = "sga.usuarios-iniciales")
 public record UsuariosInicialesProperties(boolean habilitados, List<UsuarioInicial> usuarios) {
     public UsuariosInicialesProperties {

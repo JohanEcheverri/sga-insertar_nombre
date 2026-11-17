@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/** Carga las credenciales y roles de un usuario para Spring Security. */
 @Service
 public class UsuarioUserDetailsService implements UserDetailsService {
     private final UsuarioRepository usuarios;

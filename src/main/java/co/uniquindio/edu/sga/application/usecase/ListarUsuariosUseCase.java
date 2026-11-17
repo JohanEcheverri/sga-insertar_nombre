@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/** Caso de uso que consulta la lista de usuarios del sistema. */
 @Service
 public class ListarUsuariosUseCase {
     private final UsuarioRepository usuarios;

@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Ubicación geográfica del alojamiento. */
 public record Ubicacion(String departamento, String ciudad, String direccion) {
 
     public Ubicacion {

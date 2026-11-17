@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
 import java.time.LocalDate;
 
+/** Persona registrada como parte de una reserva. */
 public record Ocupante(NombreCompleto nombreCompleto, DocumentoIdentidad documentoIdentidad, FechaNacimiento fechaNacimiento) {
 
     public Ocupante {

@@ -13,6 +13,8 @@ El backend organiza el código en capas hexagonales:
 - `infraestructure/config/`: configuración de Spring, servicios del dominio y OpenAPI.
 - `frontend/src/`: modelos, servicios HTTP, esquemas Zod, componentes, páginas, rutas y contexto de sesión.
 
+La estructura, responsabilidades y flujo de trabajo del backend se describen en [Documentación del backend](docs/backend.md).
+
 ## Requisitos
 
 - Java 25.

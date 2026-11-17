@@ -48,10 +48,12 @@ public class ModificarApartamentoUseCase {
         cmd.solicitante().exigirAdministrador();
         Alojamiento alojamiento = Cargas.alojamiento(alojamientoRepository);
         Apartamento apartamento = Cargas.apartamento(alojamiento, cmd.apartamentoId());
-        if (cmd.capacidad() != apartamento.getCategoria().aforoMaximo() || cmd.dormitorios() == null
-                || cmd.dormitorios().size() != apartamento.getCategoria().cantidadDormitorios()) {
-            throw new ReglaDominioException("La categoría " + apartamento.getCategoria() + " requiere aforo "
-                    + apartamento.getCategoria().aforoMaximo() + " y " + apartamento.getCategoria().cantidadDormitorios() + " dormitorios.");
+        if (cmd.capacidad() < 1 || cmd.capacidad() > apartamento.getCategoria().aforoMaximo()
+                || cmd.dormitorios() == null || cmd.dormitorios().isEmpty()
+                || cmd.dormitorios().size() > apartamento.getCategoria().cantidadDormitorios()) {
+            throw new ReglaDominioException("La categoría " + apartamento.getCategoria() + " admite un aforo entre 1 y "
+                    + apartamento.getCategoria().aforoMaximo() + " personas y hasta "
+                    + apartamento.getCategoria().cantidadDormitorios() + " dormitorios.");
         }
         Capacidad nueva = CrearApartamentoUseCase.capacidad(cmd.capacidad());
 

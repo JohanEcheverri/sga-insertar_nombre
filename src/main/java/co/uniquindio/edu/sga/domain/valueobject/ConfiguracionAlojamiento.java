@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalTime;
 
+/** Parámetros de operación y cobro propios de un alojamiento. */
 public record ConfiguracionAlojamiento(
     int umbralEdadFacturable,
     LocalTime entrada,

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/** Caso de uso que modifica los datos de una novedad. */
 @Service
 @Transactional
 public class ModificarNovedadUseCase {

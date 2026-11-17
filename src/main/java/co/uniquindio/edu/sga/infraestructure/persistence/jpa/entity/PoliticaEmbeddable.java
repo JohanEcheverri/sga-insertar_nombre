@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.LocalDate;
 
+/** Modelo JPA embebible que almacena los datos de politica. */
 @Embeddable
 public record PoliticaEmbeddable(
         @Column(name = "version", nullable = false, length = 50)

@@ -8,6 +8,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Entidad JPA que almacena los datos de folio. */
 @Entity
 @Table(name = "Folio")
 @Getter

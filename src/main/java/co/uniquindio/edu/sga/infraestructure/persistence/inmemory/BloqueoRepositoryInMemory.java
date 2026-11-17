@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+/** Implementación en memoria del repositorio de bloqueo. */
 @Repository
 public class BloqueoRepositoryInMemory implements BloqueoRepository {
 

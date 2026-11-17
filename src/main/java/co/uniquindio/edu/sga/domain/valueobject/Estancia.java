@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Intervalo de fechas de entrada y salida de una reserva. */
 public record Estancia(LocalDate fechaEntrada, LocalDate fechaSalida) {
     public Estancia {
         if (fechaEntrada == null || fechaSalida == null) {

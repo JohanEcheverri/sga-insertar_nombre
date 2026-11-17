@@ -1,5 +1,6 @@
 package co.uniquindio.edu.sga.application.exception;
 
+/** Indica que no se encontró el recurso de tipo apartamento solicitado por la aplicación. */
 public class ApartamentoNoEncontradoException extends ApplicationException {
 
     public ApartamentoNoEncontradoException(String id) {

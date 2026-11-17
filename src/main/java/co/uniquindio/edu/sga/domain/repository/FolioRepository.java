@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/** Define las operaciones de consulta y persistencia de folio. */
 public interface FolioRepository {
 
     void guardar(Folio folio);

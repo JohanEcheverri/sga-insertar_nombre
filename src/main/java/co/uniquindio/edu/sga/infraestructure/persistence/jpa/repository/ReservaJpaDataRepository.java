@@ -9,6 +9,7 @@ import java.util.List;
 import co.uniquindio.edu.sga.domain.valueobject.EstadoReserva;
 import java.util.UUID;
 
+/** Repositorio Spring Data para consultar entidades de reserva. */
 @Repository
 public interface ReservaJpaDataRepository extends JpaRepository<ReservaEntity, Long> {
 

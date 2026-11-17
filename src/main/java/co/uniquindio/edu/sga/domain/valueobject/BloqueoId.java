@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 import java.util.UUID;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Identificador tipado de bloqueo usado por el dominio. */
 public record BloqueoId(UUID valor) {
 
     public BloqueoId {

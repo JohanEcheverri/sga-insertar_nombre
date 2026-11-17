@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 import java.time.LocalDateTime;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 
+/** Datos de autorización requeridos para cerrar un folio. */
 public record AutorizacionCierre(String autor, String motivo, LocalDateTime fecha) {
     public AutorizacionCierre {
         // Regla de autorización: deben quedar identificados el autor, el motivo y la fecha.

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
 
+/** Adaptador que implementa el repositorio de dominio de reserva con JPA. */
 @Repository
 @Primary
 @Transactional

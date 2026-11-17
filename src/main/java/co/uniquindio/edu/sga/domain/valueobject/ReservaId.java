@@ -3,6 +3,7 @@ package co.uniquindio.edu.sga.domain.valueobject;
 import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import java.util.UUID;
 
+/** Identificador tipado de reserva usado por el dominio. */
 public record ReservaId(UUID valor) {
 
     public ReservaId {

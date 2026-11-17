@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 
+/** Genera la respuesta HTTP para solicitudes sin autenticación válida. */
 @Component
 public class AutenticacionEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper objectMapper;

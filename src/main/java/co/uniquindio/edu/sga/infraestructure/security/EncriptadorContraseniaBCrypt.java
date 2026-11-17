@@ -4,6 +4,7 @@ import co.uniquindio.edu.sga.application.port.EncriptadorContraseniaPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/** Adapta BCrypt al puerto de codificación de contraseñas de la aplicación. */
 @Component
 public class EncriptadorContraseniaBCrypt implements EncriptadorContraseniaPort {
     private final PasswordEncoder passwordEncoder;
