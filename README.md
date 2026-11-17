@@ -41,6 +41,8 @@ npm run dev
 
 Copia `frontend/.env.example` a `frontend/.env.local` y ajusta `VITE_API_URL` si la API no usa la URL local predeterminada.
 
+En desarrollo, Vite reenvía las solicitudes `/api` a `http://localhost:8080`; inicia el backend antes de consultar el catálogo.
+
 Antes de iniciar el backend, copia `src/main/resources/application-secrets.properties.example` a `src/main/resources/application-secrets.properties`. El archivo local está ignorado por Git y excluido del JAR. El login es `POST /api/auth/login`, con `username` (correo) y `password`; `POST /api/auth/registro` crea siempre un usuario `HUESPED`. Envía el token como `Authorization: Bearer <token>` en las rutas protegidas.
 
 ## Datos y autenticación de prueba
