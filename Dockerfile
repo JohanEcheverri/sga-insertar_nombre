@@ -1,7 +1,7 @@
 FROM eclipse-temurin:25-jdk AS compilacion
 WORKDIR /app
 COPY . .
-RUN ./gradlew bootJar --no-daemon -x test
+RUN chmod +x gradlew && ./gradlew bootJar --no-daemon -x test
 
 FROM eclipse-temurin:25-jre AS ejecucion
 WORKDIR /app

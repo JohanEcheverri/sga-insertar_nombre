@@ -48,7 +48,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
             AutenticacionEntryPoint entryPoint, AccesoDenegadoHandler deniedHandler,
             AuthenticationManager authenticationManager,
-            @Value("${sga.seguridad.herramientas-desarrollo:false}") boolean herramientasDesarrollo) throws Exception {
+            @Value("${sga.seguridad.herramientas-desarrollo:true}") boolean herramientasDesarrollo) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> { })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
