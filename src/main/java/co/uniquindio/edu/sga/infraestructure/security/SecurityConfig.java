@@ -35,7 +35,7 @@ public class SecurityConfig {
             @Value("${sga.cors.allowed-origins:http://localhost:5173,http://localhost:5174}") String origenes) {
         CorsConfiguration cors = new CorsConfiguration();
         cors.setAllowedOrigins(Arrays.stream(origenes.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList());
-        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
+        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         cors.setAllowCredentials(false);
         cors.setMaxAge(3600L);
@@ -61,7 +61,9 @@ public class SecurityConfig {
                             "/api/reservas/*/registrar-llegada", "/api/reservas/*/registrar-salida",
                             "/api/reservas/*/folio/**", "/api/reservas/llegadas", "/api/reservas/salidas")
                             .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.GET, "/api/apartamentos/**", "/api/cotizaciones/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET,
+                            "/api/apartamentos/disponibilidad", "/api/apartamentos/buscar-capacidad",
+                            "/api/cotizaciones").permitAll();
                     auth.requestMatchers(HttpMethod.POST, "/api/cotizaciones").permitAll();
                     if (herramientasDesarrollo) {
                         auth.requestMatchers("/api-docs/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll();
