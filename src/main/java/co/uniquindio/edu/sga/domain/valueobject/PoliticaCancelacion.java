@@ -5,6 +5,7 @@ import co.uniquindio.edu.sga.domain.exception.ReglaDominioException;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.time.Duration;
 
 /** Política inmutable que define retenciones por antelación y para no-show. */
 public record PoliticaCancelacion(VersionPolitica version,
@@ -26,15 +27,15 @@ public record PoliticaCancelacion(VersionPolitica version,
         }
 
         List<TramoCancelacion> tramosOrdenados = tramos.stream()
-                .sorted(Comparator.comparingInt(TramoCancelacion::diasAntelacionMinimos))
+                .sorted(Comparator.comparingInt(TramoCancelacion::horasAntelacionMinimas))
                 .toList();
-        if (tramosOrdenados.getFirst().diasAntelacionMinimos() != 0) {
-            throw new ReglaDominioException("La política debe incluir un tramo desde cero días de antelación.");
+        if (tramosOrdenados.getFirst().horasAntelacionMinimas() != 0) {
+            throw new ReglaDominioException("La política debe incluir un tramo desde cero horas de antelación.");
         }
         for (int i = 1; i < tramosOrdenados.size(); i++) {
-            if (tramosOrdenados.get(i - 1).diasAntelacionMinimos()
-                    == tramosOrdenados.get(i).diasAntelacionMinimos()) {
-                throw new ReglaDominioException("No puede haber tramos con el mismo mínimo de días de antelación.");
+            if (tramosOrdenados.get(i - 1).horasAntelacionMinimas()
+                    == tramosOrdenados.get(i).horasAntelacionMinimas()) {
+                throw new ReglaDominioException("No puede haber tramos con el mismo mínimo de horas de antelación.");
             }
         }
         tramos = List.copyOf(tramosOrdenados);
@@ -44,17 +45,14 @@ public record PoliticaCancelacion(VersionPolitica version,
      * Calcula la retención por cancelación según las horas de antelación y el valor base de la reserva.
      */
     public Dinero calcularRetencionCancelacion(long horasAntelacion, Dinero valorBase) {
-        // si cancela con más de 48 horas de anticipación, la retención es del 10%, de lo contrario es del 50%.
-        BigDecimal porcentajeRetencion = (horasAntelacion >= 48) ? new BigDecimal("0.10") : new BigDecimal("0.50");
-        return valorBase.multiplicar(porcentajeRetencion);
+        return valorBase.multiplicar(retencionParaHoras(Duration.ofHours(Math.max(0, horasAntelacion))));
     }
 
     /**
      * Calcula la retención por no-show aplicando las reglas de la política al valor base.
      */
     public Dinero calcularRetencionNoShow(Dinero valorBase) {
-        //él no-show aplica una retención del 100%.
-        return valorBase.multiplicar(BigDecimal.ONE);
+        return valorBase.multiplicar(porcentajeRetencionNoShow);
     }
 
     /** RN-13 - La retención de cancelación se determina según la antelación con que se cancela. */
@@ -68,6 +66,23 @@ public record PoliticaCancelacion(VersionPolitica version,
             aplicable = tramo;
         }
         return aplicable.porcentajeRetencion();
+    }
+
+    /** Retención para una diferencia exacta hasta check-in; el límite superior del último tramo es estricto. */
+    public BigDecimal retencionParaHoras(Duration antelacion) {
+        return tramos.get(tramoIndexParaHoras(antelacion)).porcentajeRetencion();
+    }
+
+    public int tramoIndexParaHoras(Duration antelacion) {
+        if (antelacion == null || antelacion.isNegative()) throw new ReglaDominioException("La antelación debe ser válida.");
+        int aplicable = 0;
+        for (int i = 1; i < tramos.size(); i++) {
+            Duration umbral = Duration.ofHours(tramos.get(i).horasAntelacionMinimas());
+            boolean ultimo = i == tramos.size() - 1;
+            if (ultimo ? antelacion.compareTo(umbral) > 0 : antelacion.compareTo(umbral) >= 0) aplicable = i;
+            else break;
+        }
+        return aplicable;
     }
 
     /** RN-13 - La retención aplicable a un no-show se toma de la configuración específica de la política. */

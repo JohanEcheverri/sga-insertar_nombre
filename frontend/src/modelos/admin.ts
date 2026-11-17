@@ -69,3 +69,7 @@ export interface ReporteOcupacion {
   nochesDisponibles: number
   apartamentosIncluidos: number
 }
+
+export interface TramoPolitica { horasAntelacionMinimas: number; porcentajeRetencion: number }
+export interface PoliticaCancelacionResponse { version: string; tramos: TramoPolitica[]; porcentajeRetencionNoShow: number }
+export interface ActualizarPoliticaRequest { version: string; tramos: TramoPolitica[]; porcentajeRetencionNoShow: number }

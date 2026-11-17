@@ -50,6 +50,10 @@ public class ModificarEstadoOperativoApartamentoUseCase {
         switch (cmd.nuevoEstado()) {
             case EN_PREPARACION -> apartamento.iniciarPreparacion();
             case PREPARADO -> apartamento.marcarPreparado();
+            case PENDIENTE_PREPARACION -> {
+                cmd.solicitante().exigirAdministrador();
+                apartamento.marcarPendientePreparacionAdministrativo();
+            }
             case FUERA_DE_SERVICIO -> {
                 cmd.solicitante().exigirAdministrador();
                 apartamento.marcarFueraDeServicio();

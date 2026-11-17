@@ -109,6 +109,14 @@ public class Apartamento {
         disponible = false;
     }
 
+    /** El administrador puede apartar para alistamiento cualquier unidad que no esté ocupada por huéspedes. */
+    public void marcarPendientePreparacionAdministrativo() {
+        exigir(estadoOperativo != EstadoOperativo.OCUPADO,
+                "No se puede marcar pendiente de preparación un apartamento ocupado.");
+        estadoOperativo = EstadoOperativo.PENDIENTE_PREPARACION;
+        disponible = false;
+    }
+
     /** PENDIENTE_PREPARACION → EN_PREPARACION (personal de servicio). */
     public void iniciarPreparacion() {
         exigir(estadoOperativo == EstadoOperativo.PENDIENTE_PREPARACION,

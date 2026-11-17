@@ -5,7 +5,7 @@ import { esquemaNovedad } from '../../esquemas/admin'
 import type { ApartamentoResponse } from '../../modelos/apartamento'
 import type { NovedadResponse } from '../../modelos/admin'
 import { GRAVEDADES } from '../../modelos/admin'
-import { crearNovedad, eliminarNovedad, listarNovedades, listarPendientesPreparacion } from '../../servicios/operacionServicio'
+import { crearNovedad, eliminarNovedad, listarNovedades, listarPendientesPreparacion, modificarNovedad } from '../../servicios/operacionServicio'
 import { formatearFechaHora } from '../../utilidades/fechas'
 import { etiqueta } from '../../utilidades/formato'
 import { validar } from '../../utilidades/validacion'
@@ -27,6 +27,7 @@ export function PanelNovedades({ apartamentos, autorPorDefecto, avisos, soloLect
   const [pendientes, setPendientes] = useState<ApartamentoResponse[]>([])
   const [form, setForm] = useState({ autor: autorPorDefecto, descripcion: '', gravedad: 'MEDIA' })
   const [errores, setErrores] = useState<Record<string, string>>({})
+  const [editandoId, setEditandoId] = useState<string | null>(null)
   const { exito, fallo } = avisos
 
   const cargarNovedades = useCallback(async (id: string) => {
@@ -48,9 +49,11 @@ export function PanelNovedades({ apartamentos, autorPorDefecto, avisos, soloLect
     setErrores(errs)
     if (!datos) return
     try {
-      await crearNovedad(apartamentoId, datos)
+      if (editandoId) await modificarNovedad(editandoId, datos)
+      else await crearNovedad(apartamentoId, datos)
+      setEditandoId(null)
       setForm({ ...form, descripcion: '' })
-      exito('Novedad registrada.')
+      exito(editandoId ? 'Novedad actualizada.' : 'Novedad registrada.')
       await cargarNovedades(apartamentoId)
     } catch (causa) { fallo(causa) }
   }
@@ -72,19 +75,21 @@ export function PanelNovedades({ apartamentos, autorPorDefecto, avisos, soloLect
           <div className="d-flex justify-content-between align-items-start gap-2">
             <div><span className={`badge text-bg-${COLOR_GRAVEDAD[n.gravedad]} me-2`}>{etiqueta(n.gravedad)}</span>{n.descripcion}
               <div className="small text-secondary">{n.autor} · {formatearFechaHora(n.fechaReporte)}</div></div>
-            {!soloLectura && <button className="btn btn-outline-danger btn-sm" type="button" onClick={() => void anular(n.id)}>Anular</button>}
+            {!soloLectura && <div className="d-flex gap-1"><button className="btn btn-outline-primary btn-sm" type="button" onClick={() => { setEditandoId(n.id); setForm({ autor: n.autor, descripcion: n.descripcion, gravedad: n.gravedad }) }}>Editar</button>
+              <button className="btn btn-outline-danger btn-sm" type="button" onClick={() => void anular(n.id)}>Anular</button></div>}
           </div></li>)}</ul>)}
     </div>
 
     <div className="col-12 col-lg-5">
-      {!soloLectura && <form onSubmit={enviar} noValidate className="mb-4"><h2 className="h5">Registrar novedad</h2>
+      {!soloLectura && <form onSubmit={enviar} noValidate className="mb-4"><h2 className="h5">{editandoId ? 'Editar novedad' : 'Registrar novedad'}</h2>
         {errores.apartamento && <div className="text-danger small">{errores.apartamento}</div>}
         <input className="form-control my-1" placeholder="Autor" aria-label="Autor" value={form.autor} onChange={(e) => setForm({ ...form, autor: e.target.value })} />
         {errores.autor && <div className="text-danger small">{errores.autor}</div>}
         <textarea className="form-control my-1" rows={3} placeholder="Describe el daño, faltante o situación" aria-label="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
         {errores.descripcion && <div className="text-danger small">{errores.descripcion}</div>}
         <select className="form-select my-1" aria-label="Gravedad" value={form.gravedad} onChange={(e) => setForm({ ...form, gravedad: e.target.value })}>{GRAVEDADES.map((g) => <option key={g} value={g}>{etiqueta(g)}</option>)}</select>
-        <button className="btn btn-primary w-100 mt-1" type="submit">Registrar novedad</button>
+        <button className="btn btn-primary w-100 mt-1" type="submit">{editandoId ? 'Guardar cambios' : 'Registrar novedad'}</button>
+        {editandoId && <button className="btn btn-link w-100" type="button" onClick={() => { setEditandoId(null); setForm({ autor: autorPorDefecto, descripcion: '', gravedad: 'MEDIA' }) }}>Cancelar edición</button>}
       </form>}
 
       <div className="d-flex justify-content-between align-items-center"><h2 className="h5 mb-0">Pendientes de preparación</h2>

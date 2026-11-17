@@ -17,5 +17,7 @@ public record ModificarUsuarioRequest(
         String apellido,
 
         @NotBlank(message = "El teléfono es obligatorio")
-        String telefono
+        String telefono,
+
+        String rol
 ) { }

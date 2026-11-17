@@ -11,6 +11,10 @@ export async function crearNovedad(apartamentoId: string, datos: RegistrarNoveda
   return (await api.post<NovedadResponse>(`/apartamentos/${apartamentoId}/novedades`, datos)).data
 }
 
+export async function modificarNovedad(id: string, datos: RegistrarNovedadRequest): Promise<NovedadResponse> {
+  return (await api.put<NovedadResponse>(`/novedades/${id}`, datos)).data
+}
+
 export async function eliminarNovedad(id: string): Promise<void> {
   await api.delete(`/novedades/${id}`)
 }

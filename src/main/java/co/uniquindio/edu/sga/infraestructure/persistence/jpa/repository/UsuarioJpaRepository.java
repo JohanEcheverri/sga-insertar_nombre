@@ -23,4 +23,5 @@ public class UsuarioJpaRepository implements UsuarioRepository {
     @Transactional(readOnly=true) public Optional<Usuario> buscarPorCorreo(CorreoElectronico correo) { return dataRepository.findByCorreo(correo.direccion()).map(mapper::aDominio); }
     /** Indica si el correo ya está registrado. */
     @Transactional(readOnly=true) public boolean existePorCorreo(CorreoElectronico correo) { return dataRepository.findByCorreo(correo.direccion()).isPresent(); }
+    @Transactional(readOnly=true) public List<Usuario> buscarTodos() { return dataRepository.findAll().stream().map(mapper::aDominio).toList(); }
 }

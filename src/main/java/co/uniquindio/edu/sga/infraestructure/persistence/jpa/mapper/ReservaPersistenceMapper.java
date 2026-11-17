@@ -50,7 +50,7 @@ public interface ReservaPersistenceMapper {
 
     default List<TramoCancelacionEmbeddable> toTramosEmbeddable(PoliticaCancelacion politica) {
         return politica.tramos().stream()
-                .map(t -> new TramoCancelacionEmbeddable(t.diasAntelacionMinimos(), t.porcentajeRetencion()))
+                .map(t -> new TramoCancelacionEmbeddable(t.horasAntelacionMinimas(), t.porcentajeRetencion()))
                 .toList();
     }
 
@@ -94,7 +94,7 @@ public interface ReservaPersistenceMapper {
                 new PoliticaCancelacion(
                         new VersionPolitica(reservaEntity.getPoliticaCongelada().version(), reservaEntity.getPoliticaCongelada().vigenteDesde()),
                         reservaEntity.getTramosCancelacion().stream()
-                                .map(t -> new TramoCancelacion(t.diasAntelacionMinimos(), t.porcentajeRetencion()))
+                                .map(t -> new TramoCancelacion(t.horasAntelacionMinimas(), t.porcentajeRetencion()))
                                 .toList(),
                         reservaEntity.getPorcentajeRetencionNoShow()),
                 reservaEntity.getFechaCreacion(),

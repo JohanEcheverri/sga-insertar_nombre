@@ -4,11 +4,13 @@ import co.uniquindio.edu.sga.application.dto.request.DefinirPoliticaCancelacionR
 import co.uniquindio.edu.sga.application.dto.request.ActualizarPoliticaCancelacionRequest;
 import co.uniquindio.edu.sga.application.dto.response.PoliticaCancelacionResponse;
 import co.uniquindio.edu.sga.application.usecase.ActualizarPoliticaCancelacionUseCase;
+import co.uniquindio.edu.sga.application.usecase.ConsultarPoliticaCancelacionUseCase;
 import co.uniquindio.edu.sga.infraestructure.rest.mapper.PoliticaCancelacionMapper;
 import co.uniquindio.edu.sga.application.security.SolicitanteActualPort;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,14 +22,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class PoliticaCancelacionController {
 
     private final ActualizarPoliticaCancelacionUseCase actualizarPoliticaCancelacionUseCase;
+    private final ConsultarPoliticaCancelacionUseCase consultarPoliticaCancelacionUseCase;
     private final PoliticaCancelacionMapper mapper;
     private final SolicitanteActualPort solicitanteActual;
 
     public PoliticaCancelacionController(ActualizarPoliticaCancelacionUseCase actualizarPoliticaCancelacionUseCase,
+                                         ConsultarPoliticaCancelacionUseCase consultarPoliticaCancelacionUseCase,
                                          PoliticaCancelacionMapper mapper, SolicitanteActualPort solicitanteActual) {
         this.actualizarPoliticaCancelacionUseCase = actualizarPoliticaCancelacionUseCase;
+        this.consultarPoliticaCancelacionUseCase = consultarPoliticaCancelacionUseCase;
         this.mapper = mapper;
         this.solicitanteActual = solicitanteActual;
+    }
+
+    @GetMapping
+    public ResponseEntity<PoliticaCancelacionResponse> consultar() {
+        return ResponseEntity.ok(mapper.aRespuesta(consultarPoliticaCancelacionUseCase.ejecutar(solicitanteActual.obtener())));
     }
 
     // POST -> /api/politica-cancelacion

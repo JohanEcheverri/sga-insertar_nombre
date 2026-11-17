@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 @Embeddable
 public record TramoCancelacionEmbeddable(
         @Column(name = "dias_antelacion_minimos", nullable = false)
-        int diasAntelacionMinimos,
+        int horasAntelacionMinimas,
         @Column(name = "porcentaje_retencion", nullable = false, precision = 5, scale = 4)
         BigDecimal porcentajeRetencion
 ) { }

@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 public class Novedad {
     private final NovedadId id;
     private final ApartamentoId apartamentoId;
-    private final String autor;
-    private final String descripcion;
-    private final GravedadNovedad gravedad;
+    private String autor;
+    private String descripcion;
+    private GravedadNovedad gravedad;
     private final LocalDateTime fechaReporte;
     private boolean anulada;   // borrado lógico (12.4: las eliminaciones son lógicas)
 
@@ -55,6 +55,16 @@ public class Novedad {
     public void anular() {
         exigir(!anulada, "La novedad ya está anulada.");
         anulada = true;
+    }
+
+    public void actualizar(String autor, String descripcion, GravedadNovedad gravedad) {
+        exigir(!anulada, "No se puede editar una novedad anulada.");
+        exigir(autor != null && !autor.isBlank(), "La novedad debe identificar a su autor.");
+        exigir(descripcion != null && !descripcion.isBlank(), "La novedad debe tener descripción.");
+        exigir(gravedad != null, "La novedad debe tener un nivel de gravedad.");
+        this.autor = autor.trim();
+        this.descripcion = descripcion.trim();
+        this.gravedad = gravedad;
     }
 
     private static void exigir(boolean condicion, String mensaje) {

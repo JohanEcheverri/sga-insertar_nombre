@@ -45,8 +45,9 @@ public class CrearNovedadUseCase {
     }
 
     public NovedadDetalle ejecutar(Command cmd) {
-        if (cmd.solicitante() == null || !cmd.solicitante().esAdministrador()) {
-            throw new AccesoDenegadoException("Solo administración puede registrar novedades.");
+        if (cmd.solicitante() == null || (!cmd.solicitante().esAdministrador()
+                && cmd.solicitante().rol() != RolUsuario.PERSONAL_SERVICIO)) {
+            throw new AccesoDenegadoException("Solo administración o personal de servicio puede registrar novedades.");
         }
         Apartamento apartamento = Cargas.apartamento(Cargas.alojamiento(alojamientoRepository), cmd.apartamentoId());
         Novedad novedad = Novedad.reportar(apartamento.getId(), cmd.autor(), cmd.descripcion(), cmd.gravedad(),

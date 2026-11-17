@@ -17,7 +17,7 @@ public class BloqueoEntity {
     @Id
     private String id;
 
-    @Column(name = "apartamento_id", nullable = false, length = 15)
+    @Column(name = "apartamento_id", nullable = false, length = 36)
     private String apartamentoId;
 
     @Column(name = "fecha_inicio", nullable = false)

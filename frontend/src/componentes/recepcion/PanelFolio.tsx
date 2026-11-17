@@ -9,6 +9,7 @@ import { formatearFechaHora } from '../../utilidades/fechas'
 import { etiqueta, formatearMoneda } from '../../utilidades/formato'
 import { validar } from '../../utilidades/validacion'
 import { InsigniaEstado } from '../InsigniaEstado'
+import { useAuth } from '../../contexto/useAuth'
 
 interface Props {
   codigoInicial: string
@@ -20,12 +21,15 @@ const MensajeError = ({ texto }: { texto?: string }) => (texto ? <div className=
 
 /** Folio de una reserva: cargos, pagos parciales, cargos manuales y cierre (RN-15, RN-16, RN-17). */
 export function PanelFolio({ codigoInicial, avisos }: Props) {
+  const { tieneRol } = useAuth()
+  const esAdmin = tieneRol(['ADMINISTRADOR'])
   const [codigo, setCodigo] = useState(codigoInicial)
   const [folio, setFolio] = useState<FolioResponse | null>(null)
   const [cargando, setCargando] = useState(false)
   const [pago, setPago] = useState({ monto: '', medio: 'EFECTIVO', referencia: '' })
   const [cargo, setCargo] = useState({ tipoCargo: 'SERVICIO_ADICIONAL', concepto: '', monto: '' })
   const [motivo, setMotivo] = useState('Cierre ordinario')
+  const [autorizaSaldoPendiente, setAutorizaSaldoPendiente] = useState(false)
   const [errPago, setErrPago] = useState<Errores>({})
   const [errCargo, setErrCargo] = useState<Errores>({})
   const [errCierre, setErrCierre] = useState<Errores>({})
@@ -67,6 +71,7 @@ export function PanelFolio({ codigoInicial, avisos }: Props) {
 
   const enviarCierre = async (e: FormEvent) => {
     e.preventDefault()
+    if (folio && folio.saldoPendiente > 0 && (!esAdmin || !autorizaSaldoPendiente)) return
     const { datos, errores } = validar(esquemaCierreFolio, { motivo })
     setErrCierre(errores)
     if (!datos || !folio) return
@@ -110,10 +115,13 @@ export function PanelFolio({ codigoInicial, avisos }: Props) {
           <input className="form-control my-1" placeholder="Concepto" aria-label="Concepto" value={cargo.concepto} onChange={(e) => setCargo({ ...cargo, concepto: e.target.value })} /><MensajeError texto={errCargo.concepto} />
           <input className="form-control my-1" type="number" placeholder="Monto (COP)" aria-label="Monto del cargo" value={cargo.monto} onChange={(e) => setCargo({ ...cargo, monto: e.target.value })} /><MensajeError texto={errCargo.monto} />
           <button className="btn btn-primary w-100 mt-1" type="submit">Registrar cargo</button></form>
-        <form className="col-12 col-lg-4" onSubmit={enviarCierre} noValidate><h3 className="h6">Cerrar folio</h3>
+        <form className="col-12 col-lg-4" onSubmit={enviarCierre} noValidate><h3 className="h6">{folio.saldoPendiente > 0 ? 'Cierre excepcional con saldo' : 'Cerrar folio'}</h3>
           <input className="form-control mb-1" aria-label="Motivo del cierre" value={motivo} onChange={(e) => setMotivo(e.target.value)} /><MensajeError texto={errCierre.motivo} />
-          <p className="form-text">Con saldo pendiente solo el administrador puede cerrar (RN-17) y queda registrado el motivo.</p>
-          <button className="btn btn-dark w-100" type="submit">Cerrar folio</button></form>
+          {folio.saldoPendiente > 0 ? <>
+            <p className="form-text">Saldo pendiente: <strong>{formatearMoneda(folio.saldoPendiente)}</strong>. La excepción requiere autorización administrativa y una justificación; ambas quedarán en la auditoría del folio.</p>
+            {esAdmin ? <label className="form-check mb-2"><input className="form-check-input" type="checkbox" checked={autorizaSaldoPendiente} onChange={(e) => setAutorizaSaldoPendiente(e.target.checked)} /><span className="form-check-label">Autorizo explícitamente cerrar este folio con saldo pendiente</span></label> : <p className="small text-danger">Solo un administrador puede autorizar esta excepción.</p>}
+          </> : <p className="form-text">El folio debe estar en cero para el cierre ordinario.</p>}
+          <button className="btn btn-dark w-100" type="submit" disabled={folio.saldoPendiente > 0 && (!esAdmin || !autorizaSaldoPendiente)}>{folio.saldoPendiente > 0 ? 'Autorizar cierre excepcional' : 'Cerrar folio'}</button></form>
       </div> : <p className="text-secondary">El folio está cerrado: no admite más cargos ni pagos.</p>}
     </>}
   </section>

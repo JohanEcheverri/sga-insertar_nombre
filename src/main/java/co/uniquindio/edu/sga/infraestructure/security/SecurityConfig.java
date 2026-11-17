@@ -57,10 +57,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/auth/login", "/api/auth/registro", "/error", "/actuator/health").permitAll();
                     auth.requestMatchers("/api/apartamentos/preparacion-pendiente",
-                            "/api/apartamentos/*/novedades/**", "/api/novedades/**",
                             "/api/reservas/*/registrar-llegada", "/api/reservas/*/registrar-salida",
                             "/api/reservas/llegadas", "/api/reservas/salidas")
-                            .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
+                            .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR", "PERSONAL_SERVICIO");
+                    auth.requestMatchers("/api/apartamentos/*/novedades/**", "/api/novedades/**")
+                            .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR", "PERSONAL_SERVICIO");
+                    auth.requestMatchers(HttpMethod.PATCH, "/api/apartamentos/*/estado-operativo")
+                            .hasAnyRole("ADMINISTRADOR", "PERSONAL_SERVICIO");
                     auth.requestMatchers(HttpMethod.GET, "/api/reservas/*/folio").authenticated();
                     auth.requestMatchers("/api/reservas/*/folio/**").hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
                     auth.requestMatchers(HttpMethod.GET,

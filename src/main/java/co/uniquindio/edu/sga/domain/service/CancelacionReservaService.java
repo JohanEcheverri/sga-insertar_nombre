@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 /**
  * Coordina Reserva y Folio (dos agregados) al cancelar una reserva o al vencer su plazo de
@@ -42,20 +41,21 @@ public class CancelacionReservaService {
     }
 
     public static long horasAntelacion(Reserva reserva, LocalDateTime ahora) {
-        LocalDateTime checkIn = reserva.getEstancia().fechaEntrada().atTime(15, 0);
-        return Math.max(0, ChronoUnit.HOURS.between(ahora, checkIn));
+        return duracionAntelacion(reserva, ahora).toHours();
     }
 
     public static BigDecimal porcentajeRetencion(Reserva reserva, LocalDateTime ahora) {
-        return tramoCancelacion(reserva, ahora) == 1 ? new BigDecimal("0.10") : new BigDecimal("0.25");
+        return reserva.getPoliticaCancelacion().retencionParaHoras(duracionAntelacion(reserva, ahora));
     }
 
     public static int tramoCancelacion(Reserva reserva, LocalDateTime ahora) {
+        return reserva.getPoliticaCancelacion().tramoIndexParaHoras(duracionAntelacion(reserva, ahora)) + 1;
+    }
+
+    private static Duration duracionAntelacion(Reserva reserva, LocalDateTime ahora) {
         LocalDateTime checkIn = reserva.getEstancia().fechaEntrada().atTime(15, 0);
         Duration diferencia = Duration.between(ahora, checkIn);
-        if (diferencia.compareTo(Duration.ofHours(72)) > 0) return 1;
-        if (diferencia.compareTo(Duration.ofHours(24)) >= 0) return 2;
-        return 3;
+        return diferencia.isNegative() ? Duration.ZERO : diferencia;
     }
 
     /** RN-21 - Cancelación automática por vencimiento del plazo de confirmación: sin penalidad. */

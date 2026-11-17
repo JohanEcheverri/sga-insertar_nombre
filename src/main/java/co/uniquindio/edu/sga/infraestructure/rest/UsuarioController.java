@@ -2,6 +2,7 @@ package co.uniquindio.edu.sga.infraestructure.rest;
 
 import co.uniquindio.edu.sga.application.dto.request.ModificarUsuarioRequest;
 import co.uniquindio.edu.sga.application.dto.request.CrearUsuarioRequest;
+import co.uniquindio.edu.sga.application.dto.request.EstadoUsuarioRequest;
 import co.uniquindio.edu.sga.application.dto.response.UsuarioResponse;
 import co.uniquindio.edu.sga.application.dto.response.ReservaResumenResponse;
 import co.uniquindio.edu.sga.application.security.SolicitanteActualPort;
@@ -10,6 +11,8 @@ import co.uniquindio.edu.sga.application.usecase.ConsultarHistorialDeReservasHue
 import co.uniquindio.edu.sga.application.usecase.CrearUsuarioUseCase;
 import co.uniquindio.edu.sga.application.usecase.EliminarUsuarioUseCase;
 import co.uniquindio.edu.sga.application.usecase.ModificarUsuarioUseCase;
+import co.uniquindio.edu.sga.application.usecase.ListarUsuariosUseCase;
+import co.uniquindio.edu.sga.application.usecase.CambiarEstadoUsuarioUseCase;
 import co.uniquindio.edu.sga.domain.valueobject.RolUsuario;
 import co.uniquindio.edu.sga.infraestructure.rest.mapper.ReservaMapper;
 import co.uniquindio.edu.sga.infraestructure.rest.mapper.UsuarioMapper;
@@ -28,6 +31,8 @@ public class UsuarioController {
     private final ModificarUsuarioUseCase modificarUsuarioUseCase;
     private final EliminarUsuarioUseCase eliminarUsuarioUseCase;
     private final BuscarUsuarioPorCodigoUseCase buscarUsuarioPorCodigoUseCase;
+    private final ListarUsuariosUseCase listarUsuariosUseCase;
+    private final CambiarEstadoUsuarioUseCase cambiarEstadoUsuarioUseCase;
     private final ConsultarHistorialDeReservasHuespedUseCase consultarHistorialUseCase;
     private final UsuarioMapper usuarioMapper;
     private final ReservaMapper reservaMapper;
@@ -37,12 +42,15 @@ public class UsuarioController {
             ModificarUsuarioUseCase modificarUsuarioUseCase,
             EliminarUsuarioUseCase eliminarUsuarioUseCase,
             BuscarUsuarioPorCodigoUseCase buscarUsuarioPorCodigoUseCase,
+            ListarUsuariosUseCase listarUsuariosUseCase, CambiarEstadoUsuarioUseCase cambiarEstadoUsuarioUseCase,
             ConsultarHistorialDeReservasHuespedUseCase consultarHistorialUseCase,
             UsuarioMapper usuarioMapper, ReservaMapper reservaMapper, SolicitanteActualPort solicitanteActual) {
         this.crearUsuarioUseCase = crearUsuarioUseCase;
         this.modificarUsuarioUseCase = modificarUsuarioUseCase;
         this.eliminarUsuarioUseCase = eliminarUsuarioUseCase;
         this.buscarUsuarioPorCodigoUseCase = buscarUsuarioPorCodigoUseCase;
+        this.listarUsuariosUseCase = listarUsuariosUseCase;
+        this.cambiarEstadoUsuarioUseCase = cambiarEstadoUsuarioUseCase;
         this.consultarHistorialUseCase = consultarHistorialUseCase;
         this.usuarioMapper = usuarioMapper;
         this.reservaMapper = reservaMapper;
@@ -63,8 +71,20 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> modificarUsuario(@PathVariable String id, @Valid @RequestBody ModificarUsuarioRequest solicitud) {
         var comando = new ModificarUsuarioUseCase.Command(java.util.UUID.fromString(id), solicitud.nombre(),
-                solicitud.apellido(), solicitud.telefono(), solicitanteActual.obtener());
+                solicitud.apellido(), solicitud.telefono(), solicitud.rol() == null || solicitud.rol().isBlank() ? null : RolUsuario.valueOf(solicitud.rol()), solicitanteActual.obtener());
         return ResponseEntity.ok(usuarioMapper.aRespuesta(modificarUsuarioUseCase.ejecutar(comando)));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UsuarioResponse>> listarUsuarios() {
+        return ResponseEntity.ok(listarUsuariosUseCase.ejecutar(solicitanteActual.obtener()).stream().map(usuarioMapper::aRespuesta).toList());
+    }
+
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<UsuarioResponse> cambiarEstado(@PathVariable String id, @Valid @RequestBody EstadoUsuarioRequest solicitud) {
+        var resultado = cambiarEstadoUsuarioUseCase.ejecutar(new CambiarEstadoUsuarioUseCase.Command(
+                java.util.UUID.fromString(id), solicitud.activo(), solicitanteActual.obtener()));
+        return ResponseEntity.ok(usuarioMapper.aRespuesta(resultado));
     }
 
     // DELETE -> /api/usuarios/{id}

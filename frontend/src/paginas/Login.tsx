@@ -18,7 +18,7 @@ export default function Login() {
     setError('')
     try {
       const sesion = await iniciarSesion(datos)
-      navegar(sesion.roles.includes('ADMINISTRADOR') ? '/admin' : sesion.roles.includes('RECEPCIONISTA') ? '/recepcion' : '/', { replace: true })
+      navegar(sesion.roles.includes('ADMINISTRADOR') ? '/admin' : sesion.roles.includes('RECEPCIONISTA') ? '/recepcion' : sesion.roles.includes('PERSONAL_SERVICIO') ? '/servicio' : '/', { replace: true })
     } catch (fallo: unknown) {
       setError(extraerMensajeError(fallo))
     }

@@ -25,7 +25,7 @@ const dormitoriosNuevos = (categoria: CategoriaApartamento) => Array.from(
   { length: cantidadDormitorios(categoria) }, (_, i) => ({ ...DORMITORIO_VACIO, nombre: `Dormitorio ${i + 1}` }),
 )
 const FORM_VACIO: FormApto = { identificadorUnico: '', descripcion: '', categoria: 'STANDARD', aforoMaximo: '3', dormitorios: dormitoriosNuevos('STANDARD'), tarifas: {} }
-const ESTADOS_MANUALES: EstadoOperativo[] = ['EN_PREPARACION', 'PREPARADO', 'FUERA_DE_SERVICIO']
+const ESTADOS_MANUALES: EstadoOperativo[] = ['PENDIENTE_PREPARACION', 'EN_PREPARACION', 'PREPARADO', 'FUERA_DE_SERVICIO']
 
 /** El backend entrega los dormitorios como "Nombre: N cama(s) tipo"; se reconstruyen para editar. */
 function parsearDormitorio(texto: string): DormitorioForm {

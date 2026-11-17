@@ -2,6 +2,7 @@ import type { ApartamentoResponse, EstadoOperativo } from '../modelos/apartament
 import type {
   AsignarTarifaRequest, BloqueoResponse, CrearApartamentoRequest, CrearBloqueoRequest, CrearTemporadaRequest,
   IndicadoresConsolidados, ModificarApartamentoRequest, ReporteOcupacion, TemporadaResponse,
+  ActualizarPoliticaRequest, PoliticaCancelacionResponse,
 } from '../modelos/admin'
 import type { Pagina } from '../modelos/comun'
 import { api } from './api'
@@ -65,4 +66,12 @@ export async function reporteConsolidado(fechaInicio: string, fechaFin: string):
 
 export async function reporteOcupacion(fechaInicio: string, fechaFin: string): Promise<ReporteOcupacion> {
   return (await api.get<ReporteOcupacion>('/reportes/ocupacion', { params: { fechaInicio, fechaFin } })).data
+}
+
+export async function obtenerPoliticaCancelacion(): Promise<PoliticaCancelacionResponse> {
+  return (await api.get<PoliticaCancelacionResponse>('/politicas-cancelacion')).data
+}
+
+export async function actualizarPoliticaCancelacion(datos: ActualizarPoliticaRequest): Promise<PoliticaCancelacionResponse> {
+  return (await api.put<PoliticaCancelacionResponse>('/politicas-cancelacion', datos)).data
 }

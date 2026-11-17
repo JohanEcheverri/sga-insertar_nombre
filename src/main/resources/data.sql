@@ -1,5 +1,6 @@
 -- Datos de desarrollo del alojamiento El Cam, Lloró, Chocó. Idempotentes.
 ALTER TABLE Reserva ALTER COLUMN titular_usuario_id DROP NOT NULL;
+ALTER TABLE Bloqueo ALTER COLUMN apartamento_id VARCHAR(36);
 INSERT INTO politicas_cancelacion (version, vigente_desde, porcentaje_no_show)
 SELECT 'el-cam-v1', DATE '2026-01-01', 1.0000
 WHERE NOT EXISTS (SELECT 1 FROM politicas_cancelacion WHERE version = 'el-cam-v1');
@@ -7,26 +8,36 @@ WHERE NOT EXISTS (SELECT 1 FROM politicas_cancelacion WHERE version = 'el-cam-v1
 INSERT INTO politica_tramos (version, dias_antelacion_minimos, porcentaje_retencion)
 SELECT 'el-cam-v1', 0, 0.2500
 WHERE NOT EXISTS (SELECT 1 FROM politica_tramos WHERE version = 'el-cam-v1' AND dias_antelacion_minimos = 0);
+-- Migra los umbrales de la política de desarrollo de días a horas y corrige el anticipo (25%).
+UPDATE politica_tramos SET dias_antelacion_minimos=24, porcentaje_retencion=0.2500
+WHERE version='el-cam-v1' AND dias_antelacion_minimos=1 AND porcentaje_retencion=0.0625;
+UPDATE politica_tramos SET dias_antelacion_minimos=72, porcentaje_retencion=0.1000
+WHERE version='el-cam-v1' AND dias_antelacion_minimos=4 AND porcentaje_retencion=0.1000;
 INSERT INTO politica_tramos (version, dias_antelacion_minimos, porcentaje_retencion)
-SELECT 'el-cam-v1', 1, 0.0625
-WHERE NOT EXISTS (SELECT 1 FROM politica_tramos WHERE version = 'el-cam-v1' AND dias_antelacion_minimos = 1);
+SELECT 'el-cam-v1', 24, 0.2500
+WHERE NOT EXISTS (SELECT 1 FROM politica_tramos WHERE version = 'el-cam-v1' AND dias_antelacion_minimos = 24);
 INSERT INTO politica_tramos (version, dias_antelacion_minimos, porcentaje_retencion)
-SELECT 'el-cam-v1', 4, 0.1000
-WHERE NOT EXISTS (SELECT 1 FROM politica_tramos WHERE version = 'el-cam-v1' AND dias_antelacion_minimos = 4);
+SELECT 'el-cam-v1', 72, 0.1000
+WHERE NOT EXISTS (SELECT 1 FROM politica_tramos WHERE version = 'el-cam-v1' AND dias_antelacion_minimos = 72);
+UPDATE reserva_tramos_cancelacion SET dias_antelacion_minimos=24, porcentaje_retencion=0.2500
+WHERE dias_antelacion_minimos=1 AND porcentaje_retencion=0.0625;
+UPDATE reserva_tramos_cancelacion SET dias_antelacion_minimos=72
+WHERE dias_antelacion_minimos=4 AND porcentaje_retencion=0.1000;
 
 INSERT INTO alojamientos (id, nombre, descripcion, ciudad, direccion, departamento, umbral_edad_facturable,
  hora_entrada, hora_salida, tiempo_preparacion_horas, plazo_confirmacion_horas, hora_limite_no_show,
  porcentaje_anticipo, politica_version, politica_vigente_desde)
 SELECT '10000000-0000-0000-0000-000000000001', 'El Cam', 'Alojamiento en Lloró, Chocó',
- 'Lloró', 'Lloró, Chocó, Colombia', 'Chocó', 5, TIME '15:00:00', TIME '15:00:00', 4, 4,
+ 'Lloró', 'Lloró, Chocó, Colombia', 'Chocó', 5, TIME '15:00:00', TIME '15:00:00', 3, 4,
  TIME '18:00:00', 0.2500, 'el-cam-v1', DATE '2026-01-01'
 WHERE NOT EXISTS (SELECT 1 FROM alojamientos WHERE id = '10000000-0000-0000-0000-000000000001');
 UPDATE alojamientos SET nombre='El Cam', descripcion='Alojamiento en Lloró, Chocó', ciudad='Lloró',
  direccion='Lloró, Chocó, Colombia', departamento='Chocó', umbral_edad_facturable=5,
- hora_entrada=TIME '15:00:00', hora_salida=TIME '15:00:00', tiempo_preparacion_horas=4,
- plazo_confirmacion_horas=4, hora_limite_no_show=TIME '18:00:00', porcentaje_anticipo=0.2500,
- politica_version='el-cam-v1', politica_vigente_desde=DATE '2026-01-01'
+ hora_entrada=TIME '15:00:00', hora_salida=TIME '15:00:00', tiempo_preparacion_horas=3,
+ plazo_confirmacion_horas=4, hora_limite_no_show=TIME '18:00:00', porcentaje_anticipo=0.2500
 WHERE id='10000000-0000-0000-0000-000000000001';
+UPDATE alojamientos SET politica_version='el-cam-v1', politica_vigente_desde=DATE '2026-01-01'
+WHERE id='10000000-0000-0000-0000-000000000001' AND (politica_version IS NULL OR politica_version='triquinuelas-v1');
 
 INSERT INTO apartamentos (id, alojamiento_id, identificador_unico, descripcion, capacidad, categoria, estado_operativo, disponible, activo)
 SELECT '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '101', 'Apartamento Standard', 3, 'STANDARD', 'PREPARADO', TRUE, TRUE

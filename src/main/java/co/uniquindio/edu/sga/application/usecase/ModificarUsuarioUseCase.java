@@ -27,7 +27,11 @@ import java.util.stream.Collectors;
 @Transactional
 public class ModificarUsuarioUseCase {
 
-    public record Command(UUID usuarioId, String nombre, String apellido, String telefono, Solicitante solicitante) { }
+    public record Command(UUID usuarioId, String nombre, String apellido, String telefono, RolUsuario rol, Solicitante solicitante) {
+        public Command(UUID usuarioId, String nombre, String apellido, String telefono, Solicitante solicitante) {
+            this(usuarioId, nombre, apellido, telefono, null, solicitante);
+        }
+    }
 
     private final UsuarioRepository usuarioRepository;
 
@@ -44,6 +48,10 @@ public class ModificarUsuarioUseCase {
         Usuario usuario = Cargas.usuario(usuarioRepository, cmd.usuarioId());
         usuario.actualizarNombreCompleto(new NombreCompleto(cmd.nombre(), cmd.apellido()));
         usuario.actualizarTelefono(new Telefono(cmd.telefono()));
+        if (cmd.rol() != null) {
+            if (!s.esAdministrador()) throw new AccesoDenegadoException("Solo administración puede cambiar roles.");
+            usuario.cambiarRol(cmd.rol());
+        }
         usuarioRepository.guardar(usuario);
         return UsuarioDetalle.de(usuario);
     }
