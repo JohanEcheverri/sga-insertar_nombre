@@ -1,6 +1,6 @@
 -- Datos de desarrollo del alojamiento El Cam, Lloró, Chocó. Idempotentes.
-ALTER TABLE Reserva ALTER COLUMN titular_usuario_id DROP NOT NULL;
-ALTER TABLE Bloqueo ALTER COLUMN apartamento_id VARCHAR(36);
+--ALTER TABLE Reserva ALTER COLUMN titular_usuario_id SET NULL;
+--ALTER TABLE Bloqueo ALTER COLUMN apartamento_id VARCHAR(36);
 INSERT INTO politicas_cancelacion (version, vigente_desde, porcentaje_no_show)
 SELECT 'el-cam-v1', DATE '2026-01-01', 1.0000
 WHERE NOT EXISTS (SELECT 1 FROM politicas_cancelacion WHERE version = 'el-cam-v1');
