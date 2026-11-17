@@ -35,7 +35,16 @@ export const esquemaDormitorio = z.object({
 export const esquemaApartamento = z.object({
   identificadorUnico: z.string().trim().min(1, 'El identificador es obligatorio.'),
   descripcion: z.string().trim().min(1, 'La descripción es obligatoria.'),
+  categoria: z.enum(['STANDARD', 'PREMIUM'], { error: 'Selecciona una categoría.' }),
   aforoMaximo: z.coerce.number({ error: 'Capacidad inválida.' }).int('Debe ser entera.').min(1, 'Mínimo 1 persona.').max(127, 'Máximo 127.'),
   dormitorios: z.array(esquemaDormitorio).min(1, 'Registra al menos un dormitorio.'),
+}).superRefine((datos, ctx) => {
+  const premium = datos.categoria === 'PREMIUM'
+  if (datos.aforoMaximo !== (premium ? 6 : 3)) {
+    ctx.addIssue({ code: 'custom', path: ['aforoMaximo'], message: `La categoría ${premium ? 'Premium' : 'Standard'} admite ${premium ? 6 : 3} personas.` })
+  }
+  if (datos.dormitorios.length !== (premium ? 3 : 2)) {
+    ctx.addIssue({ code: 'custom', path: ['dormitorios'], message: `La categoría ${premium ? 'Premium' : 'Standard'} requiere ${premium ? 3 : 2} dormitorios.` })
+  }
 })
 export type FormularioApartamento = z.infer<typeof esquemaApartamento>

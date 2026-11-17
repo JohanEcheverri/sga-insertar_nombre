@@ -1,10 +1,12 @@
 export type EstadoOperativo = 'PREPARADO' | 'OCUPADO' | 'PENDIENTE_PREPARACION' | 'EN_PREPARACION' | 'FUERA_DE_SERVICIO'
+export type CategoriaApartamento = 'STANDARD' | 'PREMIUM'
 
 export interface ApartamentoResponse {
   id: string
   identificadorUnico: string
   descripcion: string
   aforoMaximo: number
+  categoria: CategoriaApartamento
   estadoOperativo: EstadoOperativo
   dormitorios: string[]
   disponible: boolean

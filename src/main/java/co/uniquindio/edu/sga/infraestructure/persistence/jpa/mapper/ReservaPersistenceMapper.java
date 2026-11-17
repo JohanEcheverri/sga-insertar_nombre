@@ -26,7 +26,7 @@ public interface ReservaPersistenceMapper {
     @Mapping(target = "estancia", expression = "java(toEstanciaEmbeddable(reserva.getEstancia()))")
     @Mapping(target = "politicaCongelada", expression = "java(toPoliticaEmbeddable(reserva.getPoliticaCancelacion()))")
     @Mapping(target = "tramosCancelacion", expression = "java(toTramosEmbeddable(reserva.getPoliticaCancelacion()))")
-    @Mapping(target = "titularUsuarioId", source = "titular.usuarioId.valor")
+    @Mapping(target = "titularUsuarioId", expression = "java(reserva.getTitular().usuarioId() == null ? null : reserva.getTitular().usuarioId().valor())")
     @Mapping(target = "titularCorreo", source = "titular.correo.direccion")
     @Mapping(target = "titularTelefono", source = "titular.telefono.numeroTelefono")
     @Mapping(target = "porcentajeRetencionNoShow", source = "politicaCancelacion.porcentajeRetencionNoShow")
@@ -80,7 +80,7 @@ public interface ReservaPersistenceMapper {
                 reservaEntity.getFolioId() == null ? null : new FolioId(reservaEntity.getFolioId()),
                 new ApartamentoId(reservaEntity.getApartamentoId()),
                 new Titular(titular.nombreCompleto(),
-                        new UsuarioId(reservaEntity.getTitularUsuarioId()),
+                        reservaEntity.getTitularUsuarioId() == null ? null : new UsuarioId(reservaEntity.getTitularUsuarioId()),
                         new CorreoElectronico(reservaEntity.getTitularCorreo()),
                         new Telefono(reservaEntity.getTitularTelefono()),
                         titular.documentoIdentidad()),

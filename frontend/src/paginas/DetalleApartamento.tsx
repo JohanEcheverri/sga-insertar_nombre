@@ -39,6 +39,16 @@ export default function DetalleApartamento() {
     return () => { activo = false }
   }, [id])
 
+  useEffect(() => {
+    if (!apartamento) return
+    const limite = apartamento.categoria === 'PREMIUM' ? 6 : 3
+    const adultosIniciales = Math.max(1, Math.min(limite, Number(adultos) || 1))
+    const menoresIniciales = Math.max(0, Math.min(limite - adultosIniciales, Number(menores) || 0))
+    setAdultos(String(adultosIniciales))
+    setMenores(String(menoresIniciales))
+  // Los valores iniciales pueden venir de una URL antigua con más ocupantes que el aforo.
+  }, [apartamento, adultos, menores])
+
   const consultar = async (evento: FormEvent) => {
     evento.preventDefault()
     setErrorConsulta('')
@@ -70,6 +80,16 @@ export default function DetalleApartamento() {
 
   const consulta = new URLSearchParams({ entrada, salida, adultos, menores }).toString()
   const puedeReservar = estaAutenticado && tieneRol(['HUESPED'])
+  const premium = apartamento.categoria === 'PREMIUM'
+  const maximo = premium ? 6 : 3
+  const totalPersonas = Number(adultos || 0) + Number(menores || 0)
+  const cambiarAdultos = (valor: string) => {
+    const n = Math.max(1, Math.min(maximo, Number(valor) || 1))
+    setAdultos(String(n))
+    if (n + Number(menores || 0) > maximo) setMenores(String(Math.max(0, maximo - n)))
+  }
+  const cambiarMenores = (valor: string) => setMenores(String(Math.max(0, Math.min(maximo - Number(adultos || 1), Number(valor) || 0))))
+  const anticipo = resultado?.cotizacion ? Math.round(resultado.cotizacion.total * 0.25) : 0
 
   return <main className="container py-4">
     <Link to="/" className="small">← Volver al catálogo</Link>
@@ -78,12 +98,25 @@ export default function DetalleApartamento() {
         <div className="bg-secondary-subtle rounded-4 d-flex align-items-center justify-content-center mb-3" style={{ height: 220 }}>
           <span className="display-3 fw-bold text-secondary">{apartamento.identificadorUnico}</span>
         </div>
-        <h1 className="h3">Apartamento {apartamento.identificadorUnico}</h1>
+        <h1 className="h3">Apartamento {apartamento.identificadorUnico} · {premium ? 'Premium' : 'Standard'}</h1>
         <p>{apartamento.descripcion}</p>
         <p className="mb-2">Capacidad máxima: <strong>{apartamento.aforoMaximo} personas</strong> · Estado operativo: <InsigniaEstado estado={apartamento.estadoOperativo} /></p>
         <h2 className="h6 mt-4">Dormitorios</h2>
         <ul>{apartamento.dormitorios.map((d) => <li key={d}>{d}</li>)}</ul>
-        <p className="text-secondary small">El apartamento se entrega completo y en exclusiva a tu grupo. Se cobra por persona facturable y por noche; los menores del umbral de edad ocupan cupo sin generar cargo.</p>
+        <p className="text-secondary small">{premium ? 'La tarifa se cobra por persona facturable y por noche.' : 'La tarifa es fija por apartamento y por noche.'} Los menores de 5 años no pagan tarifa adicional; sí cuentan para el aforo. Se factura desde los 5 años cumplidos.</p>
+        <section className="mt-4"><h2 className="h5">Dotación y características</h2>
+          {premium ? <ul><li>Kit de aseo completo: papel higiénico y toallas de lujo.</li><li>Aire acondicionado.</li><li>Balcón con vista al río.</li></ul> : <ul><li>Ventilador.</li><li>Dotación básica de baño.</li></ul>}
+        </section>
+        <section className="mt-4"><h2 className="h5">Normas y políticas</h2><ul>
+          <li><strong>Check-in:</strong> 3:00 p. m. a 6:00 p. m. (límite de no-show: 6:00 p. m.).</li>
+          <li><strong>Check-out:</strong> 12:00 p. m. a 3:00 p. m.</li>
+          <li><strong>Mascotas:</strong> máximo 1 pequeña o mediana por apartamento; cargo único de limpieza especial de $30.000 COP por estancia.</li>
+          <li><strong>Cancelación:</strong> con más de 72 horas, retención del 10% del total; entre 72 y 24 horas, penalidad del 25% del anticipo; con menos de 24 horas, penalidad del 100% del anticipo o 1 SMMLV proporcional.</li>
+        </ul></section>
+        <section className="mt-4"><h2 className="h5">Servicios adicionales</h2><p>Disponibles durante la reserva o la estancia: desayuno típico chocoano ($10.000 COP por persona) y room service ($5.000 COP por pedido).</p></section>
+        <section className="mt-4"><h2 className="h5">Ubicación</h2><p>El Cam, Lloró, Chocó, Colombia.</p>
+          <iframe title="Mapa de El Cam en Lloró, Chocó" src="https://maps.google.com/maps?q=Llor%C3%B3%2C%20Choc%C3%B3%2C%20Colombia&z=13&output=embed" width="100%" height="260" style={{ border: 0 }} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+        </section>
       </div>
 
       <div className="col-12 col-lg-5">
@@ -98,12 +131,13 @@ export default function DetalleApartamento() {
                 <input id="salida" type="date" min={entrada ? sumarDias(entrada, 1) : hoyISO()} className={`form-control${errores.fechaSalida ? ' is-invalid' : ''}`} value={salida} onChange={(e) => setSalida(e.target.value)} />
                 {errores.fechaSalida && <div className="invalid-feedback">{errores.fechaSalida}</div>}</div>
               <div className="col-6"><label className="form-label" htmlFor="adultos">Adultos</label>
-                <input id="adultos" type="number" min={1} className={`form-control${errores.adultos ? ' is-invalid' : ''}`} value={adultos} onChange={(e) => setAdultos(e.target.value)} />
+                <input id="adultos" type="number" min={1} max={maximo} className={`form-control${errores.adultos ? ' is-invalid' : ''}`} value={adultos} onChange={(e) => cambiarAdultos(e.target.value)} />
                 {errores.adultos && <div className="invalid-feedback">{errores.adultos}</div>}</div>
               <div className="col-6"><label className="form-label" htmlFor="menores">Menores</label>
-                <input id="menores" type="number" min={0} className={`form-control${errores.menores ? ' is-invalid' : ''}`} value={menores} onChange={(e) => setMenores(e.target.value)} />
+                <input id="menores" type="number" min={0} max={Math.max(0, maximo - Number(adultos || 1))} className={`form-control${errores.menores ? ' is-invalid' : ''}`} value={menores} onChange={(e) => cambiarMenores(e.target.value)} />
                 {errores.menores && <div className="invalid-feedback">{errores.menores}</div>}</div>
             </div>
+            <p className="small text-secondary mt-2 mb-0">Ocupación: {totalPersonas}/{maximo}. Todos cuentan para el aforo; los menores de 5 años no son facturables.</p>
             <button className="btn btn-primary w-100 mt-3" type="submit" disabled={consultando}>{consultando ? 'Consultando…' : 'Ver disponibilidad y precio'}</button>
           </form>
           <div className="mt-3"><AlertaNotificacion mensaje={errorConsulta} tipo="error" /></div>
@@ -114,14 +148,16 @@ export default function DetalleApartamento() {
               : <AlertaNotificacion tipo="error" mensaje="No está disponible para esas fechas. Prueba con otras fechas." />}
             {resultado.cotizacion && <>
               <div className="table-responsive"><table className="table table-sm">
-                <thead><tr><th>Noche</th><th>Temporada</th><th className="text-end">Tarifa</th><th className="text-end">Pers.</th><th className="text-end">Subtotal</th></tr></thead>
+                <thead><tr><th>Noche</th><th>Temporada</th><th className="text-end">{premium ? 'Tarifa/persona' : 'Tarifa/apartamento'}</th><th className="text-end">{premium ? 'Facturables' : 'Unidad'}</th><th className="text-end">Subtotal</th></tr></thead>
                 <tbody>{resultado.cotizacion.lineas.map((l) => <tr key={l.noche}>
                   <td>{formatearFecha(l.noche)}</td><td>{l.temporada}</td>
-                  <td className="text-end">{formatearMoneda(l.tarifa)}</td><td className="text-end">{l.ocupantesFacturables}</td>
+                  <td className="text-end">{formatearMoneda(l.tarifa)}</td><td className="text-end">{premium ? l.ocupantesFacturables : '1 apto.'}</td>
                   <td className="text-end">{formatearMoneda(l.subtotal)}</td></tr>)}</tbody>
                 <tfoot><tr><th colSpan={4}>Total</th><th className="text-end">{formatearMoneda(resultado.cotizacion.total)}</th></tr></tfoot>
               </table></div>
-              <p className="small text-secondary">Valor estimado: el valor definitivo se calcula con los datos reales de los ocupantes.</p>
+              <p className="mb-1"><strong>Anticipo requerido (25%): {formatearMoneda(anticipo)}</strong></p>
+              <p className="small text-secondary">Tienes 4 horas después de reservar para adjuntar el comprobante de pago. Medios aceptados: efectivo, tarjeta débito/crédito y transferencia bancaria.</p>
+              <p className="small text-secondary">Valor estimado: el valor definitivo se calcula con las fechas de nacimiento reales de los ocupantes.</p>
             </>}
             {resultado.disponible && (puedeReservar
               ? <Link className="btn btn-success w-100" to={`/reservar/${apartamento.id}?${consulta}`}>Reservar este apartamento</Link>

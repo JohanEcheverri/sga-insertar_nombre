@@ -1,3 +1,5 @@
+import type { CategoriaApartamento } from './apartamento'
+
 export interface TemporadaResponse {
   id: string
   nombre: string
@@ -16,6 +18,7 @@ export interface TarifaInicialRequest { temporadaId: string; precioPorNochePorOc
 export interface CrearApartamentoRequest {
   identificadorUnico: string
   descripcion: string
+  categoria: CategoriaApartamento
   aforoMaximo: number
   dormitorios: DormitorioRequest[]
   tarifas: TarifaInicialRequest[]

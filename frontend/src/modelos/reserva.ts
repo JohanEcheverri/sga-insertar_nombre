@@ -14,7 +14,7 @@ export interface CrearReservaRequest {
   apartamentoId: string
   nombreTitular: string
   apellidoTitular: string
-  usuarioId: string
+  usuarioId?: string | null
   correoTitular: string
   telefonoTitular: string
   documentoTitular: string
@@ -46,6 +46,27 @@ export interface ReservaDetalle {
   valorCongelado: number
   versionPoliticaCancelacion: string
   fechaCreacion: string
+}
+
+export interface CancelacionReservaResponse {
+  codigo: string
+  estado: EstadoReserva
+  porcentajeRetenido: number
+  penalidad: number
+  saldoAFavor: number
+  saldoPendiente: number
+  detalle: ReservaDetalle
+}
+
+export interface PrevisualizacionCancelacion {
+  horasAntelacion: number
+  tramo: 1 | 2 | 3
+  porcentajeRetenido: number
+  penalidad: number
+  anticipoRequerido: number
+  pagosRegistrados: number
+  saldoAFavorEstimado: number
+  saldoPendienteEstimado: number
 }
 
 export interface ReservaResumen {

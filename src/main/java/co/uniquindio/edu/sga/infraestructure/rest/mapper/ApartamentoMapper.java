@@ -24,19 +24,19 @@ public interface ApartamentoMapper {
                 .map(d -> new DormitorioDatos(d.nombre(), d.cantidadCamas(), d.tipoCamas())).toList();
         Map<UUID, java.math.BigDecimal> tarifas = solicitud.tarifas().stream().collect(Collectors.toMap(
                 t -> UUID.fromString(t.temporadaId()), co.uniquindio.edu.sga.application.dto.request.TarifaRequest::precioPorNochePorOcupante));
-        return new CrearApartamentoUseCase.Command(solicitud.identificadorUnico(), solicitud.descripcion(),
+        return new CrearApartamentoUseCase.Command(solicitud.identificadorUnico(), solicitud.descripcion(), solicitud.categoria(),
                 solicitud.aforoMaximo(), dormitorios, tarifas, solicitante);
     }
 
     default ApartamentoResponse aRespuesta(ApartamentoDetalle apartamento, List<DormitorioRequest> dormitorios) {
         return new ApartamentoResponse(apartamento.id().toString(), apartamento.identificador(), apartamento.descripcion(),
-                apartamento.capacidad(), apartamento.estadoOperativo().name(), dormitorios.stream()
+                apartamento.capacidad(), apartamento.categoria().name(), apartamento.estadoOperativo().name(), dormitorios.stream()
                 .map(d -> d.nombre() + ": " + d.cantidadCamas() + " cama(s) " + d.tipoCamas()).toList(), apartamento.disponible());
     }
 
     default ApartamentoResponse aRespuesta(ApartamentoDetalle apartamento) {
         return new ApartamentoResponse(apartamento.id().toString(), apartamento.identificador(), apartamento.descripcion(),
-                apartamento.capacidad(), apartamento.estadoOperativo().name(), apartamento.dormitorios(), apartamento.disponible());
+                apartamento.capacidad(), apartamento.categoria().name(), apartamento.estadoOperativo().name(), apartamento.dormitorios(), apartamento.disponible());
     }
 
     default ApartamentoResponse aRespuesta(Apartamento a) {
@@ -45,6 +45,6 @@ public interface ApartamentoMapper {
                 .toList();
         return new ApartamentoResponse(a.getId().valor().toString(), a.getIdentificadorUnico(),
                 a.getDescripcion(), (int) a.getCapacidad().aforoMax(),
-                a.getEstadoOperativo().name(), dormitorios, a.isDisponible());
+                a.getCategoria().name(), a.getEstadoOperativo().name(), dormitorios, a.isDisponible());
     }
 }

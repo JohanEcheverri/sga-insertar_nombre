@@ -59,8 +59,10 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/apartamentos/preparacion-pendiente",
                             "/api/apartamentos/*/novedades/**", "/api/novedades/**",
                             "/api/reservas/*/registrar-llegada", "/api/reservas/*/registrar-salida",
-                            "/api/reservas/*/folio/**", "/api/reservas/llegadas", "/api/reservas/salidas")
+                            "/api/reservas/llegadas", "/api/reservas/salidas")
                             .hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
+                    auth.requestMatchers(HttpMethod.GET, "/api/reservas/*/folio").authenticated();
+                    auth.requestMatchers("/api/reservas/*/folio/**").hasAnyRole("RECEPCIONISTA", "ADMINISTRADOR");
                     auth.requestMatchers(HttpMethod.GET,
                             "/api/apartamentos/disponibilidad", "/api/apartamentos/buscar-capacidad",
                             "/api/cotizaciones").permitAll();

@@ -17,7 +17,7 @@ export function TarjetaApartamento({ apartamento, total, consulta = '' }: Props)
       <span className="display-6 fw-bold text-secondary">{apartamento.identificadorUnico}</span>
     </div>
     <div className="card-body d-flex flex-column">
-      <h2 className="h5">Apartamento {apartamento.identificadorUnico}</h2>
+      <h2 className="h5">Apartamento {apartamento.identificadorUnico} · {apartamento.categoria === 'PREMIUM' ? 'Premium' : 'Standard'}</h2>
       <p className="text-secondary small">{apartamento.descripcion}</p>
       <ul className="list-unstyled small mb-3">
         <li>Capacidad: <strong>{apartamento.aforoMaximo}</strong> personas</li>

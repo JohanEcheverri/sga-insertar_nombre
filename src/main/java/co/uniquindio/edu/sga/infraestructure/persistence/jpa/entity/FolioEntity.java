@@ -18,11 +18,11 @@ public class FolioEntity {
     @Id
     private String id;
 
-    @Column(name = "reserva_id", nullable = false, length = 15)
+    @Column(name = "reserva_id", nullable = false, length = 36)
     private String reservaId;
 
     @Column(name = "saldo_total", nullable = false, precision = 15, scale = 2)
-    private BigDecimal saldoTotal;
+    private BigDecimal saldoTotal = BigDecimal.ZERO;
 
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;

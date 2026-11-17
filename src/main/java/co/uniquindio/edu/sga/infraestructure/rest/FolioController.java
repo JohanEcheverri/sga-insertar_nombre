@@ -65,7 +65,7 @@ public class FolioController {
                 java.util.UUID.fromString(codigo), co.uniquindio.edu.sga.domain.valueobject.TipoCargo.valueOf(solicitud.tipoCargo()),
                 solicitud.concepto(), solicitud.monto(), solicitanteActual.obtener()));
         var cargo = folio.cargos().get(folio.cargos().size() - 1);
-        return ResponseEntity.status(201).body(new CargoResponse(cargo.tipo().name(), cargo.concepto(), cargo.monto(), cargo.fecha()));
+        return ResponseEntity.status(201).body(new CargoResponse(cargo.tipo().name(), cargo.concepto(), cargo.monto(), cargo.fecha(), cargo.tipo().esCredito()));
     }
 
     // PUT -> /api/reservas/{codigo}/folio/cerrar

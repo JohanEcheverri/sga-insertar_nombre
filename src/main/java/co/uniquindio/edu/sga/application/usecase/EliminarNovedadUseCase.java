@@ -36,8 +36,8 @@ public class EliminarNovedadUseCase {
     }
 
     public void ejecutar(Command cmd) {
-        if (cmd.solicitante() == null || !cmd.solicitante().esPersonalInterno()) {
-            throw new AccesoDenegadoException("Solo el personal interno puede anular novedades.");
+        if (cmd.solicitante() == null || !cmd.solicitante().esAdministrador()) {
+            throw new AccesoDenegadoException("Solo administración puede anular novedades.");
         }
         Novedad novedad = novedadRepository.buscarPorId(NovedadId.of(cmd.novedadId()))
                 .orElseThrow(() -> new NovedadNoEncontradaException(String.valueOf(cmd.novedadId())));

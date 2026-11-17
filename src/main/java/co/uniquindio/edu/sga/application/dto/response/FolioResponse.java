@@ -11,7 +11,7 @@ import java.util.List;
  * @param cantidadPagos Cantidad de pagos registrados.
  * @param totalCargos Suma monetaria de los cargos.
  * @param totalPagos Suma monetaria de los pagos.
- * @param saldoPendiente Valor aún adeudado.
+ * @param saldoPendiente Saldo con signo: positivo es deuda, negativo es saldo a favor.
  * @param autorizacionCierre Datos de la autorización de cierre, si existe.
  * @author Equipo SGA
  * @version 1.0
@@ -21,8 +21,10 @@ public record FolioResponse(
         String reservaId,
         String estado,
         List<CargoResponse> cargos,
+        List<PagoResponse> pagos,
         int cantidadPagos,
         BigDecimal totalCargos,
         BigDecimal totalPagos,
         BigDecimal saldoPendiente,
+        BigDecimal saldoAFavor,
         AutorizacionCierreResponse autorizacionCierre) { }

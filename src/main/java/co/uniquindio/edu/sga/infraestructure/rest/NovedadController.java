@@ -46,7 +46,7 @@ public class NovedadController {
     @PostMapping("/apartamentos/{id}/novedades")
     public ResponseEntity<NovedadResponse> crearNovedad(@PathVariable String id, @Valid @RequestBody RegistrarNovedadRequest solicitud) {
         var command = new CrearNovedadUseCase.Command(java.util.UUID.fromString(id), solicitud.autor(),
-                solicitud.descripcion(), GravedadNovedad.valueOf(solicitud.gravedad()));
+                solicitud.descripcion(), GravedadNovedad.valueOf(solicitud.gravedad()), solicitanteActual.obtener());
         return ResponseEntity.status(201).body(mapper.aRespuesta(crearNovedadUseCase.ejecutar(command)));
     }
 

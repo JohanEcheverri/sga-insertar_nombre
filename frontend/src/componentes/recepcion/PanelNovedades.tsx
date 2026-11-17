@@ -15,12 +15,13 @@ interface Props {
   apartamentos: ApartamentoResponse[]
   autorPorDefecto: string
   avisos: Avisos
+  soloLectura?: boolean
 }
 
 const COLOR_GRAVEDAD: Record<string, string> = { BAJA: 'secondary', MEDIA: 'info', ALTA: 'warning', CRITICA: 'danger' }
 
 /** Novedades por apartamento y unidades pendientes de preparación. Reportar no cambia el estado operativo (RN-31). */
-export function PanelNovedades({ apartamentos, autorPorDefecto, avisos }: Props) {
+export function PanelNovedades({ apartamentos, autorPorDefecto, avisos, soloLectura = false }: Props) {
   const [apartamentoId, setApartamentoId] = useState('')
   const [novedades, setNovedades] = useState<NovedadResponse[]>([])
   const [pendientes, setPendientes] = useState<ApartamentoResponse[]>([])
@@ -71,12 +72,12 @@ export function PanelNovedades({ apartamentos, autorPorDefecto, avisos }: Props)
           <div className="d-flex justify-content-between align-items-start gap-2">
             <div><span className={`badge text-bg-${COLOR_GRAVEDAD[n.gravedad]} me-2`}>{etiqueta(n.gravedad)}</span>{n.descripcion}
               <div className="small text-secondary">{n.autor} · {formatearFechaHora(n.fechaReporte)}</div></div>
-            <button className="btn btn-outline-danger btn-sm" type="button" onClick={() => void anular(n.id)}>Anular</button>
+            {!soloLectura && <button className="btn btn-outline-danger btn-sm" type="button" onClick={() => void anular(n.id)}>Anular</button>}
           </div></li>)}</ul>)}
     </div>
 
     <div className="col-12 col-lg-5">
-      <form onSubmit={enviar} noValidate className="mb-4"><h2 className="h5">Registrar novedad</h2>
+      {!soloLectura && <form onSubmit={enviar} noValidate className="mb-4"><h2 className="h5">Registrar novedad</h2>
         {errores.apartamento && <div className="text-danger small">{errores.apartamento}</div>}
         <input className="form-control my-1" placeholder="Autor" aria-label="Autor" value={form.autor} onChange={(e) => setForm({ ...form, autor: e.target.value })} />
         {errores.autor && <div className="text-danger small">{errores.autor}</div>}
@@ -84,7 +85,7 @@ export function PanelNovedades({ apartamentos, autorPorDefecto, avisos }: Props)
         {errores.descripcion && <div className="text-danger small">{errores.descripcion}</div>}
         <select className="form-select my-1" aria-label="Gravedad" value={form.gravedad} onChange={(e) => setForm({ ...form, gravedad: e.target.value })}>{GRAVEDADES.map((g) => <option key={g} value={g}>{etiqueta(g)}</option>)}</select>
         <button className="btn btn-primary w-100 mt-1" type="submit">Registrar novedad</button>
-      </form>
+      </form>}
 
       <div className="d-flex justify-content-between align-items-center"><h2 className="h5 mb-0">Pendientes de preparación</h2>
         <button className="btn btn-outline-secondary btn-sm" type="button" onClick={() => void cargarPendientes()}>Actualizar</button></div>

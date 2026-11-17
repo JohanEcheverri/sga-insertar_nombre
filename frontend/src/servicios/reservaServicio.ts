@@ -1,5 +1,5 @@
 import type { Pagina } from '../modelos/comun'
-import type { CrearReservaRequest, FiltrosReservas, ReservaDetalle, ReservaResumen } from '../modelos/reserva'
+import type { CancelacionReservaResponse, CrearReservaRequest, FiltrosReservas, PrevisualizacionCancelacion, ReservaDetalle, ReservaResumen } from '../modelos/reserva'
 import { api } from './api'
 
 export async function crearReserva(datos: CrearReservaRequest): Promise<ReservaDetalle> {
@@ -18,7 +18,12 @@ export async function listarMisReservas(usuarioId: string): Promise<ReservaResum
 async function accion(codigo: string, ruta: string): Promise<ReservaDetalle> {
   return (await api.put<ReservaDetalle>(`/reservas/${codigo}/${ruta}`)).data
 }
-export const cancelarReserva = (codigo: string) => accion(codigo, 'cancelar')
+export async function cancelarReserva(codigo: string): Promise<CancelacionReservaResponse> {
+  return (await api.put<CancelacionReservaResponse>(`/reservas/${codigo}/cancelar`)).data
+}
+export async function previsualizarCancelacion(codigo: string): Promise<PrevisualizacionCancelacion> {
+  return (await api.get<PrevisualizacionCancelacion>(`/reservas/${codigo}/cancelacion`)).data
+}
 export const confirmarReserva = (codigo: string) => accion(codigo, 'confirmar')
 export const registrarLlegada = (codigo: string) => accion(codigo, 'registrar-llegada')
 export const registrarSalida = (codigo: string) => accion(codigo, 'registrar-salida')

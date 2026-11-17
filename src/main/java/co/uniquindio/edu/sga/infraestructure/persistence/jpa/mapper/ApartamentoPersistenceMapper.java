@@ -13,7 +13,7 @@ public class ApartamentoPersistenceMapper {
     public ApartamentoEntity aEntidad(Apartamento a) {
         var e = new ApartamentoEntity();
         e.setId(a.getId().valor().toString()); e.setIdentificadorUnico(a.getIdentificadorUnico());
-        e.setDescripcion(a.getDescripcion()); e.setCapacidad(a.getCapacidad().aforoMax());
+        e.setDescripcion(a.getDescripcion()); e.setCategoria(a.getCategoria().name()); e.setCapacidad(a.getCapacidad().aforoMax());
         e.setEstadoOperativo(a.getEstadoOperativo().name()); e.setDisponible(a.isDisponible()); e.setActivo(a.isActivo());
         a.getDormitorios().forEach(d -> { var x = new DormitorioEmbeddable(); x.setNombre(d.nombre()); x.setCantidadCamas(d.cantidadCamas()); x.setTipoCamas(d.tipoCamas()); e.getDormitorios().add(x); });
         return e;
@@ -22,8 +22,9 @@ public class ApartamentoPersistenceMapper {
     public Apartamento aDominio(ApartamentoEntity e) {
         var dormitorios = e.getDormitorios().stream().map(d -> new Dormitorio(d.getNombre(), d.getCantidadCamas(), d.getTipoCamas())).toList();
         var estado = EstadoOperativo.valueOf(e.getEstadoOperativo());
+        var categoria = e.getCategoria() == null ? CategoriaApartamento.PREMIUM : CategoriaApartamento.valueOf(e.getCategoria());
         var a = Apartamento.crear(new Capacidad((byte)e.getCapacidad()), e.getDescripcion(), dormitorios, estado,
-                ApartamentoId.of(UUID.fromString(e.getId())), e.getIdentificadorUnico(), e.isDisponible());
+                ApartamentoId.of(UUID.fromString(e.getId())), e.getIdentificadorUnico(), e.isDisponible(), categoria);
         if (!e.isActivo()) a.retirar();
         return a;
     }

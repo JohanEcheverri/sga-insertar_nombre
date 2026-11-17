@@ -18,6 +18,7 @@ public record ApartamentoResponse(
         String identificadorUnico,
         String descripcion,
         Integer aforoMaximo,
+        String categoria,
         String estadoOperativo,
         List<String> dormitorios,
         boolean disponible

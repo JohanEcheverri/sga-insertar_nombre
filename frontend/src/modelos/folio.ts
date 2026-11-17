@@ -12,6 +12,7 @@ export interface CargoResponse {
   concepto: string
   monto: number
   fechaRegistro: string
+  esCredito: boolean
 }
 
 export interface AutorizacionCierreResponse {
@@ -25,11 +26,13 @@ export interface FolioResponse {
   reservaId: string
   estado: EstadoFolio
   cargos: CargoResponse[]
+  pagos: { medio: MedioPago; monto: number; referencia: string | null; fechaRegistro: string }[]
   cantidadPagos: number
   totalCargos: number
   totalPagos: number
   /** Saldo con signo: positivo debe el huésped, negativo saldo a favor. */
   saldoPendiente: number
+  saldoAFavor: number
   autorizacionCierre: AutorizacionCierreResponse | null
 }
 

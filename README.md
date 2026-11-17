@@ -1,6 +1,6 @@
 # SGA — Sistema de Gestión de Alojamiento
 
-API para administrar alojamientos, apartamentos, temporadas y tarifas, reservas, folios, cargos y políticas de cancelación. El alojamiento de ejemplo del catálogo es Triquiñuelas, en Salento, Quindío.
+API para administrar alojamientos, apartamentos, temporadas y tarifas, reservas, folios, cargos y políticas de cancelación. El alojamiento del catálogo es El Cam, en Lloró, Chocó.
 
 ## Arquitectura
 
@@ -27,7 +27,7 @@ En la raíz del repositorio, inicia el backend:
 ./gradlew bootRun
 ```
 
-La API queda en `http://localhost:8080/api`. H2 usa una base en memoria y `data.sql` carga el catálogo al iniciar. La documentación servida por Springdoc está en `http://localhost:8080/swagger-ui.html` y `http://localhost:8080/v3/api-docs`.
+La API queda en `http://localhost:8080/api`. En desarrollo, H2 guarda la base en `data/sga.mv.db` y conserva usuarios y reservas entre reinicios; `data.sql` carga el catálogo inicial de forma idempotente. El directorio `data/` está excluido de Git. Se puede sustituir la URL local definiendo `SPRING_DATASOURCE_URL`. La documentación servida por Springdoc está en `http://localhost:8080/swagger-ui.html` y `http://localhost:8080/v3/api-docs`.
 
 En otra terminal, inicia el frontend:
 
@@ -43,7 +43,7 @@ Antes de iniciar el backend, copia `src/main/resources/application-secrets.prope
 
 ## Datos y autenticación de prueba
 
-El catálogo inicial incluye cuatro apartamentos, tarifas base y de temporada, y la política versionada `triquinuelas-v1`. Los identificadores fijos de catálogo aparecen en `src/main/resources/data.sql`.
+El catálogo inicial incluye cuatro apartamentos Standard y Premium, tarifas base y de temporada, y la política versionada `el-cam-v1`. Los identificadores fijos de catálogo aparecen en `src/main/resources/data.sql`.
 
 Los usuarios de desarrollo se crean si su correo no existe, con contraseñas BCrypt; se deshabilitan en el perfil `prod`.
 

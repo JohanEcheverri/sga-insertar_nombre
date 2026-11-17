@@ -38,7 +38,7 @@ public interface ReservaMapper {
         return new ReservaDetalleResponse(reserva.getId().valor().toString(),
                 reserva.getFolioId().valor().toString(), reserva.getApartamentoId().valor().toString(),
                 titular.nombreCompleto().nombre(), titular.nombreCompleto().apellido(),
-                titular.usuarioId().valor().toString(), titular.correo().direccion(),
+                titular.usuarioId() == null ? null : titular.usuarioId().valor().toString(), titular.correo().direccion(),
                 titular.telefono().numeroTelefono(), titular.documentoIdentidad().numero(),
                 ocupantes, reserva.getEstancia().fechaEntrada(), reserva.getEstancia().fechaSalida(),
                 reserva.getIdentificadorExterno(), reserva.getHoraEstimadaLlegada(),

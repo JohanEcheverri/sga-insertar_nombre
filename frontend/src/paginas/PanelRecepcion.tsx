@@ -4,16 +4,17 @@ import { BuscadorReservas } from '../componentes/recepcion/BuscadorReservas'
 import { OperacionDia } from '../componentes/recepcion/OperacionDia'
 import { PanelFolio } from '../componentes/recepcion/PanelFolio'
 import { PanelNovedades } from '../componentes/recepcion/PanelNovedades'
+import { NuevaReservaDirecta } from '../componentes/recepcion/NuevaReservaDirecta'
 import { useAuth } from '../contexto/useAuth'
 import { useAviso } from '../hooks/useAviso'
 import type { ApartamentoResponse } from '../modelos/apartamento'
 import { listarTodosLosApartamentos } from '../servicios/apartamentoServicio'
 
-type Pestania = 'dia' | 'reservas' | 'folio' | 'novedades'
-const PESTANIAS: [Pestania, string][] = [['dia', 'Llegadas y salidas'], ['reservas', 'Reservas'], ['folio', 'Folio'], ['novedades', 'Novedades']]
+type Pestania = 'dia' | 'reservas' | 'nueva' | 'folio' | 'novedades'
+const PESTANIAS: [Pestania, string][] = [['dia', 'Llegadas y salidas'], ['reservas', 'Reservas'], ['nueva', 'Nueva reserva directa'], ['folio', 'Folio'], ['novedades', 'Novedades']]
 
 export default function PanelRecepcion() {
-  const { sesion } = useAuth()
+  const { sesion, tieneRol } = useAuth()
   const { aviso, exito, error, fallo, limpiar } = useAviso()
   const avisos = useMemo(() => ({ exito, error, fallo }), [exito, error, fallo])
   const [pestania, setPestania] = useState<Pestania>('dia')
@@ -34,7 +35,8 @@ export default function PanelRecepcion() {
     <AlertaNotificacion mensaje={aviso?.mensaje} tipo={aviso?.tipo} alCerrar={limpiar} />
     {pestania === 'dia' && <OperacionDia apartamentos={mapa} avisos={avisos} irAFolio={irAFolio} />}
     {pestania === 'reservas' && <BuscadorReservas apartamentos={mapa} avisos={avisos} irAFolio={irAFolio} />}
+    {pestania === 'nueva' && <NuevaReservaDirecta apartamentos={apartamentos} avisos={avisos} />}
     {pestania === 'folio' && <PanelFolio codigoInicial={codigoFolio} avisos={avisos} />}
-    {pestania === 'novedades' && <PanelNovedades apartamentos={apartamentos} autorPorDefecto={sesion?.correo ?? ''} avisos={avisos} />}
+    {pestania === 'novedades' && <PanelNovedades apartamentos={apartamentos} autorPorDefecto={sesion?.correo ?? ''} avisos={avisos} soloLectura={!tieneRol(['ADMINISTRADOR'])} />}
   </main>
 }

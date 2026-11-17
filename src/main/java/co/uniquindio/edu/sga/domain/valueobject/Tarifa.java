@@ -28,4 +28,17 @@ public record Tarifa(TemporadaId temporadaId, ApartamentoId apartamentoId,
         return precioPorNochePorOcupante.valor()
                 .multiply(BigDecimal.valueOf(ocupantesFacturables));
     }
+
+    /** Premium cobra por persona facturable; Standard cobra una tarifa fija por apartamento. */
+    public BigDecimal calcularValorNoche(int ocupantesFacturables, CategoriaApartamento categoria) {
+        if (categoria == null) {
+            throw new ReglaDominioException("La categoría es necesaria para calcular la tarifa.");
+        }
+        if (ocupantesFacturables <= 0) {
+            throw new ReglaDominioException("El número de ocupantes facturables debe ser mayor a cero.");
+        }
+        return categoria.tarifaPorPersona()
+                ? precioPorNochePorOcupante.valor().multiply(BigDecimal.valueOf(ocupantesFacturables))
+                : precioPorNochePorOcupante.valor();
+    }
 }

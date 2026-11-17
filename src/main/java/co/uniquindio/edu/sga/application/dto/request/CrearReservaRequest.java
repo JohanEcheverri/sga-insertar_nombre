@@ -15,7 +15,7 @@ import java.util.List;
  * @param apartamentoId Identificador del apartamento solicitado.
  * @param nombreTitular Nombres del titular de la reserva.
  * @param apellidoTitular Apellidos del titular de la reserva.
- * @param usuarioId Identificador del usuario titular.
+ * @param usuarioId Identificador opcional de la cuenta del titular (nulo en una reserva directa).
  * @param correoTitular Correo de contacto del titular.
  * @param telefonoTitular Teléfono de contacto del titular.
  * @param documentoTitular Documento de identidad del titular.
@@ -39,7 +39,6 @@ public record CrearReservaRequest(
         @NotBlank(message = "El apellido del titular es obligatorio")
         String apellidoTitular,
 
-        @NotBlank(message = "El identificador del usuario titular es obligatorio")
         String usuarioId,
 
         @NotBlank(message = "El correo del titular es obligatorio") @Email(message = "El correo del titular no tiene un formato válido")

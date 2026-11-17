@@ -25,6 +25,36 @@ public class FolioJpaRepository implements FolioRepository {
     @Transactional(readOnly=true) public List<Folio> buscarConPagosEntre(LocalDateTime desde, LocalDateTime hasta) { return data.findAll().stream().filter(e->e.getPagos().stream().anyMatch(p->!p.getFechaRegistro().isBefore(desde)&&p.getFechaRegistro().isBefore(hasta))).map(this::aDominio).toList(); }
     /** Devuelve todos los folios. */
     @Transactional(readOnly=true) public List<Folio> buscarTodos() { return data.findAll().stream().map(this::aDominio).toList(); }
-    private FolioEntity aEntidad(Folio f) { var e=new FolioEntity();e.setId(f.getId().valor().toString());e.setReservaId(f.getReservaId().valor().toString());e.setEstado(f.getEstado().name());e.setFechaCreacion(LocalDateTime.now()); f.getCargos().forEach(c->{var x=new CargoEmbeddable();x.setTipo(c.tipoCargo().name());x.setConcepto(c.concepto());x.setMonto(c.monto().valor());x.setFechaRegistro(c.fechaRegistro());e.getCargos().add(x);}); f.getPagos().forEach(p->{var x=new PagoEmbeddable();x.setMonto(p.monto().valor());x.setMedio(p.medio().name());x.setReferencia(p.referencia());x.setFechaRegistro(p.fechaRegistro());e.getPagos().add(x);}); var a=f.getAutorizacionCierre();if(a!=null){e.setAutorizacionAutor(a.autor());e.setAutorizacionMotivo(a.motivo());e.setAutorizacionFecha(a.fecha());}return e; }
+    private FolioEntity aEntidad(Folio f) {
+        var e = new FolioEntity();
+        e.setId(f.getId().valor().toString());
+        e.setReservaId(f.getReservaId().valor().toString());
+        e.setSaldoTotal(f.saldo());
+        e.setEstado(f.getEstado().name());
+        e.setFechaCreacion(LocalDateTime.now());
+        f.getCargos().forEach(c -> {
+            var x = new CargoEmbeddable();
+            x.setTipo(c.tipoCargo().name());
+            x.setConcepto(c.concepto());
+            x.setMonto(c.monto().valor());
+            x.setFechaRegistro(c.fechaRegistro());
+            e.getCargos().add(x);
+        });
+        f.getPagos().forEach(p -> {
+            var x = new PagoEmbeddable();
+            x.setMonto(p.monto().valor());
+            x.setMedio(p.medio().name());
+            x.setReferencia(p.referencia());
+            x.setFechaRegistro(p.fechaRegistro());
+            e.getPagos().add(x);
+        });
+        var autorizacion = f.getAutorizacionCierre();
+        if (autorizacion != null) {
+            e.setAutorizacionAutor(autorizacion.autor());
+            e.setAutorizacionMotivo(autorizacion.motivo());
+            e.setAutorizacionFecha(autorizacion.fecha());
+        }
+        return e;
+    }
     private Folio aDominio(FolioEntity e) { var f=Folio.crear(FolioId.of(UUID.fromString(e.getId())),ReservaId.of(UUID.fromString(e.getReservaId()))); e.getCargos().forEach(c->f.registrarCargo(new Cargo(TipoCargo.valueOf(c.getTipo()),c.getConcepto(),Dinero.de(c.getMonto()),c.getFechaRegistro())));e.getPagos().forEach(p->f.registrarPago(new Pago(Dinero.de(p.getMonto()),MedioPago.valueOf(p.getMedio()),p.getReferencia(),p.getFechaRegistro())));if("CERRADO".equals(e.getEstado())){var a=new AutorizacionCierre(e.getAutorizacionAutor(),e.getAutorizacionMotivo(),e.getAutorizacionFecha());if(f.tieneSaldoPendiente())f.cerrarConSaldoAutorizado(a);else f.cerrar(a);}return f; }
 }
